@@ -1,0 +1,25 @@
+{
+  "_test_description": "Standalone event envelope from a CDN at Retrieval conformance level. No session_id (content owner has no session context). source_role is edge with full edge enrichment data. Validated against telemetry-event.json envelope schema.",
+  "document_type": "event",
+  "schema_version": "0.1",
+  "event": {
+    "type": "content_retrieved",
+    "timestamp": "2026-03-28T08:15:00Z",
+    "source_role": "edge",
+    "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440050",
+    "content_url": "https://www.telegraph.co.uk/business/2026/03/28/ftse-100-markets-live",
+    "data": {
+      "user_agent": "PerplexityBot/1.0",
+      "bot_category": "inference",
+      "verified": false,
+      "cache_status": "miss",
+      "response_status": 200,
+      "response_bytes": 42100,
+      "ja4": "t13d1516h2_5b57614c22b0_7cb938dcc8ab",
+      "asn": 396982,
+      "asn_org": "Perplexity AI",
+      "country": "US",
+      "ip_hash": "sha256:e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6"
+    }
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "_test_description": "Attribution conformance level: full funnel from retrieval through grounding, citation, display, to engagement.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440003",
+  "agent_id": "shopping-assistant-v2",
+  "content_scope": "electronics-reviews",
+  "manifest_ref": "https://retailer.example.com/.well-known/content-telemetry.json",
+  "started_at": "2026-03-28T14:00:00Z",
+  "ended_at": "2026-03-28T14:06:00Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T14:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "comparison",
+        "topics": ["running shoes", "trail running"],
+        "query_tokens": 18
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T14:00:01Z",
+      "source_role": "agent",
+      "content_telemetry_id": "880e8400-e29b-41d4-a716-446655440010",
+      "content_url": "https://www.runnersworld.com/gear/best-trail-running-shoes"
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-03-28T14:00:02Z",
+      "content_url": "https://www.runnersworld.com/gear/best-trail-running-shoes",
+      "content_id": "rw:best-trail-shoes-2026",
+      "data": {
+        "scope": "session",
+        "cached": false,
+        "tokens_ingested": 6200,
+        "content_last_modified": "2026-03-20T10:00:00Z",
+        "content_hash": "sha256:b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
+        "media_type": "text"
+      }
+    },
+    {
+      "type": "content_cited",
+      "timestamp": "2026-03-28T14:00:06Z",
+      "turn_id": "1",
+      "content_url": "https://www.runnersworld.com/gear/best-trail-running-shoes",
+      "content_id": "rw:best-trail-shoes-2026",
+      "data": {
+        "citation_type": "paraphrase",
+        "excerpt_tokens": 110,
+        "excerpt_chars": 480,
+        "position": "primary",
+        "media_type": "text",
+        "url_verified": true
+      }
+    },
+    {
+      "type": "content_displayed",
+      "timestamp": "2026-03-28T14:00:06Z",
+      "turn_id": "1",
+      "content_url": "https://www.runnersworld.com/gear/best-trail-running-shoes",
+      "content_id": "rw:best-trail-shoes-2026",
+      "data": {
+        "display_type": "card"
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T14:00:06Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "comparison",
+        "response_type": "recommendation",
+        "response_mode": "standard",
+        "topics": ["Salomon Speedcross 6", "Hoka Speedgoat 6", "trail shoes"],
+        "content_urls_retrieved": [
+          "https://www.runnersworld.com/gear/best-trail-running-shoes"
+        ],
+        "content_urls_cited": [
+          "https://www.runnersworld.com/gear/best-trail-running-shoes"
+        ],
+        "response_tokens": 310
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-03-28T14:02:30Z",
+      "turn_id": "1",
+      "content_url": "https://www.runnersworld.com/gear/best-trail-running-shoes",
+      "content_id": "rw:best-trail-shoes-2026",
+      "data": {
+        "engagement_type": "link_click"
+      }
+    }
+  ]
+}

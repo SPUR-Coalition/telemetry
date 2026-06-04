@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contenttelemetry.org/schema/v0.1/manifest.json",
+  "title": "Content Telemetry Manifest",
+  "description": "Schema for the .well-known/content-telemetry.json manifest defined in section 8 of the Content Telemetry specification. A manifest declares a participant's identity, roles, telemetry endpoint, signing keys, and claimed domains.",
+  "type": "object",
+  "required": ["schema_version", "id", "roles", "operator"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "0.1",
+      "description": "Manifest schema version. v0.1 emitters MUST use '0.1'. (Section 8.2)"
+    },
+    "id": {
+      "type": "string",
+      "format": "uri",
+      "description": "The manifest's canonical URL, e.g. https://example.com/.well-known/content-telemetry.json. (Section 8.2)"
+    },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["content_owner", "agent", "platform"]
+      },
+      "description": "One or more of content_owner, agent, platform. (Section 8.2)"
+    },
+    "operator": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name of the operating organisation. (Section 8.3)"
+        },
+        "domain": {
+          "type": "string",
+          "description": "Primary domain. Defaults to the manifest URL's host. (Section 8.3)"
+        }
+      },
+      "description": "Operating organisation. (Section 8.3)"
+    },
+    "keys": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "publicKey"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Key identifier, unique within the manifest. (Section 8.4)"
+          },
+          "type": {
+            "type": "string",
+            "const": "Ed25519",
+            "description": "Key type. v0.1: Ed25519. (Section 8.4)"
+          },
+          "publicKey": {
+            "type": "string",
+            "description": "Multibase-encoded public key (multicodec prefix, base58btc - the same format as did:key). (Section 8.4)"
+          },
+          "expires": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 expiry. (Section 8.4)"
+          }
+        }
+      },
+      "description": "Public keys for signing telemetry events. Per-event signing is informational in v0.1. (Section 8.4)"
+    },
+    "telemetry": {
+      "type": "object",
+      "required": ["endpoint"],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTPS URL. For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the owner's content. (Section 8.5)"
+        },
+        "conformance_level": {
+          "type": "string",
+          "enum": ["retrieval", "grounding", "attribution"],
+          "description": "Conformance level advertised by this participant's own emitter(s). Informational. (Sections 8.5, 5.7)"
+        }
+      },
+      "description": "Telemetry endpoint declaration. (Section 8.5)"
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Domains the participant claims authority over. MAY appear only on root manifests; each entry MUST be the manifest's own host or a subdomain of it (literal or wildcard). (Section 8.6)"
+    }
+  }
+}

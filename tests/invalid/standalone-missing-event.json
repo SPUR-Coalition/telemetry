@@ -1,0 +1,6 @@
+{
+  "_test_description": "Standalone event envelope with document_type and schema_version but no event field. Fails validation: without the event key the validator falls through to session schema, which requires started_at.",
+  "document_type": "event",
+  "schema_version": "0.1",
+  "session_id": "770e8400-e29b-41d4-a716-446655440010"
+}

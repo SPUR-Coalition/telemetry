@@ -1,0 +1,12 @@
+{
+  "_test_description": "Event without timestamp field. Fails JSON Schema validation: timestamp is required on TelemetryEvent.",
+  "schema_version": "0.1",
+  "session_id": "770e8400-e29b-41d4-a716-446655440005",
+  "started_at": "2026-03-28T10:00:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "content_url": "https://example.com/article/test"
+    }
+  ]
+}

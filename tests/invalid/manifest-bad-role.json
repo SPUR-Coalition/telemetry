@@ -1,0 +1,7 @@
+{
+  "_test_description": "Manifest with a role value 'publisher' that is not in the roles enum (content_owner, agent, platform). Fails JSON Schema validation.",
+  "schema_version": "0.1",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": ["publisher"],
+  "operator": { "name": "Example Media" }
+}

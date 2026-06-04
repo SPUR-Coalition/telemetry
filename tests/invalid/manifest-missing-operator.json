@@ -1,0 +1,6 @@
+{
+  "_test_description": "Manifest missing the required 'operator' field. Fails JSON Schema validation.",
+  "schema_version": "0.1",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": ["content_owner"]
+}

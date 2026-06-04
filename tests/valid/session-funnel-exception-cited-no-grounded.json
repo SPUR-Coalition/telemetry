@@ -1,0 +1,53 @@
+{
+  "_test_description": "Funnel exception: content_cited with no preceding content_grounded event. This is a hallucinated citation - the agent references content it never retrieved or loaded into context. Valid per section 4.3. Attribution consumers SHOULD treat this as a lower-confidence signal.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440011",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-03-28T20:00:00Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T20:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "fact_check",
+        "topics": ["population statistics", "demographics"]
+      }
+    },
+    {
+      "type": "content_cited",
+      "timestamp": "2026-03-28T20:00:05Z",
+      "turn_id": "1",
+      "content_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration",
+      "data": {
+        "citation_type": "reference",
+        "position": "primary",
+        "url_verified": false
+      }
+    },
+    {
+      "type": "content_displayed",
+      "timestamp": "2026-03-28T20:00:05Z",
+      "turn_id": "1",
+      "content_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration",
+      "data": {
+        "display_type": "link"
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T20:00:05Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "response_type": "explanation",
+        "response_mode": "standard",
+        "content_urls_cited": [
+          "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration"
+        ],
+        "response_tokens": 180
+      }
+    }
+  ]
+}

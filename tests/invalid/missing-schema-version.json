@@ -1,0 +1,12 @@
+{
+  "_test_description": "Session without schema_version. Fails JSON Schema validation: schema_version is a required field.",
+  "session_id": "770e8400-e29b-41d4-a716-446655440001",
+  "started_at": "2026-03-28T10:00:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T10:00:01Z",
+      "content_url": "https://example.com/article/test"
+    }
+  ]
+}

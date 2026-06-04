@@ -1,0 +1,18 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: Turn at minimal privacy with query_text present. Passes JSON Schema validation but violates the privacy field gating rule (section 5.5): query_text MUST NOT be present when privacy_level is minimal.",
+  "schema_version": "0.1",
+  "session_id": "770e8400-e29b-41d4-a716-446655440011",
+  "started_at": "2026-03-28T10:00:00Z",
+  "events": [
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T10:00:05Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "minimal",
+        "query_text": "What is the best coffee grinder under 100 pounds?",
+        "response_tokens": 120
+      }
+    }
+  ]
+}

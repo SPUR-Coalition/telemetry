@@ -1,0 +1,52 @@
+{
+  "_test_description": "Custom response_mode value not in the recommended set. The spec says platforms MAY use custom string values and attribution consumers MUST tolerate unknown values.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440009",
+  "agent_id": "podcast-gen-v1",
+  "started_at": "2026-03-28T18:00:00Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T18:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "creative",
+        "topics": ["quantum computing", "podcast"]
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T18:00:02Z",
+      "source_role": "agent",
+      "content_url": "https://www.quantamagazine.org/the-quest-for-quantum-advantage-20260315/"
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-03-28T18:00:03Z",
+      "content_url": "https://www.quantamagazine.org/the-quest-for-quantum-advantage-20260315/",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "tokens_ingested": 4500
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T18:02:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "creative",
+        "response_type": "creative",
+        "response_mode": "podcast_generation",
+        "topics": ["quantum computing", "error correction", "IBM", "Google"],
+        "content_urls_retrieved": [
+          "https://www.quantamagazine.org/the-quest-for-quantum-advantage-20260315/"
+        ],
+        "response_tokens": 8500,
+        "model_id": "claude-4-opus"
+      }
+    }
+  ]
+}

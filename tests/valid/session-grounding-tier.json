@@ -1,0 +1,55 @@
+{
+  "_test_description": "Grounding conformance level: agent emitting content_retrieved, content_grounded, and turn events with privacy_level. Includes agent_id and data.scope as required by the Grounding tier.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440002",
+  "agent_id": "research-assistant-v1",
+  "started_at": "2026-03-28T12:00:00Z",
+  "ended_at": "2026-03-28T12:05:00Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T12:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "explanation",
+        "topics": ["climate policy", "carbon credits"]
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T12:00:01Z",
+      "source_role": "agent",
+      "content_url": "https://www.nature.com/articles/s41558-026-01234-5"
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-03-28T12:00:02Z",
+      "content_url": "https://www.nature.com/articles/s41558-026-01234-5",
+      "content_id": "doi:10.1038/s41558-026-01234-5",
+      "data": {
+        "scope": "session",
+        "cached": false,
+        "tokens_ingested": 5100,
+        "content_last_modified": "2026-03-15T08:00:00Z",
+        "media_type": "text"
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T12:00:08Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "explanation",
+        "response_type": "explanation",
+        "response_mode": "standard",
+        "topics": ["carbon credits", "EU ETS", "voluntary markets"],
+        "content_urls_retrieved": [
+          "https://www.nature.com/articles/s41558-026-01234-5"
+        ],
+        "response_tokens": 420
+      }
+    }
+  ]
+}

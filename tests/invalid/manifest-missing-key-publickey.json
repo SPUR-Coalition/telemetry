@@ -1,0 +1,10 @@
+{
+  "_test_description": "Manifest with a keys entry missing the required 'publicKey' field. Fails JSON Schema validation.",
+  "schema_version": "0.1",
+  "id": "https://searchco.com/agents/web-search/.well-known/content-telemetry.json",
+  "roles": ["agent"],
+  "operator": { "name": "SearchCo" },
+  "keys": [
+    { "id": "key-1", "type": "Ed25519" }
+  ]
+}

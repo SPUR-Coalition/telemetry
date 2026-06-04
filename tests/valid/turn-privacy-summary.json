@@ -1,0 +1,30 @@
+{
+  "_test_description": "turn_completed at summary privacy level: query_text and response_text are summarised (not verbatim). Includes query_intent, topics, query_tokens, response_tokens, model_id, ad_rendered, response_mode, response_type.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440009",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-03-28T18:00:00Z",
+  "events": [
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T18:00:07Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "summary",
+        "query_text": "User asked about best noise-cancelling headphones under a budget.",
+        "response_text": "Agent recommended two models based on review sources, comparing noise cancellation and sound quality.",
+        "query_intent": "comparison",
+        "response_type": "recommendation",
+        "response_mode": "standard",
+        "topics": ["headphones", "noise cancelling", "product comparison"],
+        "content_urls_cited": [
+          "https://www.wirecutter.com/reviews/best-wireless-headphones"
+        ],
+        "query_tokens": 14,
+        "response_tokens": 72,
+        "model_id": "claude-4-sonnet",
+        "ad_rendered": false
+      }
+    }
+  ]
+}

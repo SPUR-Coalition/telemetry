@@ -1,0 +1,28 @@
+{
+  "_test_description": "Retrieval conformance level: content owner CDN emitting content_retrieved with source_role and content_url. No session context beyond the minimum.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440001",
+  "started_at": "2026-03-28T11:00:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T11:00:01Z",
+      "source_role": "edge",
+      "content_telemetry_id": "770e8400-e29b-41d4-a716-446655440001",
+      "content_url": "https://www.theguardian.com/technology/2026/mar/28/ai-agents-roundup",
+      "data": {
+        "user_agent": "ClaudeBot/1.0",
+        "bot_category": "inference",
+        "verified": true,
+        "cache_status": "miss",
+        "response_status": 200,
+        "response_bytes": 35420,
+        "ja4": "t13d1517h2_8daaf6152771_02e4c6ae3e16",
+        "asn": 14618,
+        "asn_org": "Anthropic",
+        "country": "US",
+        "ip_hash": "sha256:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+      }
+    }
+  ]
+}

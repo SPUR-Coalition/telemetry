@@ -1,0 +1,10 @@
+{
+  "_test_description": "Standalone event envelope missing document_type. The event key triggers envelope validation, which requires document_type.",
+  "schema_version": "0.1",
+  "event": {
+    "type": "content_retrieved",
+    "timestamp": "2026-03-28T10:00:00Z",
+    "source_role": "edge",
+    "content_url": "https://example.com/article/test"
+  }
+}

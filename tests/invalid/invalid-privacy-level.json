@@ -1,0 +1,17 @@
+{
+  "_test_description": "Turn with privacy_level 'redacted' which is not in the PrivacyLevel enum. Fails JSON Schema validation.",
+  "schema_version": "0.1",
+  "session_id": "770e8400-e29b-41d4-a716-446655440009",
+  "started_at": "2026-03-28T10:00:00Z",
+  "events": [
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T10:00:05Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "redacted",
+        "response_tokens": 150
+      }
+    }
+  ]
+}

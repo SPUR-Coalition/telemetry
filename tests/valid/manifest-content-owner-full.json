@@ -1,0 +1,11 @@
+{
+  "_test_description": "Content-owner manifest with operator.domain, a telemetry endpoint (no conformance_level), and a domains array with literal and wildcard subdomains.",
+  "schema_version": "0.1",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": ["content_owner"],
+  "operator": { "name": "Example Media", "domain": "example.com" },
+  "telemetry": {
+    "endpoint": "https://telemetry.example.com/v1/events"
+  },
+  "domains": ["example.com", "*.example.com"]
+}

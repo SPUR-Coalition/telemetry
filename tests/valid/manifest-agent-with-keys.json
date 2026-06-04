@@ -1,0 +1,19 @@
+{
+  "_test_description": "Agent manifest served under a path prefix, with an Ed25519 signing key (including expires) and a telemetry endpoint advertising grounding conformance.",
+  "schema_version": "0.1",
+  "id": "https://searchco.com/agents/web-search/.well-known/content-telemetry.json",
+  "roles": ["agent"],
+  "operator": { "name": "SearchCo" },
+  "keys": [
+    {
+      "id": "key-1",
+      "type": "Ed25519",
+      "publicKey": "z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "expires": "2027-01-01T00:00:00Z"
+    }
+  ],
+  "telemetry": {
+    "endpoint": "https://telemetry.example.com/v1/events",
+    "conformance_level": "grounding"
+  }
+}

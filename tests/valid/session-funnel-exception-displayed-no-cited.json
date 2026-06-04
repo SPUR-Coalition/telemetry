@@ -1,0 +1,55 @@
+{
+  "_test_description": "Funnel exception: content_displayed without content_cited. This is the Sources sidebar pattern - the agent shows source links without explicitly citing the content in the response text. Valid per section 4.3.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440010",
+  "agent_id": "search-assistant-v1",
+  "started_at": "2026-03-28T19:00:00Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T19:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "question",
+        "topics": ["sourdough", "starter maintenance"]
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T19:00:01Z",
+      "source_role": "agent",
+      "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance"
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-03-28T19:00:02Z",
+      "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "tokens_ingested": 1800
+      }
+    },
+    {
+      "type": "content_displayed",
+      "timestamp": "2026-03-28T19:00:06Z",
+      "turn_id": "1",
+      "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance",
+      "data": {
+        "display_type": "link"
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T19:00:06Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "response_type": "explanation",
+        "response_mode": "search",
+        "response_tokens": 220
+      }
+    }
+  ]
+}

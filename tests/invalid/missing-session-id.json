@@ -1,0 +1,12 @@
+{
+  "_test_description": "Session without session_id. Fails JSON Schema validation: session_id is a required field.",
+  "schema_version": "0.1",
+  "started_at": "2026-03-28T10:00:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T10:00:01Z",
+      "content_url": "https://example.com/article/test"
+    }
+  ]
+}

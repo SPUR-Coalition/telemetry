@@ -1,0 +1,44 @@
+{
+  "_test_description": "Grounding from agent-side cache with no retrieval event. license_ref preserved from the original retrieval, as recommended by section 6.6.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440004",
+  "agent_id": "copilot-v3",
+  "started_at": "2026-03-28T09:00:00Z",
+  "ended_at": "2026-03-28T09:04:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-03-28T09:00:00Z",
+      "content_url": "https://www.ft.com/content/def456",
+      "content_id": "ft:def456",
+      "license_ref": "jwt:eyJhbGciOiJFUzI1NiJ9.pkg-ft-2026-03",
+      "data": {
+        "scope": "session",
+        "cached": true,
+        "tokens_ingested": 2800,
+        "content_last_modified": "2026-03-27T16:00:00Z",
+        "content_hash": "sha256:c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+        "media_type": "text"
+      }
+    },
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T09:00:01Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "minimal",
+        "response_tokens": null
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T09:00:06Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "minimal",
+        "content_urls_cited": ["https://www.ft.com/content/def456"],
+        "response_tokens": 195
+      }
+    }
+  ]
+}

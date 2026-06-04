@@ -1,0 +1,13 @@
+{
+  "_test_description": "Bare minimum conforming session: schema_version, session_id, started_at, and one event with type and timestamp.",
+  "schema_version": "0.1",
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "started_at": "2026-03-28T10:00:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T10:00:01Z",
+      "content_url": "https://example.com/article/getting-started"
+    }
+  ]
+}

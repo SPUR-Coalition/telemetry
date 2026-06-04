@@ -1,0 +1,15 @@
+{
+  "_test_description": "Single manifest declaring multiple roles (content_owner and agent) with a key, telemetry endpoint, and domains.",
+  "schema_version": "0.1",
+  "id": "https://publisher.com/.well-known/content-telemetry.json",
+  "roles": ["content_owner", "agent"],
+  "operator": { "name": "Publisher Co" },
+  "keys": [
+    { "id": "key-1", "type": "Ed25519", "publicKey": "z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK" }
+  ],
+  "telemetry": {
+    "endpoint": "https://telemetry.example.com/v1/events",
+    "conformance_level": "attribution"
+  },
+  "domains": ["publisher.com"]
+}

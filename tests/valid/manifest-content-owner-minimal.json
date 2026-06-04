@@ -1,0 +1,7 @@
+{
+  "_test_description": "Minimal valid content-owner manifest: schema_version, id, roles, operator only. No keys, telemetry, or domains.",
+  "schema_version": "0.1",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": ["content_owner"],
+  "operator": { "name": "Example Media" }
+}

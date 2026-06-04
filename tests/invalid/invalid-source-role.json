@@ -1,0 +1,14 @@
+{
+  "_test_description": "Event with source_role 'cdn' which is not in the SourceRole enum. Fails JSON Schema validation.",
+  "schema_version": "0.1",
+  "session_id": "770e8400-e29b-41d4-a716-446655440014",
+  "started_at": "2026-03-28T10:00:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T10:00:01Z",
+      "source_role": "cdn",
+      "content_url": "https://example.com/article/test"
+    }
+  ]
+}

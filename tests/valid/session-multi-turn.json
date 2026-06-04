@@ -1,0 +1,126 @@
+{
+  "_test_description": "Session-scoped grounding, 3 turns, citations in turns 1 and 3, zero-click outcome (browse with new_query exit). Turn 2 has no citation - the grounded content was in context but not explicitly referenced.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440006",
+  "agent_id": "copilot-v3",
+  "started_at": "2026-03-28T16:00:00Z",
+  "ended_at": "2026-03-28T16:10:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T16:00:01Z",
+      "source_role": "agent",
+      "content_url": "https://www.bbc.co.uk/news/science-environment-68234567"
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-03-28T16:00:02Z",
+      "content_url": "https://www.bbc.co.uk/news/science-environment-68234567",
+      "content_id": "bbc:68234567",
+      "data": {
+        "scope": "session",
+        "cached": false,
+        "tokens_ingested": 2400,
+        "media_type": "text"
+      }
+    },
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T16:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "question",
+        "topics": ["fusion energy", "ITER"]
+      }
+    },
+    {
+      "type": "content_cited",
+      "timestamp": "2026-03-28T16:00:08Z",
+      "turn_id": "1",
+      "content_url": "https://www.bbc.co.uk/news/science-environment-68234567",
+      "content_id": "bbc:68234567",
+      "data": {
+        "citation_type": "paraphrase",
+        "excerpt_tokens": 65,
+        "position": "primary"
+      }
+    },
+    {
+      "type": "content_displayed",
+      "timestamp": "2026-03-28T16:00:08Z",
+      "turn_id": "1",
+      "content_url": "https://www.bbc.co.uk/news/science-environment-68234567",
+      "data": {
+        "display_type": "link"
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T16:00:08Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "question",
+        "response_type": "explanation",
+        "response_mode": "standard",
+        "content_urls_cited": ["https://www.bbc.co.uk/news/science-environment-68234567"],
+        "response_tokens": 280
+      }
+    },
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T16:02:00Z",
+      "turn_id": "2",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "how_to",
+        "topics": ["tokamak", "plasma confinement"]
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T16:02:10Z",
+      "turn_id": "2",
+      "turn": {
+        "privacy_level": "intent",
+        "response_type": "explanation",
+        "response_mode": "standard",
+        "response_tokens": 350
+      }
+    },
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T16:05:00Z",
+      "turn_id": "3",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "analysis",
+        "topics": ["fusion timeline", "commercial viability"]
+      }
+    },
+    {
+      "type": "content_cited",
+      "timestamp": "2026-03-28T16:05:12Z",
+      "turn_id": "3",
+      "content_url": "https://www.bbc.co.uk/news/science-environment-68234567",
+      "content_id": "bbc:68234567",
+      "data": {
+        "citation_type": "reference",
+        "position": "supporting"
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T16:05:12Z",
+      "turn_id": "3",
+      "turn": {
+        "privacy_level": "intent",
+        "response_type": "analysis",
+        "response_mode": "standard",
+        "content_urls_cited": ["https://www.bbc.co.uk/news/science-environment-68234567"],
+        "response_tokens": 410
+      }
+    }
+  ]
+}

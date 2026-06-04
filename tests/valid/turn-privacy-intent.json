@@ -1,0 +1,28 @@
+{
+  "_test_description": "turn_completed at intent privacy level: query_intent, topics, response_type, response_mode, model_id, ad_rendered present. No query_text or response_text.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440012",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-03-28T18:30:00Z",
+  "events": [
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T18:30:06Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "comparison",
+        "response_type": "recommendation",
+        "response_mode": "standard",
+        "topics": ["headphones", "noise cancelling"],
+        "content_urls_cited": [
+          "https://www.wirecutter.com/reviews/best-wireless-headphones"
+        ],
+        "query_tokens": 12,
+        "response_tokens": 65,
+        "model_id": "claude-4-sonnet",
+        "ad_rendered": false
+      }
+    }
+  ]
+}

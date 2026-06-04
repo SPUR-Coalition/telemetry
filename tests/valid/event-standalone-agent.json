@@ -1,0 +1,13 @@
+{
+  "_test_description": "Standalone event envelope from an agent, with session_id as a foreign key. The agent reports its own retrieval as a standalone event for streaming delivery.",
+  "document_type": "event",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440006",
+  "event": {
+    "type": "content_retrieved",
+    "timestamp": "2026-03-28T08:20:00Z",
+    "source_role": "agent",
+    "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440051",
+    "content_url": "https://arstechnica.com/science/2026/03/new-battery-chemistry-breakthrough/"
+  }
+}

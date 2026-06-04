@@ -1,0 +1,14 @@
+{
+  "_test_description": "Standalone content_engaged (link_click) reported from a landing page after a click-out. Carries ctx_token in place of session_id (section 7.1): the destination corroborates the click without receiving the session UUID. The consumer resolves ctx_token to the originating session's click manifest.",
+  "document_type": "event",
+  "schema_version": "0.1",
+  "ctx_token": "ct_9f3a1c7e2b8d4a06",
+  "event": {
+    "type": "content_engaged",
+    "timestamp": "2026-03-28T14:06:00Z",
+    "content_url": "https://www.example-review.com/headphones/best-noise-cancelling",
+    "data": {
+      "engagement_type": "link_click"
+    }
+  }
+}

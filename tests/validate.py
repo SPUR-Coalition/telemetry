@@ -1,0 +1,298 @@
+#!/usr/bin/env python3
+"""
+Conformance test runner for Content Telemetry Specification v0.1.
+
+Validates JSON test fixtures against telemetry-session.json, telemetry-event.json,
+manifest.json, and application-layer conformance rules that JSON Schema cannot
+express. Fixtures whose filename starts with "manifest-" are validated against
+manifest.json; fixtures with an "event" key are validated as standalone event
+envelopes; all others are validated as session documents.
+
+Usage:
+    pip install jsonschema
+    python validate.py
+"""
+
+import json
+import os
+import sys
+from pathlib import Path
+
+try:
+    from jsonschema import Draft202012Validator, ValidationError
+    from referencing import Registry, Resource
+except ImportError:
+    print("ERROR: jsonschema package required. Install with: pip install jsonschema")
+    sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
+# Application-layer conformance checks
+#
+# These rules are specified in the Content Telemetry Specification but cannot be
+# expressed in JSON Schema alone. They are checked programmatically here.
+#
+# 1. Privacy level field gating (section 5.5):
+#    - At "minimal" level: query_text, response_text, query_intent, topics,
+#      model_id, ad_rendered, response_mode, and response_type MUST NOT be
+#      present. Only response_tokens and content_urls are allowed.
+#    - At "intent" level: query_text and response_text MUST NOT be present.
+#
+# 2. agent_id requirement (section 5.7, Grounding conformance):
+#    Sessions at Grounding or Attribution conformance level MUST include
+#    agent_id. Not checked here as it depends on declared conformance level.
+#
+# 3. content_url or content_id requirement (section 5.7, Grounding):
+#    Every content event MUST include at least one of content_url or
+#    content_id. Not enforced by JSON Schema (both are optional individually).
+# ---------------------------------------------------------------------------
+
+# Files in invalid/ that pass JSON Schema but fail application-layer rules.
+# Map of filename -> description of the conformance violation.
+APPLICATION_LAYER_VIOLATIONS = {
+    "privacy-violation-query-at-minimal.json": (
+        "Turn at minimal privacy includes query_text. "
+        "Violates section 5.5: query_text MUST NOT be present at minimal level."
+    ),
+    "privacy-violation-ad-rendered-at-minimal.json": (
+        "Turn at minimal privacy includes ad_rendered. "
+        "Violates section 5.5: platform metadata not available at minimal level."
+    ),
+    "privacy-violation-query-at-intent.json": (
+        "Turn at intent privacy includes query_text. "
+        "Violates section 5.5: query_text MUST NOT be present at intent level."
+    ),
+}
+
+# Fields that MUST NOT appear at each privacy level (section 5.5).
+# "minimal" strips everything except token counts (query_tokens, response_tokens) and content_urls.
+# "intent" strips query_text and response_text.
+PRIVACY_FORBIDDEN_FIELDS = {
+    "minimal": {
+        "query_text", "response_text", "query_intent", "topics",
+        "response_type", "response_mode", "model_id", "ad_rendered",
+    },
+    "intent": {
+        "query_text", "response_text",
+    },
+}
+
+
+def load_schema(schema_path):
+    """Load and return the JSON Schema and a validator instance."""
+    with open(schema_path) as f:
+        schema = json.load(f)
+    # Build a registry so that $ref pointers resolve when validating
+    # sub-schemas (e.g. TelemetryEvent) extracted from the root.
+    schema_id = schema.get("$id", "")
+    resource = Resource.from_contents(schema)
+    registry = Registry().with_resource(schema_id, resource)
+
+    # Load the standalone event envelope schema if present.
+    event_schema_path = schema_path.parent / "telemetry-event.json"
+    if event_schema_path.exists():
+        with open(event_schema_path) as f:
+            event_schema = json.load(f)
+        event_schema_id = event_schema.get("$id", "")
+        event_resource = Resource.from_contents(event_schema)
+        registry = registry.with_resource(event_schema_id, event_resource)
+    else:
+        event_schema = None
+
+    # Load the manifest schema if present. Manifest fixtures are identified
+    # by a "manifest-" filename prefix and validated against this schema
+    # rather than the session/event schemas.
+    manifest_schema_path = schema_path.parent / "manifest.json"
+    if manifest_schema_path.exists():
+        with open(manifest_schema_path) as f:
+            manifest_schema = json.load(f)
+        manifest_schema_id = manifest_schema.get("$id", "")
+        manifest_resource = Resource.from_contents(manifest_schema)
+        registry = registry.with_resource(manifest_schema_id, manifest_resource)
+        manifest_validator = Draft202012Validator(manifest_schema, registry=registry)
+    else:
+        manifest_validator = None
+
+    validator = Draft202012Validator(schema, registry=registry)
+    return schema, event_schema, validator, manifest_validator, registry
+
+
+def load_test_file(path):
+    """Load a JSON test file."""
+    with open(path) as f:
+        return json.load(f)
+
+
+def is_standalone_event(data):
+    """Check if the test file is a standalone event envelope (has 'event' key)."""
+    return "event" in data and isinstance(data["event"], dict)
+
+
+def is_manifest_fixture(path):
+    """Check if the test file is a manifest fixture (filename starts with 'manifest-')."""
+    return path.name.startswith("manifest-")
+
+
+def validate_standalone_event(data, session_schema, event_schema, registry):
+    """Validate a standalone event against the event envelope schema.
+
+    If the event envelope schema (telemetry-event.json) is available,
+    validates the full envelope. Otherwise falls back to validating
+    just the event body against the TelemetryEvent definition.
+    """
+    if event_schema is not None:
+        validator = Draft202012Validator(event_schema, registry=registry)
+        errors = list(validator.iter_errors(data))
+    else:
+        schema_id = session_schema.get("$id", "")
+        wrapper = {"$ref": f"{schema_id}#/$defs/TelemetryEvent"}
+        validator = Draft202012Validator(wrapper, registry=registry)
+        errors = list(validator.iter_errors(data["event"]))
+    return errors
+
+
+def check_privacy_conformance(data):
+    """
+    Check application-layer privacy conformance rules.
+
+    Returns a list of violation descriptions, empty if conforming.
+    """
+    violations = []
+    events = data.get("events", [])
+
+    for event in events:
+        turn = event.get("turn")
+        if turn is None:
+            continue
+
+        privacy = turn.get("privacy_level")
+        if privacy is None:
+            continue
+
+        forbidden = PRIVACY_FORBIDDEN_FIELDS.get(privacy, set())
+        for field in forbidden:
+            if field in turn and turn[field] is not None:
+                violations.append(
+                    f"Field '{field}' present on turn with privacy_level '{privacy}'"
+                )
+
+    return violations
+
+
+def run_tests():
+    """Run all conformance tests and return (passed, failed, results)."""
+    tests_dir = Path(__file__).parent
+    schema_path = tests_dir.parent / "telemetry-session.json"
+    valid_dir = tests_dir / "valid"
+    invalid_dir = tests_dir / "invalid"
+
+    schema, event_schema, session_validator, manifest_validator, registry = load_schema(schema_path)
+
+    results = []
+    passed = 0
+    failed = 0
+
+    # --- Valid tests: must pass JSON Schema ---
+    print("=" * 60)
+    print("VALID tests (must pass JSON Schema validation)")
+    print("=" * 60)
+
+    for path in sorted(valid_dir.glob("*.json")):
+        data = load_test_file(path)
+        name = path.name
+        desc = data.get("_test_description", "")
+
+        if is_manifest_fixture(path):
+            if manifest_validator is None:
+                print(f"  FAIL  {name}")
+                print("        manifest.json schema not found alongside telemetry-session.json")
+                failed += 1
+                results.append((name, False, "manifest schema missing"))
+                continue
+            errors = list(manifest_validator.iter_errors(data))
+        elif is_standalone_event(data):
+            # Standalone events validate against event envelope schema
+            errors = validate_standalone_event(data, schema, event_schema, registry)
+        else:
+            errors = list(session_validator.iter_errors(data))
+
+        if not errors:
+            print(f"  PASS  {name}")
+            passed += 1
+            results.append((name, True, None))
+        else:
+            msg = "; ".join(e.message for e in errors[:3])
+            print(f"  FAIL  {name}")
+            print(f"        {msg}")
+            failed += 1
+            results.append((name, False, msg))
+
+    print()
+
+    # --- Invalid tests: must fail JSON Schema OR application-layer ---
+    print("=" * 60)
+    print("INVALID tests (must fail validation)")
+    print("=" * 60)
+
+    for path in sorted(invalid_dir.glob("*.json")):
+        data = load_test_file(path)
+        name = path.name
+        desc = data.get("_test_description", "")
+
+        is_app_layer = name in APPLICATION_LAYER_VIOLATIONS
+
+        if is_manifest_fixture(path):
+            if manifest_validator is None:
+                print(f"  FAIL  {name}")
+                print("        manifest.json schema not found alongside telemetry-session.json")
+                failed += 1
+                results.append((name, False, "manifest schema missing"))
+                continue
+            schema_errors = list(manifest_validator.iter_errors(data))
+        elif is_standalone_event(data):
+            schema_errors = validate_standalone_event(data, schema, event_schema, registry)
+        else:
+            schema_errors = list(session_validator.iter_errors(data))
+
+        if schema_errors:
+            # Failed JSON Schema - good
+            msg = schema_errors[0].message
+            print(f"  PASS  {name}")
+            print(f"        Schema error: {msg}")
+            passed += 1
+            results.append((name, True, None))
+
+        elif is_app_layer:
+            # Passes JSON Schema but should fail conformance
+            conformance_violations = check_privacy_conformance(data)
+            if conformance_violations:
+                print(f"  PASS  {name}  [application-layer]")
+                print(f"        {APPLICATION_LAYER_VIOLATIONS[name]}")
+                passed += 1
+                results.append((name, True, None))
+            else:
+                print(f"  FAIL  {name}")
+                print(f"        Expected application-layer violation but none found")
+                failed += 1
+                results.append((name, False, "Expected conformance violation"))
+
+        else:
+            # Should have failed schema but didn't
+            print(f"  FAIL  {name}")
+            print(f"        Expected schema validation error but file validated OK")
+            failed += 1
+            results.append((name, False, "Expected schema error"))
+
+    # --- Summary ---
+    total = passed + failed
+    print()
+    print("=" * 60)
+    print(f"SUMMARY: {passed}/{total} passed, {failed}/{total} failed")
+    print("=" * 60)
+
+    return passed, failed, results
+
+
+if __name__ == "__main__":
+    passed, failed, results = run_tests()
+    sys.exit(0 if failed == 0 else 1)

@@ -1,0 +1,35 @@
+{
+  "_test_description": "turn_completed at full privacy level: query_text, response_text, intent, topics, model_id, ad_rendered all present. Maximum data sharing.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440007",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-03-28T17:00:00Z",
+  "events": [
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T17:00:08Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "full",
+        "query_text": "What are the best noise-cancelling headphones under 300 pounds?",
+        "response_text": "Based on recent reviews from Wirecutter and What Hi-Fi, the Sony WH-1000XM5 remains the top pick at around 280 pounds. The Bose QuietComfort Ultra is a close second at 299 pounds, with slightly better noise cancellation but less neutral sound.",
+        "query_intent": "comparison",
+        "response_type": "recommendation",
+        "response_mode": "standard",
+        "topics": ["headphones", "noise cancelling", "Sony WH-1000XM5", "Bose QC Ultra"],
+        "content_urls_retrieved": [
+          "https://www.wirecutter.com/reviews/best-wireless-headphones",
+          "https://www.whathifi.com/best-buys/best-noise-cancelling-headphones"
+        ],
+        "content_urls_cited": [
+          "https://www.wirecutter.com/reviews/best-wireless-headphones",
+          "https://www.whathifi.com/best-buys/best-noise-cancelling-headphones"
+        ],
+        "query_tokens": 12,
+        "response_tokens": 65,
+        "model_id": "claude-4-sonnet",
+        "ad_rendered": false
+      }
+    }
+  ]
+}

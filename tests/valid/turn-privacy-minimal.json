@@ -1,0 +1,21 @@
+{
+  "_test_description": "turn_completed at minimal privacy level: only response_tokens and content_urls present. No intent, topics, query_text, response_text, model_id, ad_rendered, or response_mode.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440008",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-03-28T17:30:00Z",
+  "events": [
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T17:30:06Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "minimal",
+        "content_urls_cited": [
+          "https://www.wirecutter.com/reviews/best-wireless-headphones"
+        ],
+        "response_tokens": 65
+      }
+    }
+  ]
+}
