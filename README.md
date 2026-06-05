@@ -62,7 +62,6 @@ The grounding event captures the boundary "this content entered the agent's gene
 - [telemetry-event.json](./telemetry-event.json) - JSON Schema for standalone event envelopes
 - [manifest.json](./manifest.json) - JSON Schema for the `.well-known/content-telemetry.json` manifest ([section 8](./SPECIFICATION.md#8-manifest))
 - [tests/](./tests/) - conformance test suite
-- [CONSIDERATIONS.md](./CONSIDERATIONS.md) - deferred design items and open questions, with rationale
 - [GOVERNANCE.md](./GOVERNANCE.md) - stewardship, preview status, relationship to the profile
 - [LICENSE](./LICENSE) - Apache License 2.0
 
@@ -150,7 +149,7 @@ This is a preview specification. Two areas are under active discussion and will 
 
 **Grounding boundary.** The spec defines grounding as content entering the generation model's context (sections 4.3 and 6.4). For straightforward RAG pipelines this is clear. For pipelines with multiple processing stages - embedding, re-ranking, summarisation before context insertion - the boundary requires judgement. The spec draws the line at the generation context (not earlier retrieval stages), but edge cases remain. Input from platform engineering teams building real implementations will sharpen this definition.
 
-**Event volume at scale.** A single deep-research query can produce 100+ retrieval events and dozens of grounding/citation events. The session document format already handles transport - one POST with all events after the session ends, not one request per event. Volume management beyond that (storage, processing, consumer-side aggregation) is an implementation concern, not a protocol gap. Sampling and aggregation are options for future versions but are deliberately not in v0.1 - what gets reported and at what granularity is a commercial decision between the parties, not a protocol default.
+**Event volume at scale.** A single deep-research query can produce 100+ retrieval events and dozens of grounding/citation events. The session document format already handles transport - one POST with all events after the session ends, not one request per event. Volume management beyond that (storage, processing, consumer-side aggregation) is an implementation concern, not a protocol gap. Sampling and aggregation are options for future versions but are deliberately not in v0.1; the standard sets no default for reporting granularity, leaving it to profiles and deployments.
 
 ## Versioning
 
