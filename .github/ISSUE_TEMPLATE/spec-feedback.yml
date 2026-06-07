@@ -1,0 +1,63 @@
+name: Spec feedback / open question
+description: Raise a design question, an unclear requirement, or a proposed change to the wire format.
+title: "[spec] "
+labels: ["needs-discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reviewing the Content Telemetry standard. This template is for
+        feedback on the specification itself - design questions, unclear or
+        contradictory requirements, gaps, or proposed changes to the wire format.
+
+        For a concrete bug in a schema file or a worked example, use the
+        **Schema or example bug** template instead.
+
+        Before filing, please check the out-of-scope list in
+        [SPECIFICATION.md sections 1.3 and 8.9](../blob/main/SPECIFICATION.md#13-non-goals).
+        Comment on whether a non-goal is the right call is welcome; say which one
+        and why.
+  - type: input
+    id: section
+    attributes:
+      label: Specification section
+      description: Which section(s) does this concern? (e.g. "6.4 Grounding data", "8.6 Domains")
+      placeholder: "4.3 Event lifecycle"
+    validations:
+      required: false
+  - type: textarea
+    id: observation
+    attributes:
+      label: What you observed
+      description: The question, ambiguity, gap, or problem - as concretely as you can put it.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Why it matters
+      description: What breaks, stays unclear, or gets implemented inconsistently if this isn't resolved? A real implementation scenario helps most.
+    validations:
+      required: false
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed direction (optional)
+      description: If you have one. A rough sketch is fine - you don't need a finished PR.
+    validations:
+      required: false
+  - type: dropdown
+    id: perspective
+    attributes:
+      label: Your perspective
+      description: Helps us weigh the feedback. Optional.
+      options:
+        - Prefer not to say
+        - Content owner / publisher
+        - AI agent / platform operator
+        - Intermediary (CDN, marketplace, affiliate or ad network, attribution vendor)
+        - Implementer / SDK author
+        - Standards / policy
+        - Other
+    validations:
+      required: false

@@ -62,7 +62,7 @@ Content access protocols govern how AI agents discover and license content. Exam
 
 Content Telemetry is the reporting counterpart: it records what actually happened after content was accessed.
 
-This separation is deliberate. An agent cannot reliably declare how it will use content before reading it - a retrieved article may prove irrelevant, or be used differently than intended at request time. Telemetry events are post-hoc: they report what actually happened.
+An agent cannot reliably declare how it will use content before reading it - a retrieved article may prove irrelevant, or be used differently than intended at request time. Telemetry events are post-hoc: they report what actually happened.
 
 Events can reference a licence via the `license_ref` field (section 5.2), connecting telemetry to whatever access protocol issued the licence. The telemetry schema does not depend on any specific access protocol.
 
@@ -574,7 +574,7 @@ The grounding event captures the same boundary regardless of agent architecture:
 | Multi-step agent | Content that entered a sub-agent's generation context | Content used only by the orchestrator to decide which sub-agents to invoke |
 | Embedding-based | Content chunks whose embeddings were placed in the generation context | Embeddings used only for similarity search or candidate selection |
 
-This boundary is deliberately drawn at the generation context, not at earlier processing stages. The generation context is the narrowest defensible boundary and the one most directly tied to content influence on the output.
+The boundary is drawn at the generation context rather than at earlier processing stages, the point most directly tied to content influence on the output.
 
 #### Caching
 
@@ -821,7 +821,7 @@ Public keys used to sign telemetry events emitted by this participant. Per-event
 | `endpoint` | string | Yes | HTTPS URL. For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the content owner's content. |
 | `conformance_level` | string | No | Conformance level advertised by this participant's own emitter(s). One of `retrieval`, `grounding`, `attribution` (see 5.7). |
 
-`conformance_level` is informational. It advertises the level of telemetry the manifest's participant emits. It does **not** constrain what an inbound `endpoint` accepts - an endpoint accepts whatever events it is configured to accept, regardless of any level declared here - and it places **no requirement** on other emitters. On a `content_owner` manifest it describes only the events the owner's own infrastructure emits (typically a CDN edge worker at `retrieval`); it says nothing about what agents or platforms report about the owner's content, which those parties advertise in their own manifests. A `content_owner` manifest SHOULD omit `conformance_level` unless the owner operates its own emitter. There is deliberately no field for a content owner to *request* a minimum level from agents; consumers tolerate events from any level (see 5.7), and the protocol does not give a manifest a way to demand more.
+`conformance_level` is informational. It advertises the level of telemetry the manifest's participant emits. It does **not** constrain what an inbound `endpoint` accepts - an endpoint accepts whatever events it is configured to accept, regardless of any level declared here - and it places **no requirement** on other emitters. On a `content_owner` manifest it describes only the events the owner's own infrastructure emits (typically a CDN edge worker at `retrieval`); it says nothing about what agents or platforms report about the owner's content, which those parties advertise in their own manifests. A `content_owner` manifest SHOULD omit `conformance_level` unless the owner operates its own emitter. There is no field for a content owner to *request* a minimum level from agents; consumers tolerate events from any level (see 5.7), and the protocol does not give a manifest a way to demand more.
 
 ### 8.6 Domains
 
@@ -1370,4 +1370,3 @@ The same turn from B.3 at `minimal` privacy. No intent, no topics, no platform m
 ```
 
 Compare with the `intent` version in B.3: `query_intent`, `topics`, `response_type`, `response_mode`, and `ad_rendered` are all absent.
-

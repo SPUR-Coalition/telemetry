@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Profile / accreditation feedback
+    url: https://github.com/SPUR-Coalition/telemetry-profile/issues
+    about: Accreditation tiers, the conformance mark, and the privacy floor live in the SPUR profile, not the standard. File those there.
+  - name: Read the contribution guide first
+    url: https://github.com/SPUR-Coalition/telemetry/blob/main/CONTRIBUTING.md
+    about: How changes are proposed, what belongs in this repo, and the conventions to follow.

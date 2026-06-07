@@ -22,7 +22,20 @@ Schema changes affect all implementations. Before submitting a PR:
 3. Consider backwards compatibility - can existing consumers ignore new fields?
 4. Update both SPECIFICATION.md and the relevant JSON schema
 5. Add or update test cases in `tests/` for any new fields or conformance rules
-6. Run `python tests/validate.py` to verify all tests pass
+6. Run the test suite to verify everything passes (see below)
+
+## Running the tests
+
+From a clean checkout, with no setup beyond [uv](https://docs.astral.sh/uv/):
+
+```sh
+uv run --with jsonschema python tests/validate.py        # conformance suite
+uv run --with jsonschema python tests/check_examples.py  # examples in the spec validate against the schemas
+```
+
+(Without uv: `pip install jsonschema` then `python3 tests/validate.py`.)
+
+`check_examples.py` validates every complete worked example in SPECIFICATION.md and README.md against its schema; an example that no longer matches its schema fails the build. Both commands run in CI on every pull request (`.github/workflows/ci.yml`).
 
 ## Conformance levels
 

@@ -6,14 +6,21 @@ Tests for the Content Telemetry Specification v0.1.
 
 - `valid/` - JSON files that MUST pass JSON Schema validation
 - `invalid/` - JSON files that MUST fail validation (either JSON Schema or application-layer conformance)
-- `validate.py` - Test runner (requires `jsonschema` package)
+- `validate.py` - Conformance test runner (requires `jsonschema`)
+- `check_examples.py` - Validates the worked examples in SPECIFICATION.md and README.md against the schemas
 
 ## Running
 
+From a clean checkout, with no setup beyond [uv](https://docs.astral.sh/uv/):
+
+```sh
+uv run --with jsonschema python tests/validate.py
+uv run --with jsonschema python tests/check_examples.py
 ```
-pip install jsonschema
-python validate.py
-```
+
+Run from the repository root. Without uv: `pip install jsonschema`, then `python3 tests/validate.py`. Both commands run in CI on every pull request.
+
+`check_examples.py` extracts every fenced `json` block from the spec and README, validates the complete top-level documents (sessions, standalone events, manifests) against the matching schema, and reports the number of fragments it skipped. A worked example that no longer matches its schema fails the build.
 
 ## What it covers
 

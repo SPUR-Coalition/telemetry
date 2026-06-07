@@ -1,0 +1,51 @@
+name: Schema or example bug
+description: Report a concrete defect in a JSON Schema file, a worked example, or the conformance suite.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for a concrete, checkable defect: a JSON Schema that accepts or
+        rejects the wrong thing, an example in SPECIFICATION.md that doesn't
+        validate against its own schema, a broken test fixture, or a mismatch
+        between the prose and the schema.
+
+        For a design question or a proposed change to the wire format, use the
+        **Spec feedback / open question** template instead.
+  - type: dropdown
+    id: artefact
+    attributes:
+      label: Which artefact
+      options:
+        - telemetry-session.json
+        - telemetry-event.json
+        - manifest.json
+        - Worked example in SPECIFICATION.md
+        - Conformance suite (tests/)
+        - Prose / schema mismatch
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: Section, filename, line, or the Annex B example number (e.g. "B.3", "manifest.json $defs/Key", "tests/valid/session-minimal.json").
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+      description: The correct behaviour - e.g. "this document should validate" or "this field should be rejected".
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happens
+      description: The observed behaviour. Paste the validator output or the offending JSON if you can.
+      render: shell
+    validations:
+      required: true

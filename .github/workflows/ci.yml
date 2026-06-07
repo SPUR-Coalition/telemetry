@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    name: Conformance suite + spec examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Run conformance test suite
+        run: uv run --with jsonschema python tests/validate.py
+      - name: Validate worked examples in the spec
+        run: uv run --with jsonschema python tests/check_examples.py
