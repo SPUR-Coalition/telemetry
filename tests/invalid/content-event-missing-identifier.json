@@ -1,0 +1,18 @@
+{
+  "_test_description": "content_grounded event carrying neither content_url nor content_id. Passes JSON Schema (both are individually optional) but violates section 5.7.5: at least one of content_url or content_id MUST be present on every content event.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440099",
+  "agent_id": "research-assistant-v1",
+  "started_at": "2026-03-28T12:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-03-28T12:00:02Z",
+      "data": {
+        "scope": "session",
+        "cached": false,
+        "tokens_ingested": 5100
+      }
+    }
+  ]
+}

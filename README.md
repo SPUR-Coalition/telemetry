@@ -34,9 +34,9 @@ Retrieved    →  content fetched over HTTP (content owner can see this today)
         Engaged  →  user clicked, expanded, copied, or shared
 ```
 
-What ties these events together is the **session** - a single user journey from query to outcome, identified by a session ID. Every event in the journey, from retrieval through engagement, carries that session ID and this connects content to outcome within a single agent interaction.
+The **session** ties these events together - a single user journey from query to outcome, identified by a session ID that every event carries, from retrieval through engagement.
 
-The gaps between stages allow for an understanding of the influence and value of content:
+The gaps between stages show how content was used:
 
 - **Retrieval without grounding** - your content was fetched but not used
 - **Grounding without citation** - your content influenced the answer but you got no credit
@@ -46,7 +46,7 @@ The grounding event captures the boundary "this content entered the agent's gene
 
 ## Design principles
 
-**Post-hoc, not pre-declared.** Events report what actually happened, not what the agent said it would do at request time. An agent cannot reliably declare how it will use content before reading it. Telemetry captures observed reality after the fact.
+**Post-hoc, not pre-declared.** Events report what actually happened, not what the agent said it would do at request time. An agent cannot reliably declare how it will use content before reading it.
 
 **Observable boundaries, not agent internals.** The five event types mark boundary crossings. What happens between them - the fan-out, relevance evaluation, re-ranking, reasoning chains - is internal to the agent and changes constantly. The spec does not model it.
 
@@ -62,7 +62,7 @@ The grounding event captures the boundary "this content entered the agent's gene
 - [GOVERNANCE.md](./GOVERNANCE.md) - stewardship, preview status, relationship to profiles
 - [LICENSE](./LICENSE) - Apache License 2.0
 
-This repository is the **standard** - the wire format. Publisher-facing accreditation tiers, the SPUR conformance mark, and the privacy floor that comes with each tier are defined separately in the [SPUR Content Telemetry Profile](https://github.com/SPUR-Coalition/telemetry-profile), which references this specification by version. See [GOVERNANCE.md](./GOVERNANCE.md).
+This repository is the **standard** - the wire format. Publisher-facing accreditation and the SPUR conformance mark are defined separately in the [SPUR Content Telemetry Profile](https://github.com/SPUR-Coalition/telemetry-profile), which references this specification by version. The standard defines the privacy mechanism (section 5.5); whether a profile makes any privacy level binding is the profile's choice. See [GOVERNANCE.md](./GOVERNANCE.md).
 
 ## Example
 
@@ -70,7 +70,6 @@ A user asks an AI agent about UK interest rates. The agent grounds its response 
 
 ```json
 {
-  "document_type": "session",
   "schema_version": "0.1",
   "session_id": "660e8400-e29b-41d4-a716-446655440000",
   "agent_id": "copilot-v3",

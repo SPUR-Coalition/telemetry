@@ -1,0 +1,13 @@
+{
+  "_test_description": "Standalone event envelope carrying neither session_id nor ctx_token. Passes JSON Schema (both are individually optional on the envelope) but violates section 5.7.5: an event MUST carry either session_id or ctx_token at Grounding conformance and above (section 7.1).",
+  "document_type": "event",
+  "schema_version": "0.1",
+  "event": {
+    "type": "content_grounded",
+    "timestamp": "2026-03-28T08:20:00Z",
+    "content_url": "https://arstechnica.com/science/2026/03/new-battery-chemistry-breakthrough/",
+    "data": {
+      "scope": "turn"
+    }
+  }
+}

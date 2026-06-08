@@ -38,13 +38,17 @@ except ImportError:
 #      present. Only response_tokens and content_urls are allowed.
 #    - At "intent" level: query_text and response_text MUST NOT be present.
 #
-# 2. agent_id requirement (section 5.7, Grounding conformance):
-#    Sessions at Grounding or Attribution conformance level MUST include
-#    agent_id. Not checked here as it depends on declared conformance level.
-#
-# 3. content_url or content_id requirement (section 5.7, Grounding):
+# 2. content_url or content_id requirement (section 5.7.5):
 #    Every content event MUST include at least one of content_url or
 #    content_id. Not enforced by JSON Schema (both are optional individually).
+#
+# 3. session_id or ctx_token requirement (sections 5.7.5, 7.1):
+#    A standalone event envelope MUST carry either session_id or ctx_token.
+#    Not enforced by JSON Schema (both are optional on the envelope).
+#
+# Not checked here: agent_id at Grounding/Attribution conformance (section
+# 5.7) depends on the emitter's declared conformance level, which fixtures do
+# not carry, so it is out of scope for the fixture suite.
 # ---------------------------------------------------------------------------
 
 # Files in invalid/ that pass JSON Schema but fail application-layer rules.
@@ -62,6 +66,22 @@ APPLICATION_LAYER_VIOLATIONS = {
         "Turn at intent privacy includes query_text. "
         "Violates section 5.5: query_text MUST NOT be present at intent level."
     ),
+    "content-event-missing-identifier.json": (
+        "content_grounded event has neither content_url nor content_id. "
+        "Violates section 5.7.5: every content event MUST carry at least one."
+    ),
+    "standalone-missing-session-and-ctx-token.json": (
+        "Standalone event envelope has neither session_id nor ctx_token. "
+        "Violates section 5.7.5: an event MUST carry one at Grounding+ (section 7.1)."
+    ),
+}
+
+# Event types that carry content and therefore require an identifier
+# (content_url or content_id) under section 5.7.5. turn_started and
+# turn_completed are turn events, not content events, and are exempt.
+CONTENT_EVENT_TYPES = {
+    "content_retrieved", "content_grounded", "content_cited",
+    "content_displayed", "content_engaged",
 }
 
 # Fields that MUST NOT appear at each privacy level (section 5.5).
@@ -179,6 +199,58 @@ def check_privacy_conformance(data):
     return violations
 
 
+def _iter_events(data):
+    """Yield the content/turn events in a document, whether it is a session
+    (events list) or a standalone envelope (single event under 'event')."""
+    if is_standalone_event(data):
+        yield data["event"]
+    else:
+        yield from data.get("events", [])
+
+
+def check_content_identifier(data):
+    """
+    Check that every content event carries content_url or content_id
+    (section 5.7.5). Returns a list of violation descriptions.
+    """
+    violations = []
+    for event in _iter_events(data):
+        if event.get("type") not in CONTENT_EVENT_TYPES:
+            continue
+        if not event.get("content_url") and not event.get("content_id"):
+            violations.append(
+                f"Content event '{event.get('type')}' carries neither "
+                "content_url nor content_id"
+            )
+    return violations
+
+
+def check_session_or_ctx_token(data):
+    """
+    Check that a standalone event envelope carries session_id or ctx_token
+    (sections 5.7.5, 7.1). The rule applies at Grounding conformance and above;
+    a Retrieval-level content_retrieved event is exempt. Session documents
+    always satisfy this: session_id is required at the top level by the schema.
+    Returns a list of violations.
+    """
+    if not is_standalone_event(data):
+        return []
+    if data["event"].get("type") == "content_retrieved":
+        return []  # Retrieval level - below the Grounding+ threshold for this rule
+    if not data.get("session_id") and not data.get("ctx_token"):
+        return ["Standalone event envelope carries neither session_id nor ctx_token"]
+    return []
+
+
+def check_application_layer(data):
+    """Run every application-layer conformance rule and return all violations."""
+    return (
+        check_privacy_conformance(data)
+        + check_content_identifier(data)
+        + check_session_or_ctx_token(data)
+    )
+
+
 def run_tests():
     """Run all conformance tests and return (passed, failed, results)."""
     tests_dir = Path(__file__).parent
@@ -216,14 +288,25 @@ def run_tests():
         else:
             errors = list(session_validator.iter_errors(data))
 
-        if not errors:
+        # Valid fixtures must also satisfy the application-layer rules that
+        # schema validation cannot express (section 5.7.5). Manifests have no
+        # such rules.
+        app_violations = [] if is_manifest_fixture(path) else check_application_layer(data)
+
+        if not errors and not app_violations:
             print(f"  PASS  {name}")
             passed += 1
             results.append((name, True, None))
-        else:
+        elif errors:
             msg = "; ".join(e.message for e in errors[:3])
             print(f"  FAIL  {name}")
             print(f"        {msg}")
+            failed += 1
+            results.append((name, False, msg))
+        else:
+            msg = "; ".join(app_violations[:3])
+            print(f"  FAIL  {name}")
+            print(f"        Application-layer violation: {msg}")
             failed += 1
             results.append((name, False, msg))
 
@@ -264,7 +347,7 @@ def run_tests():
 
         elif is_app_layer:
             # Passes JSON Schema but should fail conformance
-            conformance_violations = check_privacy_conformance(data)
+            conformance_violations = check_application_layer(data)
             if conformance_violations:
                 print(f"  PASS  {name}  [application-layer]")
                 print(f"        {APPLICATION_LAYER_VIOLATIONS[name]}")

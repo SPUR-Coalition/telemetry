@@ -123,6 +123,23 @@ Two further classifications cut across the actors and should not be confused wit
 
 A participant therefore has one actor (who it is), one or more functions (what it does), and a source role per event (how it observed that event). An affiliate network, for example, is an intermediary that emits `index` events and also operates an attribution consumer; a CDN is an intermediary that emits `edge` events on a content owner's behalf.
 
+```
+        SUPPLY                      MIDDLE                       DEMAND
+  ┌────────────────┐   ┌──────────────────────────┐   ┌────────────────┐
+  │ Content owner  │   │ Intermediary             │   │ Agent operator │   actor
+  │ publisher,     │   │ CDN/edge · search index  │   │ the AI agent   │   = who it is
+  │ creator        │   │ marketplace · vendor     │   │                │
+  └───────┬────────┘   └─────────────┬────────────┘   └───────┬────────┘
+          │ origin       edge / index │                       │ agent        source_role
+          │                          │                        │              = how observed
+          ▼                          ▼                        ▼
+          └─────────────►   Attribution consumer    ◄─────────┘
+                       resolves each content owner's events;          function
+                       any participant above can run one              = what it does
+```
+
+The end user sits to the right of the agent and is not shown: they interact with the agent but report nothing and are never a telemetry participant.
+
 | Participant | Actor | Function | Source role |
 |-------------|-------|----------|-------------|
 | Publisher, creator | Content owner | Emitter; may self-host a consumer | `origin` |
@@ -159,7 +176,7 @@ Session
 └── ended_at
 ```
 
-This lists the event types a session can contain; it is not a strict ordering. Events are ordered by timestamp. A session-scoped `content_grounded` event (for example, content grounded from cache) can precede the first `turn_started`.
+These are the event types a session can contain, not a strict ordering: events are ordered by timestamp. A session-scoped `content_grounded` event (for example, content grounded from cache) can precede the first `turn_started`.
 
 ### 4.3 Event lifecycle
 
@@ -401,6 +418,8 @@ An emitter that populates a conversation turn MUST NOT include a field above tha
 
 `content_urls_retrieved` and `content_urls_cited` are available at all levels, including `minimal`, because individual content events already expose `content_url` at every privacy level. The `minimal` level protects query-level signals (intent, topics, response categorisation), not the existence of content attribution relationships. The turn-level arrays are a convenience for consumers who process turns without joining to content events. These arrays are **derived, not authoritative**: emitters SHOULD populate them from the corresponding content events in the session. When the arrays conflict with the individual content events, the content events are the source of truth.
 
+These levels control how much of the user's query and the agent's response the recipient sees. They do not hide which content was used - that is the signal the format exists to carry - or how much of it an agent grounds. Both stay visible to whoever receives the telemetry, at every level including `minimal`.
+
 ### 5.6 Intent categories
 
 **Information:** `question`, `explanation`, `comparison`, `how_to`, `troubleshooting`, `fact_check`, `analysis`, `opinion_seeking`
@@ -528,6 +547,8 @@ The `bot_category` field carries the edge platform's classification of the reque
 
 The `inference` category is where content attribution is most relevant - there is a user, a query, and a session behind the retrieval. `training` crawls have no session context. `bot_category` can distinguish training crawls from inference fetches, but training-specific telemetry is out of scope for this specification (see section 1.3). Edge platforms map their native classification to these values.
 
+Emitting a `training`-category `content_retrieved` event is permitted but non-attributable - there is no session, grounding, or citation to follow it. An edge emitter can report these events through its normal pipeline and need not special-case or suppress them.
+
 ### 6.3 Origin enrichment (`content_retrieved` + `source_role: origin`)
 
 | Field | Type | Description |
@@ -565,7 +586,7 @@ The grounding event marks the point where content enters the generation model's 
 
 In a pipeline that retrieves 100 articles, generates embeddings for all 100, re-ranks to 10, and places 5 in the generation prompt - the grounding count is 5. The 95 articles used only for selection are retrievals, not groundings. The 10 that survived re-ranking but were not placed in context are also retrievals, not groundings.
 
-The grounding event captures the same boundary regardless of agent architecture:
+The grounding event is drawn at the same point - entry into the generation context - regardless of agent architecture:
 
 | Architecture | What grounding means | What is NOT grounded |
 |---|---|---|
@@ -576,9 +597,13 @@ The grounding event captures the same boundary regardless of agent architecture:
 
 The boundary is drawn at the generation context rather than at earlier processing stages, the point most directly tied to content influence on the output.
 
+The boundary is consistent; the resulting grounding *count* is not. An agent that loads fifty results into a long context and one that places three re-ranked chunks produce very different grounding counts for the same answer. The counting model is therefore left to commercial agreement (section 10) rather than fixed by the format.
+
 #### Caching
 
 The `cached` field distinguishes live fetches from cached reuse. A live fetch produces both a `content_retrieved` and a `content_grounded` event. A cached grounding produces `content_grounded` only - there is no corresponding HTTP request for the content owner's infrastructure to observe.
+
+`cached: true` asserts only that the content was grounded without a live fetch this session - the agent already held the bytes. It does not distinguish the kind of cache (a days-old stored document, a semantic cache, or infrastructure-level prompt caching) and makes no claim about freshness; freshness is carried by `content_version`, `content_last_modified`, and `content_hash`.
 
 Attribution consumers may weight cached and live groundings differently. An agent may cache an article for days or weeks, grounding it in multiple sessions from a single retrieval. A single retrieval produces one `content_retrieved` event but potentially many `content_grounded` events across subsequent sessions.
 
@@ -1058,7 +1083,7 @@ Preview versions (0.x) use two-component version numbers. From 1.0.0 onward, ver
 - **Minor** (1.0.0 → 1.1.0) - new optional fields, new event types
 - **Patch** (1.0.0 → 1.0.1) - clarifications
 
-Consumers SHOULD accept sessions with compatible minor versions.
+From 1.0.0 onward, consumers SHOULD accept sessions with any compatible minor version (same major version). During the preview period (0.x) the stricter rule in section 5.7.4 applies: a consumer accepts only the exact same minor version (a 0.1 consumer accepts 0.1 only).
 
 ## Annex A (normative): JSON Schema
 
