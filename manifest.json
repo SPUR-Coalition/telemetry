@@ -80,7 +80,7 @@
         },
         "conformance_level": {
           "type": "string",
-          "enum": ["retrieval", "grounding", "attribution"],
+          "enum": ["retrieval", "grounding", "citation"],
           "description": "Conformance level advertised by this participant's own emitter(s). Informational. (Sections 8.5, 5.7)"
         }
       },

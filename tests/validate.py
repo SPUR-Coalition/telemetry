@@ -46,7 +46,7 @@ except ImportError:
 #    A standalone event envelope MUST carry either session_id or ctx_token.
 #    Not enforced by JSON Schema (both are optional on the envelope).
 #
-# Not checked here: agent_id at Grounding/Attribution conformance (section
+# Not checked here: agent_id at Grounding/Citation conformance (section
 # 5.7) depends on the emitter's declared conformance level, which fixtures do
 # not carry, so it is out of scope for the fixture suite.
 # ---------------------------------------------------------------------------

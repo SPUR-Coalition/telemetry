@@ -39,7 +39,7 @@ uv run --with jsonschema python tests/check_examples.py  # examples in the spec 
 
 ## Conformance levels
 
-The spec defines three conformance levels: **Retrieval**, **Grounding**, and **Attribution** (section 5.7). When proposing new required fields, specify which conformance level they apply to. New optional fields do not require a conformance level change.
+The spec defines three conformance levels: **Retrieval**, **Grounding**, and **Citation** (section 5.7). When proposing new required fields, specify which conformance level they apply to. New optional fields do not require a conformance level change.
 
 ## Conventions
 

@@ -1,5 +1,5 @@
 {
-  "_test_description": "Attribution conformance level: full funnel from retrieval through grounding, citation, display, to engagement.",
+  "_test_description": "Citation conformance level: full funnel from retrieval through grounding, citation, display, to engagement.",
   "schema_version": "0.1",
   "session_id": "660e8400-e29b-41d4-a716-446655440003",
   "agent_id": "shopping-assistant-v2",

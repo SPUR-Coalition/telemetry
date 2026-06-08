@@ -29,7 +29,7 @@ Run from the repository root. Without uv: `pip install jsonschema`, then `python
 - Turn required fields (`privacy_level`)
 - Outcome required fields (`type`)
 - Enum validation (event types, privacy levels, schema version)
-- All three conformance levels (Retrieval, Grounding, Attribution)
+- All three conformance levels (Retrieval, Grounding, Citation)
 - Standalone event envelopes (CDN edge, agent with session FK)
 - Privacy level field gating (application-layer conformance)
 - Funnel exceptions (displayed-no-cited, cited-no-grounded)

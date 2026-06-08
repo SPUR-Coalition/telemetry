@@ -9,7 +9,7 @@
   ],
   "telemetry": {
     "endpoint": "https://telemetry.example.com/v1/events",
-    "conformance_level": "attribution"
+    "conformance_level": "citation"
   },
   "domains": ["publisher.com"]
 }

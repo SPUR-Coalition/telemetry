@@ -99,7 +99,7 @@ For the purposes of this specification, the following terms apply.
 | **grounding** | content entering the generation model's context, the boundary where content can directly influence output (section 4.3) |
 | **source role** | classification of the observer reporting a retrieval event: `origin`, `edge`, `index`, or `agent` (section 4.4) |
 | **privacy level** | data sharing tier controlling which conversation fields are populated: `full`, `summary`, `intent`, or `minimal` (section 5.5) |
-| **conformance level** | emitter capability tier: Retrieval, Grounding, or Attribution (section 5.7) |
+| **conformance level** | emitter capability tier: Retrieval, Grounding, or Citation (section 5.7) |
 | **content scope** | opaque identifier grouping sessions by their content access context (section 5.1.1) |
 
 ## 4. Concepts
@@ -288,7 +288,7 @@ Additional content metadata - version, last-modified timestamp, content hash, me
 | `manifest_ref` | string | No | Manifest reference (see 5.1.2 and section 8) |
 | `started_at` | datetime | Yes | Session start (UTC) |
 | `ended_at` | datetime | No | Session end (UTC) |
-| `conformance_level` | string | No | Informational conformance level advertised by the emitter (see section 5.7). Values: `retrieval`, `grounding`, `attribution` |
+| `conformance_level` | string | No | Informational conformance level advertised by the emitter (see section 5.7). Values: `retrieval`, `grounding`, `citation` |
 | `document_type` | string | No | `"session"` for session documents (see section 7.1 for the standalone event format) |
 | `events` | Event[] | No | Ordered list of events |
 
@@ -436,11 +436,13 @@ These are the core values. Extensions MAY define additional intent category valu
 
 Emitters advertise one of three conformance levels. The authoritative declaration lives in the emitter's manifest (section 8). Emitters MAY also include an optional `conformance_level` field on individual session documents; when present it is informational and consumers MUST NOT treat it as a substitute for verifying the manifest's declaration.
 
+Each level is named for the event it adds: a level proves the emitter produces that event and everything below it. These levels describe what an emitter reports, not what a consumer computes from it; attribution - the apportioning of credit across content - is performed by an attribution consumer at whatever funnel level the parties agree (section 10), and can be computed from grounding alone, without citation. An emitter does not need to reach the Citation level for its telemetry to support attribution.
+
 | Level | Events | What it proves | Typical emitter |
 |-------|--------|----------------|-----------------|
 | **Retrieval** | `content_retrieved` | Content was fetched by an agent | Content owner CDN, edge network, origin server |
 | **Grounding** | Above + `content_grounded`, turn events | Content entered the agent's context | Agent with basic instrumentation |
-| **Attribution** | Above + `content_cited`, `content_displayed`, `content_engaged` | Full content lifecycle from retrieval to user engagement | Agent with full instrumentation |
+| **Citation** | Above + `content_cited`, `content_displayed`, `content_engaged` | Full content lifecycle from retrieval to user engagement | Agent with full instrumentation |
 
 #### 5.7.1 Retrieval conformance
 
@@ -468,15 +470,15 @@ A Grounding emitter SHOULD include `data.tokens_ingested` and `data.cached` on g
 
 Emitters using standalone event delivery (section 7.1) MUST include `agent_id` and `session_id` on the standalone event envelope to satisfy Grounding conformance.
 
-#### 5.7.3 Attribution conformance
+#### 5.7.3 Citation conformance
 
-A conforming **Attribution** emitter MUST satisfy Grounding requirements and also:
+A conforming **Citation** emitter MUST satisfy Grounding requirements and also:
 
 - Emit `content_cited` events with `data.citation_type`
 
-The privacy-level field restriction (section 5.5) applies to Attribution emitters as it does to any emitter producing conversation turns; it is inherited through the Grounding requirements above.
+The privacy-level field restriction (section 5.5) applies to Citation emitters as it does to any emitter producing conversation turns; it is inherited through the Grounding requirements above.
 
-An Attribution emitter SHOULD:
+A Citation emitter SHOULD:
 
 - Emit `content_displayed` and `content_engaged` events when applicable
 - Include `data.position` on citation events
@@ -725,9 +727,9 @@ For `content_engaged` events emitted from a landing page after a click-out (typi
 
 The primary schema (`telemetry-session.json`) validates session documents. A standalone event envelope schema (`telemetry-event.json`) validates the event delivery format. Both schemas share the `TelemetryEvent` definition.
 
-**Conformance constraints.** Standalone event delivery is sufficient for Retrieval conformance, where the emitter reports individual `content_retrieved` events with no session context. Grounding and Attribution conformance require session-level fields (`session_id`, `agent_id`, `started_at`) that the standalone event envelope does not carry by default.
+**Conformance constraints.** Standalone event delivery is sufficient for Retrieval conformance, where the emitter reports individual `content_retrieved` events with no session context. Grounding and Citation conformance require session-level fields (`session_id`, `agent_id`, `started_at`) that the standalone event envelope does not carry by default.
 
-An agent emitter that uses standalone events for streaming delivery and wants to achieve Grounding or Attribution conformance MUST include the optional `agent_id` and `started_at` fields on the standalone event envelope. The `session_id` field, which is already defined on the envelope, becomes REQUIRED (not optional) at Grounding conformance and above. Consumers reconstruct the session from the stream of standalone events sharing the same `session_id`.
+An agent emitter that uses standalone events for streaming delivery and wants to achieve Grounding or Citation conformance MUST include the optional `agent_id` and `started_at` fields on the standalone event envelope. The `session_id` field, which is already defined on the envelope, becomes REQUIRED (not optional) at Grounding conformance and above. Consumers reconstruct the session from the stream of standalone events sharing the same `session_id`.
 
 Origin-side emitters (source role `origin` or `edge`) are not expected to achieve Grounding conformance and do not need these fields.
 
@@ -844,7 +846,7 @@ Public keys used to sign telemetry events emitted by this participant. Per-event
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `endpoint` | string | Yes | HTTPS URL. For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the content owner's content. |
-| `conformance_level` | string | No | Conformance level advertised by this participant's own emitter(s). One of `retrieval`, `grounding`, `attribution` (see 5.7). |
+| `conformance_level` | string | No | Conformance level advertised by this participant's own emitter(s). One of `retrieval`, `grounding`, `citation` (see 5.7). |
 
 `conformance_level` is informational. It advertises the level of telemetry the manifest's participant emits. It does **not** constrain what an inbound `endpoint` accepts - an endpoint accepts whatever events it is configured to accept, regardless of any level declared here - and it places **no requirement** on other emitters. On a `content_owner` manifest it describes only the events the owner's own infrastructure emits (typically a CDN edge worker at `retrieval`); it says nothing about what agents or platforms report about the owner's content, which those parties advertise in their own manifests. A `content_owner` manifest SHOULD omit `conformance_level` unless the owner operates its own emitter. There is no field for a content owner to *request* a minimum level from agents; consumers tolerate events from any level (see 5.7), and the protocol does not give a manifest a way to demand more.
 
