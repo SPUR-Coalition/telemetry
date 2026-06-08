@@ -1,6 +1,6 @@
 # Content Telemetry
 
-**Signal format for AI content attribution.**
+**Signal format for AI content usage reporting.**
 
 This is a preview specification. Field names, event types, and schema structure may change before 1.0.
 
@@ -131,17 +131,17 @@ A user asks an AI agent about UK interest rates. The agent grounds its response 
 }
 ```
 
-No `content_retrieved` event - the article was cached from a previous fetch. The grounding event is the only signal that content was used.
-
 The content owner can derive: FT article `abc123` was in context for the response, cited as a paraphrase, link was displayed, user never clicked, ads were shown alongside.
 
 ## Relationship to other protocols
 
-Content Telemetry is the **reporting** side. Content **access** protocols (peek-then-pay, IAB CoMP, bilateral APIs) govern how agents discover and license content. The `license_ref` field on events connects telemetry to whatever access protocol issued the licence. The schemas are independent - telemetry works with any access protocol, or none.
+Content Telemetry is focussed on **reporting**, while content **access** protocols (peek-then-pay, IAB CoMP, bilateral APIs) aim to govern how agents discover and license content. The `license_ref` field on events connects telemetry to whatever access protocol issued the licence, but the schemas are independent - telemetry works with any access protocol, or none.
 
 ## Request for comment
 
-This specification is open for public comment from **11 June to 10 July 2026**, a 30-day window. Feedback is triaged on the issue tracker as it arrives and incorporated into the next revision after the window closes. The wire format is held stable during the window; the only changes made before it closes are fixes to defects that block review.
+This specification is open for public comment from **11 June to 10 July 2026**.
+
+Feedback is triaged on the issue tracker as it arrives and incorporated into the next revision after the window closes, and the wire format is held stable during the window.
 
 Comment is most useful on:
 
@@ -151,7 +151,7 @@ Comment is most useful on:
 - Anything that would require an implementer to depend on a particular operator or service to participate. The standard should be implementable from the public schemas alone.
 - Any worked example that does not validate against its schema, or any mismatch between the prose and the schemas.
 
-File an issue on this repository. Two templates are available: *Spec feedback / open question* for design questions and proposed changes, and *Schema or example bug* for concrete defects. Pull requests are welcome for specific schema or text fixes; for larger changes, open an issue first (see [CONTRIBUTING.md](./CONTRIBUTING.md)). Feedback on the accreditation tiers, the conformance mark, or the privacy floor belongs on the [profile repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
+File an issue on this repository using the available templates: *Spec feedback / open question* for design questions and proposed changes, and *Schema or example bug* for concrete defects. Pull requests are welcome for specific schema or text fixes; for larger changes, open an issue first (see [CONTRIBUTING.md](./CONTRIBUTING.md)). Feedback on the accreditation tiers, the conformance mark, or the privacy floor belongs on the [profile repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
 
 Some areas are out of scope for this round. The non-goals are in [section 1.3](./SPECIFICATION.md#13-non-goals) and the deferred manifest features in [section 8.9](./SPECIFICATION.md#89-out-of-scope-for-v01); please read those before filing. Comment on whether a non-goal is the right call is welcome, provided it says which one and why.
 

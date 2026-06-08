@@ -121,7 +121,7 @@ Two further classifications cut across the actors and should not be confused wit
 - **Function** is what a participant does with telemetry. An *emitter* produces events; an *attribution consumer* receives events or whole sessions, resolves content owner identity, and exposes to each content owner only its own events. A participant may be both, and any actor can run an attribution consumer: a content owner for its own events, an agent operator, or an intermediary offering it as a service (see section 7.3).
 - **Source role** is how a single event was observed, carried in the `source_role` field on `content_retrieved` events (`origin`, `edge`, `index`, `agent`; see section 4.4). It describes the observation, not the organisation.
 
-A participant therefore has one actor (who it is), one or more functions (what it does), and a source role per event (how it observed that event). An affiliate network, for example, is an intermediary that emits `index` events and also operates an attribution consumer; a CDN is an intermediary that emits `edge` events on a content owner's behalf.
+A participant therefore has one actor (who it is), one or more functions (what it does), and a source role per event (how it observed that event). An content marketplace network, for example, is an intermediary that emits `index` events and also operates an attribution consumer; a CDN is an intermediary that emits `edge` events on a content owner's behalf.
 
 ```
         SUPPLY                      MIDDLE                       DEMAND
@@ -145,7 +145,7 @@ The end user sits to the right of the agent and is not shown: they interact with
 | Publisher, creator | Content owner | Emitter; may self-host a consumer | `origin` |
 | CDN, edge platform | Intermediary | Emitter | `edge` |
 | Search index, repository | Intermediary | Emitter | `index` |
-| Marketplace, affiliate or ad network | Intermediary | Emitter and attribution consumer | `index` |
+| Marketplace, ad network | Intermediary | Emitter and attribution consumer | `index` |
 | Attribution vendor | Intermediary | Attribution consumer | (consumes only) |
 | AI agent operator | Agent | Emitter; may self-host a consumer | `agent` |
 
@@ -184,7 +184,7 @@ Content moves through five stages during an agent interaction:
 
 1. **Retrieved** - Content fetched over HTTP from an origin server, CDN, marketplace, or index. This is an infrastructure event observable by the content owner's infrastructure (origin server, edge network) and the agent. A retrieval may be cached by the agent for use across multiple sessions.
 
-2. **Grounded** - Content loaded into the agent's generation context for this session or turn. The boundary is "this content entered the generation model's context" - the point where content can directly influence the model's output.
+2. **Grounded** - Content used in the agent's generation context for this session or turn. The boundary is "this content entered the generation model's context" - the point where content can directly influence the model's output.
 
    Content used only for retrieval selection (embedding similarity search, re-ranking scores, routing decisions) without entering the generation context is not grounded.
 
@@ -204,7 +204,7 @@ Retrieved (HTTP layer, cacheable)
         → Engaged (user action layer)
 ```
 
-Each stage is typically a progressively narrower subset. The ratios between stages are meaningful for attribution:
+Each stage is typically a progressively narrower subset. The ratios between stages are meaningful for potential attribution:
 
 - **Retrieval-to-grounding** measures content fetched but not used (irrelevant, stale, or a competing source was preferred)
 - **Grounding-to-citation** measures content that influenced the response without explicit attribution
@@ -213,7 +213,7 @@ Each stage is typically a progressively narrower subset. The ratios between stag
 
 #### Departures from the funnel model
 
-Two edge cases break the strict subset model:
+Two cases break the strict subset model:
 
 - **Displayed without cited.** An agent may display content references (e.g., a "Sources" sidebar) without citing the content in the response text. In this case, a `content_displayed` event exists with no corresponding `content_cited` event.
 - **Cited without grounded.** A hallucinated citation references content the agent never retrieved or loaded into context. The `content_cited` event has no preceding `content_grounded` event. Attribution consumers SHOULD treat uncorroborated citations (no matching grounding event) as lower-confidence signals.
