@@ -93,7 +93,7 @@ For the purposes of this specification, the following terms apply.
 | **session** | bounded interaction between an end user and a responding AI agent, identified by a session ID (section 4.2) |
 | **event** | discrete record of a boundary crossing in the content lifecycle (section 4.3) |
 | **emitter** | system that produces telemetry events - an AI agent, CDN edge, origin server, or content index |
-| **attribution consumer** | system that receives and processes telemetry to produce per-content-owner usage reports |
+| **telemetry consumer** | system that receives and processes telemetry to produce per-content-owner usage reports |
 | **content owner** | entity that owns or licences content accessed by an AI agent |
 | **agent operator** | entity running the AI agent that uses content |
 | **grounding** | content entering the generation model's context, the boundary where content can directly influence output (section 4.3) |
@@ -111,17 +111,17 @@ Three economic actors participate, by position in the value chain:
 | Actor | Position | Description |
 |-------|----------|-------------|
 | **Content owner** | Supply | Owns or licences the content an agent uses: publishers, creators, and brands with owned content. |
-| **Intermediary** | Middle | Sits between content and agent: marketplaces, affiliate and ad networks, search indices, CDN and edge platforms, and attribution vendors. |
+| **Intermediary** | Middle | Sits between content and agent: marketplaces, affiliate and ad networks, search indices, CDN and edge platforms, and telemetry vendors. |
 | **Agent** | Demand | The AI agent, and the operator running it, that retrieves content and produces responses for an end user. |
 
 The **end user** is the human interacting with the agent. They are not a telemetry participant; no actor reports the end user's identity.
 
 Two further classifications cut across the actors and should not be confused with them:
 
-- **Function** is what a participant does with telemetry. An *emitter* produces events; an *attribution consumer* receives events or whole sessions, resolves content owner identity, and exposes to each content owner only its own events. A participant may be both, and any actor can run an attribution consumer: a content owner for its own events, an agent operator, or an intermediary offering it as a service (see section 7.3).
+- **Function** is what a participant does with telemetry. An *emitter* produces events; a *telemetry consumer* receives events or whole sessions, resolves content owner identity, and exposes to each content owner only its own events. A participant may be both, and any actor can run a telemetry consumer: a content owner for its own events, an agent operator, or an intermediary offering it as a service (see section 7.3).
 - **Source role** is how a single event was observed, carried in the `source_role` field on `content_retrieved` events (`origin`, `edge`, `index`, `agent`; see section 4.4). It describes the observation, not the organisation.
 
-A participant therefore has one actor (who it is), one or more functions (what it does), and a source role per event (how it observed that event). An content marketplace network, for example, is an intermediary that emits `index` events and also operates an attribution consumer; a CDN is an intermediary that emits `edge` events on a content owner's behalf.
+A participant therefore has one actor (who it is), one or more functions (what it does), and a source role per event (how it observed that event). A content marketplace network, for example, is an intermediary that emits `index` events and also operates a telemetry consumer; a CDN is an intermediary that emits `edge` events on a content owner's behalf.
 
 ```
         SUPPLY                      MIDDLE                       DEMAND
@@ -133,7 +133,7 @@ A participant therefore has one actor (who it is), one or more functions (what i
           │ origin       edge / index │                       │ agent        source_role
           │                          │                        │              = how observed
           ▼                          ▼                        ▼
-          └─────────────►   Attribution consumer    ◄─────────┘
+          └─────────────►    Telemetry consumer     ◄─────────┘
                        resolves each content owner's events;          function
                        any participant above can run one              = what it does
 ```
@@ -145,8 +145,8 @@ The end user sits to the right of the agent and is not shown: they interact with
 | Publisher, creator | Content owner | Emitter; may self-host a consumer | `origin` |
 | CDN, edge platform | Intermediary | Emitter | `edge` |
 | Search index, repository | Intermediary | Emitter | `index` |
-| Marketplace, ad network | Intermediary | Emitter and attribution consumer | `index` |
-| Attribution vendor | Intermediary | Attribution consumer | (consumes only) |
+| Marketplace, ad network | Intermediary | Emitter and telemetry consumer | `index` |
+| Telemetry vendor | Intermediary | Telemetry consumer | (consumes only) |
 | AI agent operator | Agent | Emitter; may self-host a consumer | `agent` |
 
 In the identity and onboarding layer, the three actors are represented by the org types `content_owner`, `platform`, and `agent`; `platform` is the intermediary's identity-layer label.
@@ -216,7 +216,7 @@ Each stage is typically a progressively narrower subset. The ratios between stag
 Two cases break the strict subset model:
 
 - **Displayed without cited.** An agent may display content references (e.g., a "Sources" sidebar) without citing the content in the response text. In this case, a `content_displayed` event exists with no corresponding `content_cited` event.
-- **Cited without grounded.** A hallucinated citation references content the agent never retrieved or loaded into context. The `content_cited` event has no preceding `content_grounded` event. Attribution consumers SHOULD treat uncorroborated citations (no matching grounding event) as lower-confidence signals.
+- **Cited without grounded.** A hallucinated citation references content the agent never retrieved or loaded into context. The `content_cited` event has no preceding `content_grounded` event. Telemetry consumers SHOULD treat uncorroborated citations (no matching grounding event) as lower-confidence signals.
 
 These cases are valid. Emitters SHOULD produce the events that reflect what actually happened, even when the result does not follow the typical funnel ordering.
 
@@ -240,11 +240,13 @@ A `content_retrieved` event can originate from multiple observers of the same re
 | `index` | Search index or content repository | An intermediary that served the content to the agent |
 | `agent` | AI agent | The agent itself, reporting content it fetched |
 
-The `origin` and `edge` source roles enable content owners to report AI agent traffic using their existing infrastructure, with no cooperation from the AI agent required. Origin emitters typically submit individual events rather than complete sessions, since they do not have visibility into the agent's session context. Attribution consumers correlate these standalone events with agent-reported sessions using the `content_telemetry_id` field. Example B.2 demonstrates this pattern.
+The `origin` and `edge` source roles enable content owners to report AI agent traffic using their existing infrastructure, with no cooperation from the AI agent required. Origin emitters typically submit individual events rather than complete sessions, since they do not have visibility into the agent's session context. Telemetry consumers correlate these standalone events with agent-reported sessions using the `content_telemetry_id` field. Example B.2 demonstrates this pattern.
 
-A marketplace operating as both emitter and attribution consumer receives telemetry from platforms (as a consumer), resolves content owner identity from `content_id` or `content_url`, and generates per-content-owner usage reports. The marketplace's own `source_role: index` events provide a corroboration layer - it can cross-reference what it served against what platforms reported using.
+A marketplace operating as both emitter and telemetry consumer receives telemetry from platforms (as a consumer), resolves content owner identity from `content_id` or `content_url`, and generates per-content-owner usage reports. The marketplace's own `source_role: index` events provide a corroboration layer - it can cross-reference what it served against what platforms reported using.
 
-`content_grounded`, `content_cited`, `content_displayed`, and `content_engaged` events are reported by the agent (or agent operator) only. These events describe what happened inside the agent or in the user interface, which is not observable from the content owner's infrastructure.
+`content_grounded`, `content_cited`, and `content_displayed` events are reported by the agent (or agent operator) only. These events describe what happened inside the agent or in the agent's user interface, which is not observable from the content owner's infrastructure.
+
+`content_engaged` events are usually reported by the agent for in-product interactions. For a click-out to a landing page, a downstream marketplace, affiliate network, or destination site MAY report a corroborating `content_engaged` event using `ctx_token` in place of `session_id` (section 7.1).
 
 When multiple observers report the same retrieval, events are correlated using the `Content-Telemetry-ID` header (see section 7.2). A retrieval corroborated by multiple sources is a stronger signal than either alone. An uncorroborated origin- or edge-reported retrieval (no matching agent event) may indicate a scraper that does not support the telemetry protocol, or missing header propagation.
 
@@ -303,7 +305,7 @@ The `content_scope` field is an opaque identifier that groups sessions by their 
 | API key scoped | API key identifier |
 | Agreement-based | Agreement or contract ID |
 
-Attribution consumers can aggregate across sessions that share the same `content_scope` without the schema mandating a specific access control model. When a session spans multiple licensing agreements, emitters MAY use `license_ref` on individual events as a per-event scope proxy, since `license_ref` is event-level while `content_scope` is session-level.
+Telemetry consumers can aggregate across sessions that share the same `content_scope` without the schema mandating a specific access control model. When a session spans multiple licensing agreements, emitters MAY use `license_ref` on individual events as a per-event scope proxy, since `license_ref` is event-level while `content_scope` is session-level.
 
 #### 5.1.2 Manifest reference
 
@@ -341,7 +343,7 @@ The `source_role` field SHOULD be set on `content_retrieved` events. When multip
 
 #### 5.2.3 Licence reference
 
-The `license_ref` field connects a telemetry event to the content access licence that authorised it. The format depends on the access protocol: a JWT `jti` claim, a CoMP package ID, or any opaque identifier that both parties can resolve. When present, attribution consumers can verify that content usage was licensed.
+The `license_ref` field connects a telemetry event to the content access licence that authorised it. The format depends on the access protocol: a JWT `jti` claim, a CoMP package ID, or any opaque identifier that both parties can resolve. When present, telemetry consumers can verify that content usage was licensed.
 
 ### 5.3 Event types
 
@@ -397,7 +399,7 @@ A conversation turn represents one query-response exchange. Turn data is carried
 | `search` | Search results presentation |
 | `code_generation` | Code generation or editing |
 
-These are the recommended values. Platforms with additional product surfaces (collaborative canvases, voice, image generation, etc.) MAY use custom string values. Attribution consumers MUST tolerate unknown `response_mode` values.
+These are the recommended values. Platforms with additional product surfaces (collaborative canvases, voice, image generation, etc.) MAY use custom string values. Telemetry consumers MUST tolerate unknown `response_mode` values.
 
 ### 5.5 Privacy levels
 
@@ -430,19 +432,21 @@ These levels control how much of the user's query and the agent's response the r
 
 **Other:** `chitchat`, `other`
 
-These are the core values. Extensions MAY define additional intent category values (e.g., `price_check`, `availability_check`, `review_seeking` for commerce). Attribution consumers MUST tolerate unknown `query_intent` values.
+These are the core values. Extensions MAY define additional intent category values (e.g., `price_check`, `availability_check`, `review_seeking` for commerce). Telemetry consumers MUST tolerate unknown `query_intent` values.
 
 ### 5.7 Conformance levels
 
-Emitters advertise one of three conformance levels. The authoritative declaration lives in the emitter's manifest (section 8). Emitters MAY also include an optional `conformance_level` field on individual session documents; when present it is informational and consumers MUST NOT treat it as a substitute for verifying the manifest's declaration.
+Emitters that advertise a standard capability tier use one of three conformance levels. The authoritative declaration lives in the emitter's manifest (section 8). Emitters MAY also include an optional `conformance_level` field on individual session documents; when present it is informational and consumers MUST NOT treat it as a substitute for verifying the manifest's declaration.
 
-Each level is named for the event it adds: a level proves the emitter produces that event and everything below it. These levels describe what an emitter reports, not what a consumer computes from it; attribution - the apportioning of credit across content - is performed by an attribution consumer at whatever funnel level the parties agree (section 10), and can be computed from grounding alone, without citation. An emitter does not need to reach the Citation level for its telemetry to support attribution.
+Each level is named for the event it adds: a level proves the emitter produces that event and everything below it. These levels describe what an emitter reports, not what a consumer computes from it; attribution - the apportioning of credit across content - is performed by a telemetry consumer at whatever funnel level the parties agree (section 10), and can be computed from grounding alone, without citation. An emitter does not need to reach the Citation level for its telemetry to support attribution.
 
 | Level | Events | What it proves | Typical emitter |
 |-------|--------|----------------|-----------------|
 | **Retrieval** | `content_retrieved` | Content was fetched by an agent | Content owner CDN, edge network, origin server |
 | **Grounding** | Above + `content_grounded`, turn events | Content entered the agent's context | Agent with basic instrumentation |
-| **Citation** | Above + `content_cited`, `content_displayed`, `content_engaged` | Full content lifecycle from retrieval to user engagement | Agent with full instrumentation |
+| **Citation** | Above + `content_cited` | Content was explicitly referenced in the agent's response | Agent with citation instrumentation |
+
+Display and engagement events are optional lifecycle signals. A Citation emitter SHOULD emit them when applicable (section 5.7.3), but the Citation level proves citation support, not full retrieval-to-engagement coverage.
 
 #### 5.7.1 Retrieval conformance
 
@@ -468,7 +472,7 @@ A conforming **Grounding** emitter MUST satisfy Retrieval requirements and also:
 
 A Grounding emitter SHOULD include `data.tokens_ingested` and `data.cached` on grounding events.
 
-Emitters using standalone event delivery (section 7.1) MUST include `agent_id` and `session_id` on the standalone event envelope to satisfy Grounding conformance.
+Emitters using standalone event delivery (section 7.1) MUST include `agent_id`, `started_at`, and either `session_id` or, for click-out engagement events, `ctx_token` on the standalone event envelope to satisfy Grounding conformance.
 
 #### 5.7.3 Citation conformance
 
@@ -484,9 +488,9 @@ A Citation emitter SHOULD:
 - Include `data.position` on citation events
 - Include `data.display_type` on display events
 
-#### 5.7.4 Attribution consumers
+#### 5.7.4 Telemetry consumers
 
-A conforming **attribution consumer** MUST:
+A conforming **telemetry consumer** MUST:
 
 - Accept sessions with any `schema_version` that shares the same major version. During the preview period (0.x), consumers MUST accept sessions with the exact same minor version (e.g., a 0.1 consumer accepts 0.1 only). The major-version compatibility rule takes effect from 1.0.0 onward.
 - Tolerate unknown fields without error
@@ -607,9 +611,9 @@ The `cached` field distinguishes live fetches from cached reuse. A live fetch pr
 
 `cached: true` asserts only that the content was grounded without a live fetch this session - the agent already held the bytes. It does not distinguish the kind of cache (a days-old stored document, a semantic cache, or infrastructure-level prompt caching) and makes no claim about freshness; freshness is carried by `content_version`, `content_last_modified`, and `content_hash`.
 
-Attribution consumers may weight cached and live groundings differently. An agent may cache an article for days or weeks, grounding it in multiple sessions from a single retrieval. A single retrieval produces one `content_retrieved` event but potentially many `content_grounded` events across subsequent sessions.
+Telemetry consumers may weight cached and live groundings differently. An agent may cache an article for days or weeks, grounding it in multiple sessions from a single retrieval. A single retrieval produces one `content_retrieved` event but potentially many `content_grounded` events across subsequent sessions.
 
-Agents SHOULD preserve the `license_ref` from the original retrieval when emitting cached grounding events. Without this, attribution consumers cannot link cached usage to the licence that authorised the original access.
+Agents SHOULD preserve the `license_ref` from the original retrieval when emitting cached grounding events. Without this, telemetry consumers cannot link cached usage to the licence that authorised the original access.
 
 #### Freshness and verification
 
@@ -679,9 +683,9 @@ The content URL is identified by the event-level `content_url` field (section 5.
 | `copy` | User copied content text |
 | `share` | User shared the content or agent response containing it |
 
-`link_click` is the primary signal for clickthrough rate calculation. Attribution consumers can derive per-content-owner and aggregate clickthrough rates from the ratio of `link_click` engagements to `content_displayed` events for the same `content_url`.
+`link_click` is the primary signal for clickthrough rate calculation. Telemetry consumers can derive per-content-owner and aggregate clickthrough rates from the ratio of `link_click` engagements to `content_displayed` events for the same `content_url`.
 
-A `link_click` engagement reported from the landing page after a click-out crosses a trust boundary. Such events carry a `ctx_token` in place of `session_id`, which the attribution consumer resolves to the originating session's click manifest (see section 7.1).
+A `link_click` engagement reported from the landing page after a click-out crosses a trust boundary. Such events carry a `ctx_token` in place of `session_id`, which the telemetry consumer resolves to the originating session's click manifest (see section 7.1).
 
 ## 7. Transport
 
@@ -719,21 +723,21 @@ A standalone event carries `document_type`, `schema_version`, and optionally `se
 
 Session documents use `"document_type": "session"`. When `document_type` is absent, consumers SHOULD treat the document as a session (for backwards compatibility with pre-0.1 implementations).
 
-For origin-side emitters at Retrieval conformance level, `session_id` MAY be omitted when the content owner has no session context. Attribution consumers correlate these events with agent-reported sessions using the `content_telemetry_id` field.
+For origin-side emitters at Retrieval conformance level, `session_id` MAY be omitted when the content owner has no session context. Telemetry consumers correlate these events with agent-reported sessions using the `content_telemetry_id` field.
 
-For `content_engaged` events emitted from a landing page after a click-out (typically by a content marketplace, affiliate network, or destination site), `session_id` MAY be replaced by a `ctx_token` field that carries an opaque click-token issued by the originating agent. Attribution consumers resolve the token to the owning session. This lets a downstream observer report a corroborating engagement event without sharing the session UUID across trust boundaries. An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above.
+For `content_engaged` events emitted from a landing page after a click-out (typically by a content marketplace, affiliate network, or destination site), `session_id` MAY be replaced by a `ctx_token` field that carries an opaque click-token issued by the originating agent. Telemetry consumers resolve the token to the owning session. This lets a downstream observer report a corroborating engagement event without sharing the session UUID across trust boundaries. An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above.
 
-**ctx_token resolution.** An attribution consumer that supports `ctx_token` resolution exposes, for a resolved token, the **click manifest**: the set of `content_grounded`, `content_cited`, and `content_displayed` events belonging to the resolved session, identifying every source that informed the response that produced the click. The manifest is gated by the resolved session's `privacy_level` and by consent. A consumer MUST return the manifest only when the issuing agent has opted in to sharing sessions via click tokens and the content owner whose URLs appear has opted in to being visible in click-token lookups. When either opt-in is absent, the consumer MUST NOT disclose the manifest. The mechanism by which an agent and a content owner record these opt-ins is operator-defined; the consent gate is normative.
+**ctx_token resolution.** A telemetry consumer that supports `ctx_token` resolution exposes, for a resolved token, the **click manifest**: the set of `content_grounded`, `content_cited`, and `content_displayed` events belonging to the resolved session, identifying every source that informed the response that produced the click. The manifest is gated by the resolved session's `privacy_level` and by consent. A consumer MUST return the manifest only when the issuing agent has opted in to sharing sessions via click tokens and the content owner whose URLs appear has opted in to being visible in click-token lookups. When either opt-in is absent, the consumer MUST NOT disclose the manifest. The mechanism by which an agent and a content owner record these opt-ins is operator-defined; the consent gate is normative.
 
 The primary schema (`telemetry-session.json`) validates session documents. A standalone event envelope schema (`telemetry-event.json`) validates the event delivery format. Both schemas share the `TelemetryEvent` definition.
 
-**Conformance constraints.** Standalone event delivery is sufficient for Retrieval conformance, where the emitter reports individual `content_retrieved` events with no session context. Grounding and Citation conformance require session-level fields (`session_id`, `agent_id`, `started_at`) that the standalone event envelope does not carry by default.
+**Conformance constraints.** Standalone event delivery is sufficient for Retrieval conformance, where the emitter reports individual `content_retrieved` events with no session context. Grounding and Citation conformance require session-level fields (`session_id` or `ctx_token`, `agent_id`, `started_at`) that the standalone event envelope does not carry by default.
 
-An agent emitter that uses standalone events for streaming delivery and wants to achieve Grounding or Citation conformance MUST include the optional `agent_id` and `started_at` fields on the standalone event envelope. The `session_id` field, which is already defined on the envelope, becomes REQUIRED (not optional) at Grounding conformance and above. Consumers reconstruct the session from the stream of standalone events sharing the same `session_id`.
+An agent emitter that uses standalone events for streaming delivery and wants to achieve Grounding or Citation conformance MUST include the optional `agent_id` and `started_at` fields on the standalone event envelope. Each event envelope MUST also carry `session_id`, except for click-out engagement events where `ctx_token` is used instead. Consumers reconstruct the session from the stream of standalone events sharing the same `session_id`, or resolve the owning session from `ctx_token`.
 
 Origin-side emitters (source role `origin` or `edge`) are not expected to achieve Grounding conformance and do not need these fields.
 
-Attribution consumers MUST accept both delivery formats and reconstruct sessions from standalone events where needed.
+Telemetry consumers MUST accept both delivery formats and reconstruct sessions from standalone events where needed.
 
 ### 7.2 Content-Telemetry-ID header
 
@@ -765,7 +769,7 @@ Note: the header creates a correlation point visible to the content owner's infr
 
 A single session typically contains events referencing content from multiple content owners. The agent cannot send the complete session to each content owner's endpoint individually - doing so would expose each content owner's content usage to the others (content owner A would see content owner B's content URLs in the same session).
 
-Agent emitters SHOULD send session documents to a single **attribution consumer** - an aggregation point that receives complete sessions and provides filtered views to individual content owners. The attribution consumer resolves content owner identity from `content_url` domains (via verified domain registrations) and exposes only the events relevant to each content owner.
+Agent emitters SHOULD send session documents to a single **telemetry consumer** - an aggregation point that receives complete sessions and provides filtered views to individual content owners. The telemetry consumer resolves content owner identity from `content_url` domains (via verified domain registrations) and exposes only the events relevant to each content owner.
 
 Two deployment patterns are common:
 
@@ -774,13 +778,13 @@ Two deployment patterns are common:
 | **Platform-hosted** | Agent operator | The agent operator runs their own compatible consumer and sends filtered reports to content owners under licensing agreements. |
 | **Marketplace-hosted** | Licensing intermediary | A content marketplace aggregates telemetry for its catalogue of content owners and provides per-content-owner dashboards and royalty data. |
 
-Any party may operate a consumer: an agent operator, a licensing intermediary, or an independent third party offering it as a service. Both patterns above consume the same session format. The attribution consumer is responsible for domain resolution, content owner filtering, and access control. The spec does not mandate a specific aggregation topology, nor does it require any particular operator to provide one.
+Any party may operate a consumer: an agent operator, a licensing intermediary, or an independent third party offering it as a service. Both patterns above consume the same session format. The telemetry consumer is responsible for domain resolution, content owner filtering, and access control. The spec does not mandate a specific aggregation topology, nor does it require any particular operator to provide one.
 
 **Origin-side `.well-known/content-telemetry.json` manifests** declare where origin-emitted retrieval events are sent (CDN → content owner's chosen endpoint). They do not instruct agents where to send session documents. Agent routing is governed by the agent's telemetry configuration, not by content owner manifests.
 
-**Content owner resolution.** Attribution consumers resolve content owner identity from `content_url` domains. Content owners register and verify their domains with the attribution consumer; the consumer maps incoming event URLs to the owning organisation. This is the primary resolution path and requires `content_url` to be present on events. Events identified only by `content_id` (e.g., cached groundings where the URL was not preserved, or marketplace API content with no canonical URL) cannot be resolved by domain alone. Attribution consumers SHOULD support `content_id` prefix-based resolution as a secondary path when content owners register their identifier schemes, but this is not yet a normative requirement.
+**Content owner resolution.** Telemetry consumers resolve content owner identity from `content_url` domains. Content owners register and verify their domains with the telemetry consumer; the consumer maps incoming event URLs to the owning organisation. This is the primary resolution path and requires `content_url` to be present on events. Events identified only by `content_id` (e.g., cached groundings where the URL was not preserved, or marketplace API content with no canonical URL) cannot be resolved by domain alone. Telemetry consumers SHOULD support `content_id` prefix-based resolution as a secondary path when content owners register their identifier schemes, but this is not yet a normative requirement.
 
-**Cross-consumer correlation.** Origin-side emitters and agent-side emitters MAY use different attribution consumers. A content owner's CDN sends retrieval events to one attribution consumer; an agent sends sessions to another. The `content_telemetry_id` field (section 7.2) correlates the same retrieval across consumers - both sides share the same UUID from the HTTP request. This correlation operates at the retrieval level only. Grounding, citation, and engagement events have no independent origin-side counterpart to correlate against.
+**Cross-consumer correlation.** Origin-side emitters and agent-side emitters MAY use different telemetry consumers. A content owner's CDN sends retrieval events to one telemetry consumer; an agent sends sessions to another. The `content_telemetry_id` field (section 7.2) correlates the same retrieval across consumers - both sides share the same UUID from the HTTP request. This correlation operates at the retrieval level only. Grounding, citation, and engagement events have no independent origin-side counterpart to correlate against.
 
 ## 8. Manifest
 
@@ -1000,7 +1004,7 @@ A session where one article is grounded with session scope, the user asks ten qu
 - 10 `turn_completed` events
 - 3 `content_cited` events
 
-Whether this constitutes one royalty event, three, or ten depends on the commercial agreement. The schema provides the raw signals; attribution consumers choose the counting model.
+Whether this constitutes one royalty event, three, or ten depends on the commercial agreement. The schema provides the raw signals; telemetry consumers choose the counting model.
 
 | Counting model | Counts | Suited for |
 |----------------|--------|-----------|
@@ -1043,7 +1047,7 @@ New event types (e.g., a commerce extension's `checkout_completed`) require a sc
 
 `query_intent` accepts custom string values beyond the core set. Extensions SHOULD namespace their values to avoid collisions (e.g., `price_check` for a commerce extension). For ad-hoc categories that don't warrant a formal extension, use `other` with details in `topics`.
 
-Attribution consumers MUST tolerate unknown `query_intent` values.
+Telemetry consumers MUST tolerate unknown `query_intent` values.
 
 Extension example:
 
@@ -1075,7 +1079,7 @@ Fallback example using `other`:
 }
 ```
 
-Attribution consumers MUST tolerate unknown `response_mode` values.
+Telemetry consumers MUST tolerate unknown `response_mode` values.
 
 ## 12. Versioning
 

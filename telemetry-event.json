@@ -23,7 +23,7 @@
     },
     "ctx_token": {
       "type": "string",
-      "description": "Opaque click-token issued by the originating agent, carried on content_engaged events emitted from a landing page after a click-out in place of session_id. Resolved by the attribution consumer to the owning session (the click manifest). See section 7.1. An event MUST carry either session_id or ctx_token at Grounding conformance and above."
+      "description": "Opaque click-token issued by the originating agent, carried on content_engaged events emitted from a landing page after a click-out in place of session_id. Resolved by the telemetry consumer to the owning session (the click manifest). See section 7.1. An event MUST carry either session_id or ctx_token at Grounding conformance and above."
     },
     "agent_id": {
       "type": "string",

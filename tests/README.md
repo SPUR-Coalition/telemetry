@@ -27,7 +27,7 @@ Run from the repository root. Without uv: `pip install jsonschema`, then `python
 - Session envelope required fields (`schema_version`, `session_id`, `started_at`)
 - Event required fields (`type`, `timestamp`)
 - Turn required fields (`privacy_level`)
-- Outcome required fields (`type`)
+- Event required fields (`type`)
 - Enum validation (event types, privacy levels, schema version)
 - All three conformance levels (Retrieval, Grounding, Citation)
 - Standalone event envelopes (CDN edge, agent with session FK)

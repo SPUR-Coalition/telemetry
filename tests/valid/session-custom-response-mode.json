@@ -1,5 +1,5 @@
 {
-  "_test_description": "Custom response_mode value not in the recommended set. The spec says platforms MAY use custom string values and attribution consumers MUST tolerate unknown values.",
+  "_test_description": "Custom response_mode value not in the recommended set. The spec says platforms MAY use custom string values and telemetry consumers MUST tolerate unknown values.",
   "schema_version": "0.1",
   "session_id": "660e8400-e29b-41d4-a716-446655440009",
   "agent_id": "podcast-gen-v1",

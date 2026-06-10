@@ -1,5 +1,5 @@
 {
-  "_test_description": "Funnel exception: content_cited with no preceding content_grounded event. This is a hallucinated citation - the agent references content it never retrieved or loaded into context. Valid per section 4.3. Attribution consumers SHOULD treat this as a lower-confidence signal.",
+  "_test_description": "Funnel exception: content_cited with no preceding content_grounded event. This is a hallucinated citation - the agent references content it never retrieved or loaded into context. Valid per section 4.3. Telemetry consumers SHOULD treat this as a lower-confidence signal.",
   "schema_version": "0.1",
   "session_id": "660e8400-e29b-41d4-a716-446655440011",
   "agent_id": "assistant-v4",

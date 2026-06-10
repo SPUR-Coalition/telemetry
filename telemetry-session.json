@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://contenttelemetry.org/schema/v0.1/telemetry-session.json",
   "title": "Content Telemetry Session",
-  "description": "Schema for Content Telemetry sessions - tracking content attribution in AI agent interactions",
+  "description": "Schema for Content Telemetry sessions - tracking content usage in AI agent interactions",
   "type": "object",
   "required": ["schema_version", "session_id", "started_at"],
   "properties": {
@@ -298,7 +298,7 @@
     },
     "IntentCategory": {
       "type": "string",
-      "description": "Intent category. Core values: question, explanation, comparison, how_to, troubleshooting, fact_check, analysis, opinion_seeking, creative, purchase_intent, chitchat, other. Extensions MAY define additional values such as price_check, availability_check, review_seeking. Attribution consumers MUST tolerate unknown values."
+      "description": "Intent category. Core values: question, explanation, comparison, how_to, troubleshooting, fact_check, analysis, opinion_seeking, creative, purchase_intent, chitchat, other. Extensions MAY define additional values such as price_check, availability_check, review_seeking. Telemetry consumers MUST tolerate unknown values."
     },
     "ResponseMode": {
       "type": "string",
