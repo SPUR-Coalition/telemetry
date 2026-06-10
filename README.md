@@ -151,7 +151,7 @@ Comment is most useful on:
 - Anything that would require an implementer to depend on a particular operator or service to participate. The standard should be implementable from the public schemas alone.
 - Any worked example that does not validate against its schema, or any mismatch between the prose and the schemas.
 
-File an issue on this repository using the available templates: *Spec feedback / open question* for design questions and proposed changes, and *Schema or example bug* for concrete defects. Pull requests are welcome for specific schema or text fixes; for larger changes, open an issue first (see [CONTRIBUTING.md](./CONTRIBUTING.md)). Feedback on the accreditation tiers, the conformance mark, or the privacy floor belongs on the [profile repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
+File an issue on this repository using the available templates: *Spec feedback / open question* for design questions and proposed changes, and *Schema or example bug* for concrete defects. Pull requests are welcome for specific schema or text fixes; for larger changes, open an issue first (see [CONTRIBUTING.md](./CONTRIBUTING.md)). Feedback on accreditation, the Compliant tier, or the conformance mark belongs on the [profile repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
 
 Some areas are out of scope for this round. The non-goals are in [section 1.3](./SPECIFICATION.md#13-non-goals) and the deferred manifest features in [section 8.9](./SPECIFICATION.md#89-out-of-scope-for-v01); please read those before filing. Comment on whether a non-goal is the right call is welcome, provided it says which one and why.
 
