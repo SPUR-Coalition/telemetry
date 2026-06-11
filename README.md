@@ -30,8 +30,8 @@ Content Telemetry tracks content through five stages:
 Retrieved    →  content fetched over HTTP (content owner can see this today)
   Grounded   →  content loaded into the agent's generation context
     Cited    →  content explicitly referenced in the response
-      Displayed  →  user saw the reference
-        Engaged  →  user clicked, expanded, copied, or shared
+      Displayed  →  user saw it - a reference, or the content embedded in the answer
+        Engaged  →  user clicked, copied, shared, or directed the agent to act
 ```
 
 The **session** ties these events together - a single user journey from query to outcome, identified by a session ID that every event carries, from retrieval through engagement.
@@ -43,6 +43,8 @@ The gaps between stages show how content was used:
 - **Citation without engagement** - your content was cited but the user didn't click through
 
 The grounding event captures the boundary "this content entered the agent's generation context." It is architecture-neutral and decoupled from retrieval: content cached by the agent for days still produces a grounding event in every session it influences.
+
+Grounding and display record two different kinds of influence: grounding means the content influenced the agent, display means it reached the user. The two diverge as agent experiences move beyond the chat window - an agentic browser can render a page to the user that never entered a generation context, reported as a `content_displayed` event with `display_type: embed` and no grounding event.
 
 ## Design principles
 
@@ -139,7 +141,7 @@ Content Telemetry is focussed on **reporting**, while content **access** protoco
 
 ## Request for comment
 
-This specification is open for public comment from **11 June to 10 July 2026**.
+This specification is open for public comment from **12 June to 10 July 2026**.
 
 Feedback is triaged on the issue tracker as it arrives and incorporated into the next revision after the window closes, and the wire format is held stable during the window.
 

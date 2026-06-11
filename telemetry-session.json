@@ -165,7 +165,8 @@
             "properties": {
               "data": {
                 "properties": {
-                  "display_type": { "$ref": "#/$defs/DisplayType" }
+                  "display_type": { "$ref": "#/$defs/DisplayType" },
+                  "media_type": { "$ref": "#/$defs/MediaType" }
                 }
               }
             }
@@ -327,8 +328,7 @@
     },
     "EngagementType": {
       "type": "string",
-      "description": "Type of user interaction with content",
-      "enum": ["link_click", "expand", "copy", "share"]
+      "description": "How the user acted on content. Core values: link_click, expand, copy, share, agent_navigate. Extensions MAY define additional values (e.g. commerce actions). Consumers MUST tolerate unknown values."
     },
     "GroundingScope": {
       "type": "string",
@@ -337,8 +337,7 @@
     },
     "DisplayType": {
       "type": "string",
-      "description": "How a content reference was presented to the user",
-      "enum": ["link", "snippet", "inline_quote", "card", "detail_view"]
+      "description": "How content or a content reference was presented to the user. Core values: link, snippet, inline_quote, card, detail_view, embed. Platforms MAY use custom values for additional presentation surfaces. Consumers MUST tolerate unknown values."
     }
   }
 }

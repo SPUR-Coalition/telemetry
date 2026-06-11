@@ -32,7 +32,8 @@ Run from the repository root. Without uv: `pip install jsonschema`, then `python
 - All three conformance levels (Retrieval, Grounding, Citation)
 - Standalone event envelopes (CDN edge, agent with session FK)
 - Privacy level field gating (application-layer conformance)
-- Funnel exceptions (displayed-no-cited, cited-no-grounded)
+- Funnel exceptions (displayed-no-cited, cited-no-grounded, displayed-no-grounded)
+- Embedded display (`display_type: embed`) and agent-mediated engagement (`agent_navigate`)
 - Multi-turn sessions, cached grounding
 - Custom response_mode values
 

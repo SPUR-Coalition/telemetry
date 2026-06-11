@@ -192,9 +192,11 @@ Content moves through five stages during an agent interaction:
 
 3. **Cited** - Content explicitly referenced in the agent's response: quoted, paraphrased, or linked. A subset of grounded content. Content can influence every response in a session without being cited once.
 
-4. **Displayed** - A content reference shown to the end user: a link, snippet, inline quote, or preview card. Not all citations result in display (e.g., when the agent uses content internally without surfacing the source).
+4. **Displayed** - Content presented to the end user: a reference (a link, snippet, inline quote, or preview card) or the content itself embedded in the response surface (an iframe, a page rendered by an agentic browser, an embedded media player). Not all citations result in display (e.g., when the agent uses content internally without surfacing the source).
 
-5. **Engaged** - The user interacted with displayed content: clicked a link, expanded a preview, copied text, or shared the response.
+   Grounding and display record two different kinds of influence: grounding records that content influenced the agent, display records that it reached the user. As agent experiences evolve beyond the chat window the two diverge - content can shape an answer whose source the user never sees, and an agent can render content to the user that never entered a generation context (see *Departures from the funnel model* below).
+
+5. **Engaged** - The user acted on displayed or cited content: clicked a link, expanded a preview, copied text, shared the response, or directed the agent to act on the content on their behalf (opening the linked page, retrieving more from the source). Engagement connects the preceding events to down-funnel activity: a click-out carries a `ctx_token` that a destination can resolve to the session's click manifest - the content that influenced the response (section 7.1).
 
 ```
 Retrieved (HTTP layer, cacheable)
@@ -213,10 +215,11 @@ Each stage is typically a progressively narrower subset. The ratios between stag
 
 #### Departures from the funnel model
 
-Two cases break the strict subset model:
+Three cases break the strict subset model:
 
 - **Displayed without cited.** An agent may display content references (e.g., a "Sources" sidebar) without citing the content in the response text. In this case, a `content_displayed` event exists with no corresponding `content_cited` event.
 - **Cited without grounded.** A hallucinated citation references content the agent never retrieved or loaded into context. The `content_cited` event has no preceding `content_grounded` event. Telemetry consumers SHOULD treat uncorroborated citations (no matching grounding event) as lower-confidence signals.
+- **Displayed without grounded.** An agent can render content to the user without that content entering a generation context: an agentic browser showing a page, an embedded video played in the response surface. A `content_displayed` event (typically `display_type: embed`) exists with no corresponding `content_grounded` event. The content influenced the user directly rather than through the model, and the engagement that follows it is consumption the content owner cannot otherwise observe.
 
 These cases are valid. Emitters SHOULD produce the events that reflect what actually happened, even when the result does not follow the typical funnel ordering.
 
@@ -354,8 +357,8 @@ The `license_ref` field connects a telemetry event to the content access licence
 | `content_retrieved` | Content fetched from source | `content_url`, `source_role`, `data.media_type` |
 | `content_grounded` | Content loaded into agent context | `content_url` or `content_id`, `data.scope`, `data.cached` |
 | `content_cited` | Content referenced in response | `content_url`, `data.citation_type`, `data.position` |
-| `content_displayed` | Content reference shown to user | `content_url`, `data.display_type` |
-| `content_engaged` | User interacted with content | `content_url`, `data.engagement_type` (see 6.7) |
+| `content_displayed` | Content or a reference to it shown to user | `content_url`, `data.display_type` |
+| `content_engaged` | User acted on content | `content_url`, `data.engagement_type` (see 6.7) |
 
 #### Conversation events
 
@@ -652,7 +655,8 @@ When `content_hash` is absent or does not match any grounding event's hash (for 
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `display_type` | string | How the content reference was presented (see below) |
+| `display_type` | string | How the content or a reference to it was presented (see below) |
+| `media_type` | string | Content medium: `text`, `image`, `video`, `audio`. Defaults to `text` when absent. Most useful on `embed` displays (an embedded video reports `media_type: video`). |
 
 #### Display types
 
@@ -662,7 +666,12 @@ When `content_hash` is absent or does not match any grounding event's hash (for 
 | `snippet` | Text snippet or preview |
 | `inline_quote` | Quoted text inline in the response |
 | `card` | Rich preview card (title, description, image) |
-| `detail_view` | Expanded or full-content presentation |
+| `detail_view` | Expanded or full-content presentation within the agent's own interface |
+| `embed` | Source content rendered in the response surface: an iframe, a page rendered by an agentic browser, an embedded media player |
+
+The first five values present a reference or excerpt within the agent's interface; `embed` presents the source content itself. An `embed` display can occur without a grounding event when the content never entered a generation context (section 4.3, *Departures from the funnel model*).
+
+These are the core values. Platforms with additional presentation surfaces MAY use custom string values. Telemetry consumers MUST tolerate unknown `display_type` values.
 
 When a session includes `content_displayed` events but no subsequent `content_engaged` events, the user saw a content reference but did not interact with it. Whether this pattern is meaningful depends on the commercial agreement - a per-citation deal may not care about clickthrough, while a traffic-based deal will. This pattern is only detectable from platform-reported `content_displayed` and `content_engaged` events. Retrieval is the only event stage observable from the CDN edge.
 
@@ -682,10 +691,15 @@ The content URL is identified by the event-level `content_url` field (section 5.
 | `expand` | User expanded a collapsed citation or preview |
 | `copy` | User copied content text |
 | `share` | User shared the content or agent response containing it |
+| `agent_navigate` | User directed the agent to open or retrieve the content on their behalf |
+
+These are the core values. Extensions MAY define additional engagement actions - commerce actions such as directing the agent to purchase a listed item belong in a commerce extension or profile (section 5.3, extension events). Telemetry consumers MUST tolerate unknown `engagement_type` values.
+
+`agent_navigate` is the agent-mediated counterpart of a click: the user reached the source through the agent rather than through a browser. Consumers measuring traffic SHOULD count it alongside `link_click`, distinguishing the two where the commercial agreement does.
 
 `link_click` is the primary signal for clickthrough rate calculation. Telemetry consumers can derive per-content-owner and aggregate clickthrough rates from the ratio of `link_click` engagements to `content_displayed` events for the same `content_url`.
 
-A `link_click` engagement reported from the landing page after a click-out crosses a trust boundary. Such events carry a `ctx_token` in place of `session_id`, which the telemetry consumer resolves to the originating session's click manifest (see section 7.1).
+A `link_click` or `agent_navigate` engagement reported from the landing page after a click-out crosses a trust boundary. Such events carry a `ctx_token` in place of `session_id`, which the telemetry consumer resolves to the originating session's click manifest (see section 7.1).
 
 ## 7. Transport
 
