@@ -16,7 +16,7 @@ The SPUR Coalition stewards the specification and holds this repository. The sta
 
 ## Who the SPUR Coalition is
 
-The SPUR Coalition is a group of publishers and content owners that maintains the Content Telemetry standard. It holds the intellectual property through the preview period and releases the standard under Apache 2.0 from 11 June 2026.
+The SPUR Coalition is a group of publishers and content owners that maintains the Content Telemetry standard. It holds the intellectual property through the preview period and releases the standard under Apache 2.0 from 12 June 2026.
 
 Contributing to the standard does not require membership. The wire format is developed in the open, and anyone - content owner, agent operator, intermediary, or implementer - can take part through the issue tracker and the comment process described in the [README](./README.md#request-for-comment).
 
