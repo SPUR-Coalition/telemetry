@@ -2,7 +2,7 @@
 
 **Version:** 0.1
 **Status:** Preview
-**Last updated:** 2026-06-10
+**Last updated:** 2026-06-11
 
 ## Contents
 
@@ -968,6 +968,7 @@ Emitters SHOULD:
 
 - Use the minimum `privacy_level` necessary
 - Hash or anonymise identifiers where possible
+- Use coarse `topics` values that do not identify sensitive categories (health, political or religious affiliation, sexuality)
 
 ### 9.2 Recommended levels
 
