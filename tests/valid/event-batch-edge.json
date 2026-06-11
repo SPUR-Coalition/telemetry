@@ -1,0 +1,34 @@
+{
+  "_test_description": "Event batch envelope from a CDN at Retrieval conformance level. No session_id (content owner has no session context); the edge platform buffers detections across requests and flushes them as one batch. Validated against telemetry-event-batch.json envelope schema.",
+  "document_type": "event_batch",
+  "schema_version": "0.1",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T08:15:00Z",
+      "source_role": "edge",
+      "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440060",
+      "content_url": "https://www.telegraph.co.uk/business/2026/03/28/ftse-100-markets-live",
+      "data": {
+        "user_agent": "PerplexityBot/1.0",
+        "bot_category": "inference",
+        "verified": false,
+        "cache_status": "miss",
+        "response_status": 200
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T08:15:02Z",
+      "source_role": "edge",
+      "content_url": "https://www.telegraph.co.uk/business/2026/03/28/bank-of-england-rates",
+      "data": {
+        "user_agent": "GPTBot/1.2",
+        "bot_category": "training",
+        "verified": true,
+        "cache_status": "hit",
+        "response_status": 200
+      }
+    }
+  ]
+}

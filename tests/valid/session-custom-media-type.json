@@ -1,0 +1,47 @@
+{
+  "_test_description": "Custom media_type value not in the core set (text, image, video, audio). The spec says emitters MAY use custom string values for media outside the core set and telemetry consumers MUST tolerate unknown media_type values. Exercises the custom value on both content_retrieved and content_grounded data.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440010",
+  "agent_id": "cad-assistant-v2",
+  "started_at": "2026-03-28T19:00:00Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T19:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "research",
+        "topics": ["furniture design", "3d models"]
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T19:00:02Z",
+      "source_role": "agent",
+      "content_url": "https://models.example-cad-library.com/chairs/eames-lounge-replica.glb",
+      "data": {
+        "media_type": "3d"
+      }
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-03-28T19:00:03Z",
+      "content_url": "https://models.example-cad-library.com/chairs/eames-lounge-replica.glb",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "media_type": "3d"
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-03-28T19:00:09Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "response_tokens": 310
+      }
+    }
+  ]
+}

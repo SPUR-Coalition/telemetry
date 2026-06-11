@@ -3,10 +3,12 @@
 Conformance test runner for Content Telemetry Specification v0.1.
 
 Validates JSON test fixtures against telemetry-session.json, telemetry-event.json,
-manifest.json, and application-layer conformance rules that JSON Schema cannot
-express. Fixtures whose filename starts with "manifest-" are validated against
-manifest.json; fixtures with an "event" key are validated as standalone event
-envelopes; all others are validated as session documents.
+telemetry-event-batch.json, manifest.json, and application-layer conformance rules
+that JSON Schema cannot express. Fixtures whose filename starts with "manifest-"
+are validated against manifest.json; all others dispatch on the document_type
+discriminator (section 7.1): "event" validates as a standalone event envelope,
+"event_batch" as an event batch envelope, and "session" or absent as a session
+document.
 
 Usage:
     pip install jsonschema
@@ -17,6 +19,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 try:
     from jsonschema import Draft202012Validator, ValidationError
@@ -43,8 +46,14 @@ except ImportError:
 #    content_id. Not enforced by JSON Schema (both are optional individually).
 #
 # 3. session_id or ctx_token requirement (sections 5.7.5, 7.1):
-#    A standalone event envelope MUST carry either session_id or ctx_token.
-#    Not enforced by JSON Schema (both are optional on the envelope).
+#    A standalone event or event batch envelope MUST carry either session_id
+#    or ctx_token. Not enforced by JSON Schema (both are optional on the
+#    envelope).
+#
+# 4. Manifest rejection rules (section 8.7):
+#    Duplicate keys[].id values, and domains entries that are not the
+#    manifest's own host or a subdomain of it (section 8.6). JSON Schema
+#    cannot compare values across array items or against the manifest's id.
 #
 # Not checked here: agent_id at Grounding/Citation conformance (section
 # 5.7) depends on the emitter's declared conformance level, which fixtures do
@@ -73,6 +82,19 @@ APPLICATION_LAYER_VIOLATIONS = {
     "standalone-missing-session-and-ctx-token.json": (
         "Standalone event envelope has neither session_id nor ctx_token. "
         "Violates section 5.7.5: an event MUST carry one at Grounding+ (section 7.1)."
+    ),
+    "batch-missing-session-and-ctx-token.json": (
+        "Event batch envelope has neither session_id nor ctx_token. "
+        "Violates section 5.7.5: an event MUST carry one at Grounding+ (section 7.1)."
+    ),
+    "manifest-duplicate-key-id.json": (
+        "Manifest carries two keys sharing the same id. "
+        "Violates section 8.7: consumers reject a manifest with duplicate keys[].id."
+    ),
+    "manifest-foreign-domain.json": (
+        "Manifest at example.com claims othersite.com in domains. "
+        "Violates section 8.6: every entry MUST be the manifest's own host or a "
+        "subdomain of it. Consumers reject the manifest as malformed (section 8.7)."
     ),
 }
 
@@ -119,6 +141,17 @@ def load_schema(schema_path):
     else:
         event_schema = None
 
+    # Load the event batch envelope schema if present.
+    batch_schema_path = schema_path.parent / "telemetry-event-batch.json"
+    if batch_schema_path.exists():
+        with open(batch_schema_path) as f:
+            batch_schema = json.load(f)
+        batch_schema_id = batch_schema.get("$id", "")
+        batch_resource = Resource.from_contents(batch_schema)
+        registry = registry.with_resource(batch_schema_id, batch_resource)
+    else:
+        batch_schema = None
+
     # Load the manifest schema if present. Manifest fixtures are identified
     # by a "manifest-" filename prefix and validated against this schema
     # rather than the session/event schemas.
@@ -134,7 +167,7 @@ def load_schema(schema_path):
         manifest_validator = None
 
     validator = Draft202012Validator(schema, registry=registry)
-    return schema, event_schema, validator, manifest_validator, registry
+    return schema, event_schema, batch_schema, validator, manifest_validator, registry
 
 
 def load_test_file(path):
@@ -144,8 +177,18 @@ def load_test_file(path):
 
 
 def is_standalone_event(data):
-    """Check if the test file is a standalone event envelope (has 'event' key)."""
-    return "event" in data and isinstance(data["event"], dict)
+    """Check if the test file is a standalone event envelope (document_type 'event').
+
+    Dispatch follows the document_type discriminator (section 7.1). A document
+    without document_type is treated as a session - the consumer rule for
+    pre-0.1 documents - even when an 'event' key is present.
+    """
+    return data.get("document_type") == "event"
+
+
+def is_event_batch(data):
+    """Check if the test file is an event batch envelope (document_type 'event_batch')."""
+    return data.get("document_type") == "event_batch"
 
 
 def is_manifest_fixture(path):
@@ -168,6 +211,25 @@ def validate_standalone_event(data, session_schema, event_schema, registry):
         wrapper = {"$ref": f"{schema_id}#/$defs/TelemetryEvent"}
         validator = Draft202012Validator(wrapper, registry=registry)
         errors = list(validator.iter_errors(data["event"]))
+    return errors
+
+
+def validate_event_batch(data, session_schema, batch_schema, registry):
+    """Validate an event batch against the batch envelope schema.
+
+    If the batch envelope schema (telemetry-event-batch.json) is available,
+    validates the full envelope. Otherwise falls back to validating each
+    event body against the TelemetryEvent definition.
+    """
+    if batch_schema is not None:
+        validator = Draft202012Validator(batch_schema, registry=registry)
+        return list(validator.iter_errors(data))
+    schema_id = session_schema.get("$id", "")
+    wrapper = {"$ref": f"{schema_id}#/$defs/TelemetryEvent"}
+    validator = Draft202012Validator(wrapper, registry=registry)
+    errors = []
+    for event in data.get("events", []):
+        errors.extend(validator.iter_errors(event))
     return errors
 
 
@@ -203,7 +265,9 @@ def _iter_events(data):
     """Yield the content/turn events in a document, whether it is a session
     (events list) or a standalone envelope (single event under 'event')."""
     if is_standalone_event(data):
-        yield data["event"]
+        event = data.get("event")
+        if isinstance(event, dict):
+            yield event
     else:
         yield from data.get("events", [])
 
@@ -227,18 +291,24 @@ def check_content_identifier(data):
 
 def check_session_or_ctx_token(data):
     """
-    Check that a standalone event envelope carries session_id or ctx_token
-    (sections 5.7.5, 7.1). The rule applies at Grounding conformance and above;
-    a Retrieval-level content_retrieved event is exempt. Session documents
-    always satisfy this: session_id is required at the top level by the schema.
-    Returns a list of violations.
+    Check that a standalone event or event batch envelope carries session_id
+    or ctx_token (sections 5.7.5, 7.1). The rule applies at Grounding
+    conformance and above; Retrieval-level content_retrieved events are
+    exempt. Session documents always satisfy this: session_id is required at
+    the top level by the schema. Returns a list of violations.
     """
-    if not is_standalone_event(data):
+    if is_standalone_event(data):
+        kind = "Standalone event"
+        types = {(data.get("event") or {}).get("type")}
+    elif is_event_batch(data):
+        kind = "Event batch"
+        types = {e.get("type") for e in data.get("events", [])}
+    else:
         return []
-    if data["event"].get("type") == "content_retrieved":
+    if types <= {"content_retrieved"}:
         return []  # Retrieval level - below the Grounding+ threshold for this rule
     if not data.get("session_id") and not data.get("ctx_token"):
-        return ["Standalone event envelope carries neither session_id nor ctx_token"]
+        return [f"{kind} envelope carries neither session_id nor ctx_token"]
     return []
 
 
@@ -251,6 +321,35 @@ def check_application_layer(data):
     )
 
 
+def check_manifest_application_layer(data):
+    """
+    Check the manifest rejection rules of section 8.7 that JSON Schema cannot
+    express: duplicate keys[].id values, and domains entries that are not the
+    manifest's own host or a subdomain of it (section 8.6).
+    Returns a list of violation descriptions.
+    """
+    violations = []
+
+    seen = set()
+    for key in data.get("keys", []):
+        kid = key.get("id")
+        if kid in seen:
+            violations.append(f"Duplicate keys[].id '{kid}'")
+        seen.add(kid)
+
+    host = urlparse(data.get("id", "")).hostname
+    if host:
+        for entry in data.get("domains", []):
+            bare = entry[2:] if entry.startswith("*.") else entry
+            if bare != host and not bare.endswith("." + host):
+                violations.append(
+                    f"domains entry '{entry}' is not the manifest host "
+                    f"'{host}' or a subdomain of it"
+                )
+
+    return violations
+
+
 def run_tests():
     """Run all conformance tests and return (passed, failed, results)."""
     tests_dir = Path(__file__).parent
@@ -258,7 +357,7 @@ def run_tests():
     valid_dir = tests_dir / "valid"
     invalid_dir = tests_dir / "invalid"
 
-    schema, event_schema, session_validator, manifest_validator, registry = load_schema(schema_path)
+    schema, event_schema, batch_schema, session_validator, manifest_validator, registry = load_schema(schema_path)
 
     results = []
     passed = 0
@@ -282,6 +381,9 @@ def run_tests():
                 results.append((name, False, "manifest schema missing"))
                 continue
             errors = list(manifest_validator.iter_errors(data))
+        elif is_event_batch(data):
+            # Event batches validate against the batch envelope schema
+            errors = validate_event_batch(data, schema, batch_schema, registry)
         elif is_standalone_event(data):
             # Standalone events validate against event envelope schema
             errors = validate_standalone_event(data, schema, event_schema, registry)
@@ -289,9 +391,12 @@ def run_tests():
             errors = list(session_validator.iter_errors(data))
 
         # Valid fixtures must also satisfy the application-layer rules that
-        # schema validation cannot express (section 5.7.5). Manifests have no
-        # such rules.
-        app_violations = [] if is_manifest_fixture(path) else check_application_layer(data)
+        # schema validation cannot express (sections 5.7.5 and 8.7).
+        app_violations = (
+            check_manifest_application_layer(data)
+            if is_manifest_fixture(path)
+            else check_application_layer(data)
+        )
 
         if not errors and not app_violations:
             print(f"  PASS  {name}")
@@ -332,6 +437,8 @@ def run_tests():
                 results.append((name, False, "manifest schema missing"))
                 continue
             schema_errors = list(manifest_validator.iter_errors(data))
+        elif is_event_batch(data):
+            schema_errors = validate_event_batch(data, schema, batch_schema, registry)
         elif is_standalone_event(data):
             schema_errors = validate_standalone_event(data, schema, event_schema, registry)
         else:
@@ -347,7 +454,11 @@ def run_tests():
 
         elif is_app_layer:
             # Passes JSON Schema but should fail conformance
-            conformance_violations = check_application_layer(data)
+            conformance_violations = (
+                check_manifest_application_layer(data)
+                if is_manifest_fixture(path)
+                else check_application_layer(data)
+            )
             if conformance_violations:
                 print(f"  PASS  {name}  [application-layer]")
                 print(f"        {APPLICATION_LAYER_VIOLATIONS[name]}")

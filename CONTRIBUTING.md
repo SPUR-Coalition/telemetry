@@ -9,6 +9,7 @@ This repo contains the **specification** - the data model, event types, privacy 
 | [SPECIFICATION.md](./SPECIFICATION.md) | The normative specification |
 | [telemetry-session.json](./telemetry-session.json) | JSON Schema for session validation |
 | [telemetry-event.json](./telemetry-event.json) | JSON Schema for standalone event validation |
+| [telemetry-event-batch.json](./telemetry-event-batch.json) | JSON Schema for event batch validation |
 | [tests/](./tests/) | Conformance test suite |
 | [GOVERNANCE.md](./GOVERNANCE.md) | Stewardship and preview-status policy |
 | [LICENSE](./LICENSE) | Apache License 2.0 |

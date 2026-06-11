@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contenttelemetry.org/schema/v0.1/telemetry-event-batch.json",
+  "title": "Content Telemetry Event Batch",
+  "description": "Schema for batches of Content Telemetry events sharing one session context, delivered outside a session document",
+  "type": "object",
+  "required": ["document_type", "schema_version", "events"],
+  "properties": {
+    "document_type": {
+      "type": "string",
+      "const": "event_batch",
+      "description": "Document type discriminator. MUST be 'event_batch' for event batches."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "0.1",
+      "description": "Content Telemetry schema version"
+    },
+    "session_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Session identifier, applying to every event in the batch. MAY be omitted by origin-side emitters with no session context. REQUIRED for emitters at Grounding conformance or above (unless ctx_token is carried instead - see section 7.1). Events belonging to different sessions MUST be delivered in separate batches."
+    },
+    "ctx_token": {
+      "type": "string",
+      "description": "Opaque click-token issued by the originating agent, carried in place of session_id on batches of content_engaged events emitted from a landing page after a click-out. Applies to every event in the batch and is resolved by the telemetry consumer to the owning session. See section 7.1. An event MUST carry either session_id or ctx_token at Grounding conformance and above."
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Responding agent identifier. REQUIRED for emitters at Grounding conformance or above when using event batch delivery. Mirrors the session-level agent_id field."
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Session start timestamp (UTC). Mirrors the session-level started_at field. REQUIRED for emitters at Grounding conformance or above when using event batch delivery."
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "telemetry-session.json#/$defs/TelemetryEvent"
+      },
+      "description": "The telemetry events in the batch"
+    }
+  }
+}

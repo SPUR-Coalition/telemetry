@@ -294,7 +294,7 @@ Additional content metadata - version, last-modified timestamp, content hash, me
 | `started_at` | datetime | Yes | Session start (UTC) |
 | `ended_at` | datetime | No | Session end (UTC) |
 | `conformance_level` | string | No | Informational conformance level advertised by the emitter (see section 5.7). Values: `retrieval`, `grounding`, `citation` |
-| `document_type` | string | No | `"session"` for session documents (see section 7.1 for the standalone event format) |
+| `document_type` | string | No | `"session"` for session documents (see section 7.1 for the standalone event and event batch formats) |
 | `events` | Event[] | No | Ordered list of events |
 
 #### 5.1.1 Content scope
@@ -498,7 +498,7 @@ A conforming **telemetry consumer** MUST:
 - Accept sessions with any `schema_version` that shares the same major version. During the preview period (0.x), consumers MUST accept sessions with the exact same minor version (e.g., a 0.1 consumer accepts 0.1 only). The major-version compatibility rule takes effect from 1.0.0 onward.
 - Tolerate unknown fields without error
 - Tolerate events from any conformance level
-- Accept both the session-document and standalone-event delivery formats, reconstructing sessions from standalone events where needed (see section 7.1)
+- Accept the session-document, standalone-event, and event-batch delivery formats, reconstructing sessions from standalone events and event batches where needed (see section 7.1)
 
 #### 5.7.5 Application-layer conformance rules
 
@@ -521,9 +521,11 @@ When the reporter is the agent (`source_role: agent`), the following fields are 
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `media_type` | string | Content medium: `text`, `image`, `video`, `audio` |
+| `media_type` | string | Content medium: `text`, `image`, `video`, `audio` (see below) |
 
 `media_type` on retrieval events allows content owners to see what types of content are being fetched, independent of whether those retrievals result in grounding or citation. Defaults to `text` when absent.
+
+`text`, `image`, `video`, and `audio` are the core values. Emitters MAY use custom string values for media outside the core set (for example `3d` or `dataset`). Telemetry consumers MUST tolerate unknown `media_type` values. This rule applies to `media_type` on every event type that carries it (sections 6.4, 6.5, 6.6).
 
 ### 6.2 Edge enrichment (`content_retrieved` + `source_role: edge`)
 
@@ -576,7 +578,7 @@ Emitting a `training`-category `content_retrieved` event is permitted but non-at
 | `content_version` | string | Content version identifier (ETag, revision ID, CMS version) |
 | `content_last_modified` | datetime | When the content was last modified at source |
 | `content_hash` | string | SHA-256 of the content as ingested (`sha256:{hex}`) |
-| `media_type` | string | Content medium: `text`, `image`, `video`, `audio` |
+| `media_type` | string | Content medium: `text`, `image`, `video`, `audio` (open vocabulary, see 6.1) |
 
 `tokens_ingested` counts tokens actually placed in the generation model's context. For chunked retrieval, count only the tokens used, not the full source document. The token count uses the generation model's tokeniser (the model identified in `model_id` on the corresponding `turn_completed` event), not the retrieval or embedding model's tokeniser.
 
@@ -629,7 +631,7 @@ Agents SHOULD preserve the `license_ref` from the original retrieval when emitti
 | Field | Type | Description |
 |-------|------|-------------|
 | `citation_type` | string | How content was used: `direct_quote`, `paraphrase`, `reference`, `contradiction`, `unclassified` |
-| `media_type` | string | Content medium: `text`, `image`, `video`, `audio` |
+| `media_type` | string | Content medium: `text`, `image`, `video`, `audio` (open vocabulary, see 6.1) |
 | `excerpt_tokens` | integer | Token count of the excerpt used |
 | `excerpt_chars` | integer | Character count of the excerpt used |
 | `excerpt_hash` | string | SHA-256 of the cited excerpt text (`sha256:{hex}`). See below. |
@@ -656,7 +658,7 @@ When `content_hash` is absent or does not match any grounding event's hash (for 
 | Field | Type | Description |
 |-------|------|-------------|
 | `display_type` | string | How the content or a reference to it was presented (see below) |
-| `media_type` | string | Content medium: `text`, `image`, `video`, `audio`. Defaults to `text` when absent. Most useful on `embed` displays (an embedded video reports `media_type: video`). |
+| `media_type` | string | Content medium: `text`, `image`, `video`, `audio` (open vocabulary, see 6.1). Defaults to `text` when absent. Most useful on `embed` displays (an embedded video reports `media_type: video`). |
 
 #### Display types
 
@@ -707,11 +709,13 @@ Content Telemetry defines a signal format, not a wire protocol. Common delivery 
 
 ### 7.1 Delivery formats
 
-The schema supports two delivery formats:
+The schema supports three delivery formats:
 
 **Session document.** A complete session with nested events, delivered after the session ends or at periodic intervals. This is the primary format described in section 5.1 and validated by `telemetry-session.json`.
 
 **Standalone event.** A single event with a session reference, delivered as it occurs. Suitable for streaming architectures and origin-side emitters (CDNs, origin servers) that do not have visibility into the agent's session.
+
+**Event batch.** Multiple events sharing one session context, delivered together. The envelope carries the same fields as a standalone event, with an `events` array in place of the single `event`. Suitable for emitters that buffer events and flush periodically: edge platforms aggregating detections across requests, or SDKs batching events within a session.
 
 A standalone event carries `document_type`, `schema_version`, and optionally `session_id` alongside the event fields. The `document_type` field distinguishes standalone events from session documents:
 
@@ -735,23 +739,47 @@ A standalone event carries `document_type`, `schema_version`, and optionally `se
 }
 ```
 
+An event batch carries the same envelope fields with `"document_type": "event_batch"` and an `events` array. Envelope-level fields (`session_id`, `ctx_token`, `agent_id`, `started_at`) apply to every event in the batch; events belonging to different sessions MUST be delivered in separate batches or as session documents.
+
+```json
+{
+  "document_type": "event_batch",
+  "schema_version": "0.1",
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-01-15T10:30:01Z",
+      "source_role": "agent",
+      "content_url": "https://www.ft.com/content/abc123"
+    },
+    {
+      "type": "content_cited",
+      "timestamp": "2026-01-15T10:30:04Z",
+      "source_role": "agent",
+      "content_url": "https://www.ft.com/content/abc123"
+    }
+  ]
+}
+```
+
 Session documents use `"document_type": "session"`. When `document_type` is absent, consumers SHOULD treat the document as a session (for backwards compatibility with pre-0.1 implementations).
 
 For origin-side emitters at Retrieval conformance level, `session_id` MAY be omitted when the content owner has no session context. Telemetry consumers correlate these events with agent-reported sessions using the `content_telemetry_id` field.
 
 For `content_engaged` events emitted from a landing page after a click-out (typically by a content marketplace, affiliate network, or destination site), `session_id` MAY be replaced by a `ctx_token` field that carries an opaque click-token issued by the originating agent. Telemetry consumers resolve the token to the owning session. This lets a downstream observer report a corroborating engagement event without sharing the session UUID across trust boundaries. An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above.
 
-**ctx_token resolution.** A telemetry consumer that supports `ctx_token` resolution exposes, for a resolved token, the **click manifest**: the set of `content_grounded`, `content_cited`, and `content_displayed` events belonging to the resolved session, identifying every source that informed the response that produced the click. The manifest is gated by the resolved session's `privacy_level` and by consent. A consumer MUST return the manifest only when the issuing agent has opted in to sharing sessions via click tokens and the content owner whose URLs appear has opted in to being visible in click-token lookups. When either opt-in is absent, the consumer MUST NOT disclose the manifest. The mechanism by which an agent and a content owner record these opt-ins is operator-defined; the consent gate is normative.
+**ctx_token resolution.** A telemetry consumer that supports `ctx_token` resolution exposes, for a resolved token, the **click manifest**: the set of `content_grounded`, `content_cited`, and `content_displayed` events belonging to the resolved session, identifying every source that informed the response that produced the click. The manifest is gated by the resolved session's `privacy_level` and by consent. A consumer MUST return the manifest only when the issuing agent has opted in to sharing sessions via click tokens; when the agent opt-in is absent, the consumer MUST NOT disclose the manifest. Within a returned manifest, a source MUST appear only when its content owner has opted in to being visible in click-token lookups; the consumer MUST withhold the events of any content owner whose opt-in is absent while returning the remainder of the manifest. A resolution response MUST NOT include the resolved session's raw `session_id`: the token exists so that the session UUID never crosses the trust boundary, and a resolution response that returned it would undo that. The mechanism by which an agent and a content owner record these opt-ins is operator-defined; the consent gate is normative.
 
-The primary schema (`telemetry-session.json`) validates session documents. A standalone event envelope schema (`telemetry-event.json`) validates the event delivery format. Both schemas share the `TelemetryEvent` definition.
+The primary schema (`telemetry-session.json`) validates session documents. A standalone event envelope schema (`telemetry-event.json`) validates the event delivery format, and a batch envelope schema (`telemetry-event-batch.json`) validates the event batch format. All three schemas share the `TelemetryEvent` definition.
 
-**Conformance constraints.** Standalone event delivery is sufficient for Retrieval conformance, where the emitter reports individual `content_retrieved` events with no session context. Grounding and Citation conformance require session-level fields (`session_id` or `ctx_token`, `agent_id`, `started_at`) that the standalone event envelope does not carry by default.
+**Conformance constraints.** Standalone event and event batch delivery are sufficient for Retrieval conformance, where the emitter reports `content_retrieved` events with no session context. Grounding and Citation conformance require session-level fields (`session_id` or `ctx_token`, `agent_id`, `started_at`) that these envelopes do not carry by default.
 
-An agent emitter that uses standalone events for streaming delivery and wants to achieve Grounding or Citation conformance MUST include the optional `agent_id` and `started_at` fields on the standalone event envelope. Each event envelope MUST also carry `session_id`, except for click-out engagement events where `ctx_token` is used instead. Consumers reconstruct the session from the stream of standalone events sharing the same `session_id`, or resolve the owning session from `ctx_token`.
+An agent emitter that uses standalone events or event batches for streaming delivery and wants to achieve Grounding or Citation conformance MUST include the optional `agent_id` and `started_at` fields on the envelope. Each envelope MUST also carry `session_id`, except for click-out engagement events where `ctx_token` is used instead. Consumers reconstruct the session from the stream of envelopes sharing the same `session_id`, or resolve the owning session from `ctx_token`.
 
 Origin-side emitters (source role `origin` or `edge`) are not expected to achieve Grounding conformance and do not need these fields.
 
-Telemetry consumers MUST accept both delivery formats and reconstruct sessions from standalone events where needed.
+Telemetry consumers MUST accept all three delivery formats, reconstructing sessions from standalone events and event batches where needed.
 
 ### 7.2 Content-Telemetry-ID header
 

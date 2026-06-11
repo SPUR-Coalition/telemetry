@@ -1,5 +1,5 @@
 {
-  "_test_description": "Standalone event envelope missing document_type. The event key triggers envelope validation, which requires document_type.",
+  "_test_description": "Envelope-shaped document with an event key but no document_type. Per section 7.1 a document without document_type is treated as a session, and it fails the session schema.",
   "schema_version": "0.1",
   "event": {
     "type": "content_retrieved",

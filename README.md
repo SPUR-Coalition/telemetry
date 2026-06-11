@@ -59,6 +59,7 @@ Grounding and display record two different kinds of influence: grounding means t
 - [SPECIFICATION.md](./SPECIFICATION.md) - the full protocol specification
 - [telemetry-session.json](./telemetry-session.json) - JSON Schema for session documents
 - [telemetry-event.json](./telemetry-event.json) - JSON Schema for standalone event envelopes
+- [telemetry-event-batch.json](./telemetry-event-batch.json) - JSON Schema for event batch envelopes
 - [manifest.json](./manifest.json) - JSON Schema for the `.well-known/content-telemetry.json` manifest ([section 8](./SPECIFICATION.md#8-manifest))
 - [tests/](./tests/) - conformance test suite
 - [GOVERNANCE.md](./GOVERNANCE.md) - stewardship, preview status, relationship to profiles

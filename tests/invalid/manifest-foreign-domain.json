@@ -1,0 +1,11 @@
+{
+  "_test_description": "Content-owner manifest at example.com whose domains array claims othersite.com. Passes JSON Schema but violates section 8.6: every domains entry MUST be the manifest's own host or a subdomain of it. Consumers reject the manifest as malformed (section 8.7).",
+  "schema_version": "0.1",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": ["content_owner"],
+  "operator": { "name": "Example Media" },
+  "telemetry": {
+    "endpoint": "https://telemetry.example.com/v1/events"
+  },
+  "domains": ["example.com", "othersite.com"]
+}

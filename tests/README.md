@@ -27,8 +27,7 @@ Run from the repository root. Without uv: `pip install jsonschema`, then `python
 - Session envelope required fields (`schema_version`, `session_id`, `started_at`)
 - Event required fields (`type`, `timestamp`)
 - Turn required fields (`privacy_level`)
-- Event required fields (`type`)
-- Enum validation (event types, privacy levels, schema version)
+- Enum validation (event types, privacy levels, source roles, schema version)
 - All three conformance levels (Retrieval, Grounding, Citation)
 - Standalone event envelopes (CDN edge, agent with session FK)
 - Privacy level field gating (application-layer conformance)
@@ -45,6 +44,7 @@ Some rules cannot be expressed in JSON Schema alone. These are tested as applica
 
 - Privacy level field gating (e.g. `query_text` MUST NOT be present at `minimal` level)
 - `content_url` or `content_id` requirement on every content event (section 5.7.5)
-- `session_id` or `ctx_token` on a standalone event envelope at Grounding conformance and above (sections 5.7.5, 7.1)
+- `session_id` or `ctx_token` on a standalone event or event batch envelope at Grounding conformance and above (sections 5.7.5, 7.1)
+- Manifest rejection rules: duplicate `keys[].id`, and `domains` entries that are not the manifest's own host or a subdomain of it (sections 8.6, 8.7)
 
 Valid fixtures must pass both JSON Schema and these checks; `invalid/` fixtures that pass JSON Schema but fail a check are documented in `validate.py`. The `agent_id`-at-Grounding requirement is not fixture-tested: it depends on the emitter's declared conformance level, which the fixtures do not carry.

@@ -1,0 +1,13 @@
+{
+  "_test_description": "Event batch envelope missing schema_version. The event_batch document_type triggers batch envelope validation, which requires schema_version.",
+  "document_type": "event_batch",
+  "session_id": "660e8400-e29b-41d4-a716-446655440009",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T10:00:00Z",
+      "source_role": "edge",
+      "content_url": "https://example.com/article/test"
+    }
+  ]
+}

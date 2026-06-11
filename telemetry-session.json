@@ -322,8 +322,7 @@
     },
     "MediaType": {
       "type": "string",
-      "description": "Content medium type",
-      "enum": ["text", "image", "video", "audio"],
+      "description": "Content medium. Core values: text, image, video, audio. Emitters MAY use custom values for media outside the core set (e.g. 3d, dataset). Consumers MUST tolerate unknown values.",
       "default": "text"
     },
     "EngagementType": {

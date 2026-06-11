@@ -40,7 +40,12 @@ def load_validators():
     """Build a validator per schema, sharing one registry so $refs resolve."""
     registry = Registry()
     schemas = {}
-    for name in ("telemetry-session.json", "telemetry-event.json", "manifest.json"):
+    for name in (
+        "telemetry-session.json",
+        "telemetry-event.json",
+        "telemetry-event-batch.json",
+        "manifest.json",
+    ):
         schema = json.loads((REPO / name).read_text())
         schemas[name] = schema
         registry = registry.with_resource(
@@ -66,7 +71,9 @@ def classify(doc):
         return None
     if doc.get("document_type") == "session":
         return "telemetry-session.json"
-    if doc.get("document_type") == "event" or isinstance(doc.get("event"), dict):
+    if doc.get("document_type") == "event_batch":
+        return "telemetry-event-batch.json"
+    if doc.get("document_type") == "event":
         return "telemetry-event.json"
     if {"roles", "operator", "id", "schema_version"} <= doc.keys():
         return "manifest.json"

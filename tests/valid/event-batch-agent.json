@@ -1,0 +1,29 @@
+{
+  "_test_description": "Event batch envelope from an agent at Grounding conformance, carrying the session-level fields (session_id, agent_id, started_at) that apply to every event in the batch. The agent buffers events within a session and flushes them together.",
+  "document_type": "event_batch",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440007",
+  "agent_id": "assistant.example.com",
+  "started_at": "2026-03-28T08:19:55Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-03-28T08:20:00Z",
+      "source_role": "agent",
+      "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440061",
+      "content_url": "https://arstechnica.com/science/2026/03/new-battery-chemistry-breakthrough/"
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-03-28T08:20:03Z",
+      "source_role": "agent",
+      "content_url": "https://arstechnica.com/science/2026/03/new-battery-chemistry-breakthrough/"
+    },
+    {
+      "type": "content_cited",
+      "timestamp": "2026-03-28T08:20:05Z",
+      "source_role": "agent",
+      "content_url": "https://arstechnica.com/science/2026/03/new-battery-chemistry-breakthrough/"
+    }
+  ]
+}

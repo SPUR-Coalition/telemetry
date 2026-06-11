@@ -1,0 +1,7 @@
+{
+  "_test_description": "Event batch envelope with an empty events array. The schema requires minItems 1: an empty batch carries no signal and MUST NOT be delivered.",
+  "document_type": "event_batch",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440008",
+  "events": []
+}
