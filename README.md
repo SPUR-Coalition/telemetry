@@ -7,7 +7,7 @@ This is a preview specification. Field names, event types, and schema structure 
 ## Contents
 
 - [Problem](#problem)
-- [Five tracked events](#five-tracked-events)
+- [Telemetry events](#telemetry-events)
 - [Design principles](#design-principles)
 - [Repo contents](#repo-contents)
 - [Example](#example)
@@ -22,7 +22,7 @@ AI agents retrieve a content owner's content, use it to generate responses, and 
 
 Platforms self-report usage metrics (if they report at all), and content owners have no way to verify the numbers or compare across platforms.
 
-## Five tracked events
+## Telemetry events
 
 Content Telemetry tracks content through five stages:
 
@@ -135,7 +135,7 @@ The content owner can derive: FT article `abc123` was in context for the respons
 
 ## Relationship to other protocols
 
-Content Telemetry is focussed on **reporting**, while content **access** protocols (peek-then-pay, IAB CoMP, bilateral APIs) aim to govern how agents discover and license content. The `license_ref` field on events connects telemetry to whatever access protocol issued the licence, but the schemas are independent - telemetry works with any access protocol, or none.
+Content Telemetry is focussed on **reporting**, while content **access** protocols (Really Simple Licensing, peek-then-pay, IAB CoMP, bilateral APIs) aim to govern how agents discover and license content. The `license_ref` field on events connects telemetry to whatever access protocol issued the licence, but the schemas are independent - telemetry works with any access protocol, or none.
 
 ## Request for comment
 
