@@ -34,7 +34,7 @@ Retrieved    →  content fetched over HTTP (content owner can see this today)
         Engaged  →  user clicked, copied, shared, or directed the agent to act
 ```
 
-The **session** ties these events together - a single user journey from query to outcome, identified by a session ID that every event carries, from retrieval through engagement.
+The **session** ties these events together - one bounded interaction from query to outcome, identified by a session ID that every event carries, from retrieval through engagement.
 
 The gaps between stages show how content was used:
 
@@ -156,7 +156,7 @@ Comment is most useful on:
 
 File an issue on this repository using the available templates: *Spec feedback / open question* for design questions and proposed changes, and *Schema or example bug* for concrete defects. Pull requests are welcome for specific schema or text fixes; for larger changes, open an issue first (see [CONTRIBUTING.md](./CONTRIBUTING.md)). Feedback on accreditation, the Compliant tier, or the conformance mark belongs on the [profile repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
 
-Some areas are out of scope for this round. The non-goals are in [section 1.3](./SPECIFICATION.md#13-non-goals) and the deferred manifest features in [section 8.9](./SPECIFICATION.md#89-out-of-scope-for-v01); please read those before filing. Comment on whether a non-goal is the right call is welcome, provided it says which one and why.
+Some areas are out of scope for this round. The non-goals are in [section 1.3](./SPECIFICATION.md#13-non-goals) and the deferred manifest features in [section 8.9](./SPECIFICATION.md#89-out-of-scope-for-v01); please read those before filing. Comments on whether a non-goal is the right call are welcome, provided they say which one and why.
 
 Required fields, event types, and schema structure may all change before 1.0 (section 12). Nothing is settled except the items listed as out of scope.
 

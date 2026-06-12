@@ -20,6 +20,7 @@ body:
       options:
         - telemetry-session.json
         - telemetry-event.json
+        - telemetry-event-batch.json
         - manifest.json
         - Worked example in SPECIFICATION.md
         - Conformance suite (tests/)

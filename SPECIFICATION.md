@@ -1034,7 +1034,7 @@ Content Telemetry provides the telemetry data needed for attribution but does no
 - **Last-touch** - credit to last content before session end
 - **First-touch** - credit to first content in session
 - **Linear** - equal credit to all content
-- **Position-based** - weighted by position in journey
+- **Position-based** - weighted by position in the session
 - **SHAP-based** - game-theoretic contribution scores
 
 ### 10.1 Counting semantics
