@@ -1,0 +1,25 @@
+{
+  "document_type": "event",
+  "schema_version": "0.1",
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "agent_id": "agent-example",
+  "started_at": "2026-06-20T10:00:00Z",
+  "event": {
+    "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+    "type": "content_grounded",
+    "timestamp": "2026-06-20T10:00:01Z",
+    "content_url": "https://example.com/article",
+    "content_id": "ISCC:KACYPXW445FTYNJ3",
+    "data": {
+      "scope": "turn",
+      "cached": true,
+      "provenance": "third_party_sourced",
+      "tokens_ingested": 512,
+      "content_fingerprint": {
+        "scheme": "iscc",
+        "detected": true,
+        "preserved_in_output": false
+      }
+    }
+  }
+}
