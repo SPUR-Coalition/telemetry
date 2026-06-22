@@ -4,11 +4,7 @@
   "title": "Content Telemetry Session",
   "description": "Schema for Content Telemetry sessions - tracking content usage in AI agent interactions",
   "type": "object",
-  "required": [
-    "schema_version",
-    "session_id",
-    "started_at"
-  ],
+  "required": ["schema_version", "session_id", "started_at"],
   "properties": {
     "document_type": {
       "type": "string",
@@ -23,11 +19,7 @@
     },
     "conformance_level": {
       "type": "string",
-      "enum": [
-        "retrieval",
-        "grounding",
-        "citation"
-      ],
+      "enum": ["retrieval", "grounding", "citation"],
       "description": "Informational conformance level advertised by the emitter. The authoritative level is declared in the emitter's manifest (section 8). See section 5.7."
     },
     "session_id": {
@@ -36,24 +28,15 @@
       "description": "Unique session identifier"
     },
     "agent_id": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "description": "Responding agent identifier"
     },
     "content_scope": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "description": "Opaque content collection identifier (e.g., manifest URL, API key scope, agreement ID)"
     },
     "manifest_ref": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "description": "Manifest reference - the URL of a manifest at /.well-known/content-telemetry.json. See section 8."
     },
     "started_at": {
@@ -62,10 +45,7 @@
       "description": "Session start timestamp (UTC)"
     },
     "ended_at": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "format": "date-time",
       "description": "Session end timestamp (UTC)"
     },
@@ -81,10 +61,7 @@
     "TelemetryEvent": {
       "type": "object",
       "description": "Single telemetry event within a session",
-      "required": [
-        "type",
-        "timestamp"
-      ],
+      "required": ["type", "timestamp"],
       "properties": {
         "id": {
           "type": "string",
@@ -100,10 +77,7 @@
           "description": "Event timestamp (UTC)"
         },
         "turn_id": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Associates this event with a conversation turn. Scoped to the session. SHOULD be set on turn_started, turn_completed, content_cited, content_displayed, content_engaged events, and content_grounded events when scope is turn."
         },
         "source_role": {
@@ -111,44 +85,25 @@
           "description": "Who is reporting this event (see section 4.4). SHOULD be set on content_retrieved events."
         },
         "content_telemetry_id": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "format": "uuid",
           "description": "Correlation ID from the Content-Telemetry-ID HTTP header, used to deduplicate retrieval events reported by multiple observers"
         },
         "content_url": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "format": "uri",
           "description": "Content URL as fetched or canonical URL"
         },
         "content_id": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Stable content identifier (CMS ID, DOI, ISBN, ISCC, C2PA manifest hash, or marketplace catalogue ID). See section 4.5."
         },
         "license_ref": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Reference to the content access licence (JWT jti, CoMP package ID, or opaque identifier)"
         },
         "turn": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/ConversationTurn"
-            },
-            {
-              "type": "null"
-            }
-          ],
+          "oneOf": [{ "$ref": "#/$defs/ConversationTurn" }, { "type": "null" }],
           "description": "Conversation turn data (for turn_started/turn_completed)"
         },
         "data": {
@@ -160,49 +115,22 @@
       "allOf": [
         {
           "if": {
-            "properties": {
-              "type": {
-                "const": "content_grounded"
-              }
-            },
-            "required": [
-              "type"
-            ]
+            "properties": { "type": { "const": "content_grounded" } },
+            "required": ["type"]
           },
           "then": {
             "properties": {
               "data": {
                 "properties": {
-                  "scope": {
-                    "$ref": "#/$defs/GroundingScope"
-                  },
-                  "cached": {
-                    "type": "boolean"
-                  },
-                  "provenance": {
-                    "$ref": "#/$defs/SourceProvenance"
-                  },
-                  "tokens_ingested": {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  "content_version": {
-                    "type": "string"
-                  },
-                  "content_last_modified": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "content_hash": {
-                    "type": "string",
-                    "pattern": "^sha256:[a-f0-9]{64}$"
-                  },
-                  "media_type": {
-                    "$ref": "#/$defs/MediaType"
-                  },
-                  "content_fingerprint": {
-                    "$ref": "#/$defs/ContentFingerprint"
-                  }
+                  "scope": { "$ref": "#/$defs/GroundingScope" },
+                  "cached": { "type": "boolean" },
+                  "provenance": { "$ref": "#/$defs/SourceProvenance" },
+                  "tokens_ingested": { "type": "integer", "minimum": 0 },
+                  "content_version": { "type": "string" },
+                  "content_last_modified": { "type": "string", "format": "date-time" },
+                  "content_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+                  "media_type": { "$ref": "#/$defs/MediaType" },
+                  "content_fingerprint": { "$ref": "#/$defs/ContentFingerprint" }
                 }
               }
             }
@@ -210,49 +138,21 @@
         },
         {
           "if": {
-            "properties": {
-              "type": {
-                "const": "content_cited"
-              }
-            },
-            "required": [
-              "type"
-            ]
+            "properties": { "type": { "const": "content_cited" } },
+            "required": ["type"]
           },
           "then": {
             "properties": {
               "data": {
                 "properties": {
-                  "citation_type": {
-                    "$ref": "#/$defs/CitationType"
-                  },
-                  "media_type": {
-                    "$ref": "#/$defs/MediaType"
-                  },
-                  "excerpt_tokens": {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  "excerpt_chars": {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  "excerpt_hash": {
-                    "type": "string",
-                    "pattern": "^sha256:[a-f0-9]{64}$",
-                    "description": "SHA-256 of the cited excerpt text as it appears in the response (sha256:{hex})"
-                  },
-                  "position": {
-                    "$ref": "#/$defs/CitationPosition"
-                  },
-                  "content_hash": {
-                    "type": "string",
-                    "pattern": "^sha256:[a-f0-9]{64}$",
-                    "description": "SHA-256 matching the corresponding content_grounded event. When the agent chunked the source, this is the chunk hash."
-                  },
-                  "url_verified": {
-                    "type": "boolean"
-                  }
+                  "citation_type": { "$ref": "#/$defs/CitationType" },
+                  "media_type": { "$ref": "#/$defs/MediaType" },
+                  "excerpt_tokens": { "type": "integer", "minimum": 0 },
+                  "excerpt_chars": { "type": "integer", "minimum": 0 },
+                  "excerpt_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 of the cited excerpt text as it appears in the response (sha256:{hex})" },
+                  "position": { "$ref": "#/$defs/CitationPosition" },
+                  "content_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 matching the corresponding content_grounded event. When the agent chunked the source, this is the chunk hash." },
+                  "url_verified": { "type": "boolean" }
                 }
               }
             }
@@ -260,25 +160,15 @@
         },
         {
           "if": {
-            "properties": {
-              "type": {
-                "const": "content_displayed"
-              }
-            },
-            "required": [
-              "type"
-            ]
+            "properties": { "type": { "const": "content_displayed" } },
+            "required": ["type"]
           },
           "then": {
             "properties": {
               "data": {
                 "properties": {
-                  "display_type": {
-                    "$ref": "#/$defs/DisplayType"
-                  },
-                  "media_type": {
-                    "$ref": "#/$defs/MediaType"
-                  }
+                  "display_type": { "$ref": "#/$defs/DisplayType" },
+                  "media_type": { "$ref": "#/$defs/MediaType" }
                 }
               }
             }
@@ -286,22 +176,14 @@
         },
         {
           "if": {
-            "properties": {
-              "type": {
-                "const": "content_engaged"
-              }
-            },
-            "required": [
-              "type"
-            ]
+            "properties": { "type": { "const": "content_engaged" } },
+            "required": ["type"]
           },
           "then": {
             "properties": {
               "data": {
                 "properties": {
-                  "engagement_type": {
-                    "$ref": "#/$defs/EngagementType"
-                  }
+                  "engagement_type": { "$ref": "#/$defs/EngagementType" }
                 }
               }
             }
@@ -309,71 +191,26 @@
         },
         {
           "if": {
-            "properties": {
-              "type": {
-                "const": "content_retrieved"
-              }
-            },
-            "required": [
-              "type"
-            ]
+            "properties": { "type": { "const": "content_retrieved" } },
+            "required": ["type"]
           },
           "then": {
             "properties": {
               "data": {
                 "properties": {
-                  "media_type": {
-                    "$ref": "#/$defs/MediaType"
-                  },
-                  "user_agent": {
-                    "type": "string"
-                  },
-                  "bot_category": {
-                    "type": "string",
-                    "description": "Edge platform's bot classification. Recommended values: training, inference, search"
-                  },
-                  "bot_name": {
-                    "type": "string",
-                    "description": "Recognised bot family parsed from the User-Agent (e.g., Claude-User, GPTBot, Perplexity-User). Stable across product variants within a vendor."
-                  },
-                  "verified": {
-                    "type": "boolean"
-                  },
-                  "cache_status": {
-                    "type": "string",
-                    "description": "Edge cache result. Recommended values: hit, miss, bypass, dynamic"
-                  },
-                  "response_status": {
-                    "type": "integer",
-                    "minimum": 100,
-                    "maximum": 599
-                  },
-                  "response_bytes": {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  "ja4": {
-                    "type": "string",
-                    "description": "JA4 TLS client fingerprint"
-                  },
-                  "asn": {
-                    "type": "integer",
-                    "description": "Client AS number"
-                  },
-                  "asn_org": {
-                    "type": "string",
-                    "description": "Client AS organisation name"
-                  },
-                  "country": {
-                    "type": "string",
-                    "pattern": "^[A-Z]{2}$",
-                    "description": "ISO 3166-1 alpha-2 country code"
-                  },
-                  "ip_hash": {
-                    "type": "string",
-                    "pattern": "^sha256:[a-f0-9]{64}$",
-                    "description": "SHA-256 of client IP (sha256:{hex})"
-                  }
+                  "media_type": { "$ref": "#/$defs/MediaType" },
+                  "user_agent": { "type": "string" },
+                  "bot_category": { "type": "string", "description": "Edge platform's bot classification. Recommended values: training, inference, search" },
+                  "bot_name": { "type": "string", "description": "Recognised bot family parsed from the User-Agent (e.g., Claude-User, GPTBot, Perplexity-User). Stable across product variants within a vendor." },
+                  "verified": { "type": "boolean" },
+                  "cache_status": { "type": "string", "description": "Edge cache result. Recommended values: hit, miss, bypass, dynamic" },
+                  "response_status": { "type": "integer", "minimum": 100, "maximum": 599 },
+                  "response_bytes": { "type": "integer", "minimum": 0 },
+                  "ja4": { "type": "string", "description": "JA4 TLS client fingerprint" },
+                  "asn": { "type": "integer", "description": "Client AS number" },
+                  "asn_org": { "type": "string", "description": "Client AS organisation name" },
+                  "country": { "type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2 country code" },
+                  "ip_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 of client IP (sha256:{hex})" }
                 }
               }
             }
@@ -397,107 +234,62 @@
     "ConversationTurn": {
       "type": "object",
       "description": "Conversation turn with privacy controls",
-      "required": [
-        "privacy_level"
-      ],
+      "required": ["privacy_level"],
       "properties": {
         "privacy_level": {
           "$ref": "#/$defs/PrivacyLevel"
         },
         "query_text": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "User's query (full/summary levels only)"
         },
         "response_text": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Agent's response (full/summary levels only)"
         },
         "query_intent": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/IntentCategory"
-            },
-            {
-              "type": "null"
-            }
-          ],
+          "oneOf": [{ "$ref": "#/$defs/IntentCategory" }, { "type": "null" }],
           "description": "Classified intent category"
         },
         "response_type": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Response classification (e.g., 'recommendation', 'explanation')"
         },
         "response_mode": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/ResponseMode"
-            },
-            {
-              "type": "null"
-            }
-          ],
+          "oneOf": [{ "$ref": "#/$defs/ResponseMode" }, { "type": "null" }],
           "description": "Product surface or generation mode (e.g., 'standard', 'deep_research'). See section 5.4.1."
         },
         "topics": {
           "type": "array",
-          "items": {
-            "type": "string"
-          },
+          "items": { "type": "string" },
           "description": "Detected topics/entities"
         },
         "content_urls_retrieved": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uri"
-          },
+          "items": { "type": "string", "format": "uri" },
           "description": "Content URLs fetched to answer the query"
         },
         "content_urls_cited": {
           "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uri"
-          },
+          "items": { "type": "string", "format": "uri" },
           "description": "Content URLs cited in response"
         },
         "query_tokens": {
-          "type": [
-            "integer",
-            "null"
-          ],
+          "type": ["integer", "null"],
           "minimum": 0,
           "description": "Query token count"
         },
         "response_tokens": {
-          "type": [
-            "integer",
-            "null"
-          ],
+          "type": ["integer", "null"],
           "minimum": 0,
           "description": "Response token count"
         },
         "model_id": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "description": "Model identifier (e.g., 'claude-4-sonnet')"
         },
         "ad_rendered": {
-          "type": [
-            "boolean",
-            "null"
-          ],
+          "type": ["boolean", "null"],
           "description": "Whether advertising was displayed alongside the response"
         }
       }
@@ -505,12 +297,7 @@
     "PrivacyLevel": {
       "type": "string",
       "description": "Privacy levels for conversation data sharing",
-      "enum": [
-        "full",
-        "summary",
-        "intent",
-        "minimal"
-      ]
+      "enum": ["full", "summary", "intent", "minimal"]
     },
     "IntentCategory": {
       "type": "string",
@@ -523,64 +310,32 @@
     "SourceRole": {
       "type": "string",
       "description": "Who is reporting the event. Origin: content owner's web server. Edge: CDN or edge network. Index: search index or content repository. Agent: the AI agent itself.",
-      "enum": [
-        "origin",
-        "edge",
-        "index",
-        "agent"
-      ]
+      "enum": ["origin", "edge", "index", "agent"]
     },
     "SourceProvenance": {
       "type": "string",
-      "enum": [
-        "agent_fetched",
-        "agent_cached",
-        "third_party_sourced"
-      ],
+      "enum": ["agent_fetched", "agent_cached", "third_party_sourced"],
       "description": "How the grounded content reached the agent's context (see section 6.4). 'agent_fetched': the agent retrieved the content directly from the content owner in this session. 'agent_cached': the agent reuses content it fetched in an earlier session. 'third_party_sourced': the content reached the agent via an intermediary (e.g. a marketplace, a scraper-resale vendor, or any party other than the content owner), so no content_retrieved event against the content owner exists for it. Agent-observable: the agent knows which of these applies. Disambiguates the 'cached' boolean, which does not distinguish a self-cache from third-party-sourced content."
     },
     "ContentFingerprint": {
       "type": "object",
       "description": "An inferred, agent-reported claim that a publisher-side provenance mark was found in the grounded content. Scheme-agnostic: 'scheme' is a free string so techniques can evolve (e.g. ISCC, C2PA text provenance, syntactic watermarking). This is the only publisher-side corroboration path available for grounding, citation, and engagement events, which have no independent origin-side counterpart (section 7.3). Because the fields are agent-reported with no origin-side corroboration, they are claims, not observed facts, and consumers MUST treat them as inference. The same object covers derived-content tracing: where an intermediary serves a summary (or a summary of a summary) and the original never enters the final context, a preserved and detectable fingerprint is the one signal that the derived content traces back to the source.",
       "properties": {
-        "scheme": {
-          "type": "string",
-          "description": "Identifier of the provenance scheme the agent checked for (free string; not a closed enum). Examples: 'iscc', 'c2pa-text', 'homoglyph', 'syntactic'."
-        },
-        "detected": {
-          "type": "boolean",
-          "description": "Agent-reported claim that a mark of the named scheme was found in the grounded content. Inference, not an observed fact: there is no origin-side counterpart to corroborate it (section 7.3)."
-        },
-        "preserved_in_output": {
-          "type": "boolean",
-          "description": "Agent-reported claim that the detected mark survived into the generated output (i.e. the fingerprint is recoverable downstream of generation). Inference, not an observed fact."
-        }
+        "scheme": { "type": "string", "description": "Identifier of the provenance scheme the agent checked for (free string; not a closed enum). Examples: 'iscc', 'c2pa-text', 'homoglyph', 'syntactic'." },
+        "detected": { "type": "boolean", "description": "Agent-reported claim that a mark of the named scheme was found in the grounded content. Inference, not an observed fact: there is no origin-side counterpart to corroborate it (section 7.3)." },
+        "preserved_in_output": { "type": "boolean", "description": "Agent-reported claim that the detected mark survived into the generated output (i.e. the fingerprint is recoverable downstream of generation). Inference, not an observed fact." }
       },
-      "required": [
-        "scheme",
-        "detected"
-      ]
+      "required": ["scheme", "detected"]
     },
     "CitationType": {
       "type": "string",
       "description": "How content was used in the response",
-      "enum": [
-        "direct_quote",
-        "paraphrase",
-        "reference",
-        "contradiction",
-        "unclassified"
-      ]
+      "enum": ["direct_quote", "paraphrase", "reference", "contradiction", "unclassified"]
     },
     "CitationPosition": {
       "type": "string",
       "description": "Prominence of citation in response",
-      "enum": [
-        "primary",
-        "supporting",
-        "mentioned",
-        "unclassified"
-      ]
+      "enum": ["primary", "supporting", "mentioned", "unclassified"]
     },
     "MediaType": {
       "type": "string",
@@ -594,10 +349,7 @@
     "GroundingScope": {
       "type": "string",
       "description": "Whether content informed all subsequent responses in the session or a specific turn only",
-      "enum": [
-        "session",
-        "turn"
-      ]
+      "enum": ["session", "turn"]
     },
     "DisplayType": {
       "type": "string",
