@@ -142,7 +142,7 @@ Content Telemetry is focussed on **reporting**, while content **access** protoco
 
 ## Request for comment
 
-This specification is open for public comment from **12 June to 10 July 2026**.
+This specification is open for public comment from **12 June to 24 July 2026** (extended from 10 July).
 
 Feedback is triaged on the issue tracker as it arrives and incorporated into the next revision after the window closes, and the wire format is held stable during the window.
 
