@@ -124,11 +124,13 @@
                 "properties": {
                   "scope": { "$ref": "#/$defs/GroundingScope" },
                   "cached": { "type": "boolean" },
+                  "provenance": { "$ref": "#/$defs/SourceProvenance" },
                   "tokens_ingested": { "type": "integer", "minimum": 0 },
                   "content_version": { "type": "string" },
                   "content_last_modified": { "type": "string", "format": "date-time" },
                   "content_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
-                  "media_type": { "$ref": "#/$defs/MediaType" }
+                  "media_type": { "$ref": "#/$defs/MediaType" },
+                  "content_fingerprint": { "$ref": "#/$defs/ContentFingerprint" }
                 }
               }
             }
@@ -309,6 +311,21 @@
       "type": "string",
       "description": "Who is reporting the event. Origin: content owner's web server. Edge: CDN or edge network. Index: search index or content repository. Agent: the AI agent itself.",
       "enum": ["origin", "edge", "index", "agent"]
+    },
+    "SourceProvenance": {
+      "type": "string",
+      "enum": ["agent_fetched", "agent_cached", "third_party_sourced"],
+      "description": "How the grounded content reached the agent's context (see section 6.4). 'agent_fetched': the agent retrieved the content directly from the content owner in this session. 'agent_cached': the agent reuses content it fetched in an earlier session. 'third_party_sourced': the content reached the agent via an intermediary (e.g. a marketplace, a scraper-resale vendor, or any party other than the content owner), so no content_retrieved event against the content owner exists for it. Agent-observable: the agent knows which of these applies. Disambiguates the 'cached' boolean, which does not distinguish a self-cache from third-party-sourced content."
+    },
+    "ContentFingerprint": {
+      "type": "object",
+      "description": "An inferred, agent-reported claim that a publisher-side provenance mark was found in the grounded content. Scheme-agnostic: 'scheme' is a free string so techniques can evolve (e.g. ISCC, C2PA text provenance, syntactic watermarking). This is the only publisher-side corroboration path available for grounding, citation, and engagement events, which have no independent origin-side counterpart (section 7.3). Because the fields are agent-reported with no origin-side corroboration, they are claims, not observed facts, and consumers MUST treat them as inference. The same object covers derived-content tracing: where an intermediary serves a summary (or a summary of a summary) and the original never enters the final context, a preserved and detectable fingerprint is the one signal that the derived content traces back to the source.",
+      "properties": {
+        "scheme": { "type": "string", "description": "Identifier of the provenance scheme the agent checked for (free string; not a closed enum). Examples: 'iscc', 'c2pa-text', 'homoglyph', 'syntactic'." },
+        "detected": { "type": "boolean", "description": "Agent-reported claim that a mark of the named scheme was found in the grounded content. Inference, not an observed fact: there is no origin-side counterpart to corroborate it (section 7.3)." },
+        "preserved_in_output": { "type": "boolean", "description": "Agent-reported claim that the detected mark survived into the generated output (i.e. the fingerprint is recoverable downstream of generation). Inference, not an observed fact." }
+      },
+      "required": ["scheme", "detected"]
     },
     "CitationType": {
       "type": "string",
