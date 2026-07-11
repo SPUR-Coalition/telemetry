@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contenttelemetry.org/schema/v0.2/content-fingerprint-schemes.json",
+  "title": "Content Telemetry Fingerprint Scheme Registry",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema_version", "registry_id", "updated_at", "registration_policy", "profile_digest_semantics", "schemes"],
+  "properties": {
+    "$schema": { "const": "https://contenttelemetry.org/schema/v0.2/content-fingerprint-schemes.json" },
+    "schema_version": { "const": "0.2" },
+    "registry_id": { "type": "string", "format": "uri" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "registration_policy": { "const": "non-exclusive-discovery-only" },
+    "profile_digest_semantics": { "type": "string", "minLength": 1 },
+    "schemes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/SchemeEntry" }
+    }
+  },
+  "$defs": {
+    "Sha256Digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "SchemeProperties": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["content_borne", "identity_bearing", "verifiable"],
+      "properties": {
+        "content_borne": { "type": "boolean" },
+        "identity_bearing": { "type": "boolean" },
+        "verifiable": { "type": "boolean" }
+      }
+    },
+    "SchemeEntry": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["scheme", "status", "scheme_properties", "fingerprint_tier_ceiling", "limitations"],
+      "properties": {
+        "scheme": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["registered", "reserved"] },
+        "profile_ref": { "type": "string", "format": "uri" },
+        "profile_digest": { "$ref": "#/$defs/Sha256Digest" },
+        "scheme_properties": { "$ref": "#/$defs/SchemeProperties" },
+        "fingerprint_tier_ceiling": { "enum": ["claim", "origin_corroborated", "independently_verifiable"] },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "registered" } }, "required": ["status"] },
+          "then": { "required": ["profile_ref", "profile_digest"] }
+        },
+        {
+          "if": { "properties": { "status": { "const": "reserved" } }, "required": ["status"] },
+          "then": {
+            "not": {
+              "anyOf": [
+                { "required": ["profile_ref"] },
+                { "required": ["profile_digest"] }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://contenttelemetry.org/schema/v0.2/content-fingerprint-schemes.json",
+  "schema_version": "0.2",
+  "registry_id": "https://contenttelemetry.org/.well-known/content-fingerprint-schemes.json",
+  "updated_at": "2026-07-11T00:00:00Z",
+  "registration_policy": "non-exclusive-discovery-only",
+  "profile_digest_semantics": "SHA-256 over retrieved representation-data bytes after transfer and HTTP content codings are removed, before media parsing, charset conversion, or normalization; URI fragments do not affect retrieval bytes.",
+  "schemes": [
+    {
+      "scheme": "c2pa",
+      "status": "registered",
+      "profile_ref": "https://spec.c2pa.org/specifications/specifications/2.4/specs/C2PA_Specification.html",
+      "profile_digest": "sha256:d55caebd96206f0de667962a4bab7098c6b6468fba68f8b55bcdd3a12d1ed26d",
+      "scheme_properties": {
+        "content_borne": false,
+        "identity_bearing": true,
+        "verifiable": true
+      },
+      "fingerprint_tier_ceiling": "origin_corroborated",
+      "limitations": [
+        "C2PA supports embedded and externally stored manifests, so the generic scheme does not guarantee a content-borne signal.",
+        "Registration and successful C2PA validation do not by themselves establish an independently operated observation of content use."
+      ]
+    },
+    {
+      "scheme": "c2pa-text",
+      "status": "registered",
+      "profile_ref": "https://spec.c2pa.org/specifications/specifications/2.4/specs/C2PA_Specification.html#embedding_manifests_into_unstructured_text",
+      "profile_digest": "sha256:d55caebd96206f0de667962a4bab7098c6b6468fba68f8b55bcdd3a12d1ed26d",
+      "scheme_properties": {
+        "content_borne": true,
+        "identity_bearing": true,
+        "verifiable": true
+      },
+      "fingerprint_tier_ceiling": "independently_verifiable",
+      "limitations": [
+        "The ceiling applies only to instances with a valid C2PA claim, accepted signer identity, exact subject binding, trusted time, and a portable independent-verifier attestation satisfying section 5.8.",
+        "Transform survivability is profile-version and transform specific. See survivability-matrix-c2pa-text.json; no universal survivability claim is made."
+      ]
+    },
+    {
+      "scheme": "iscc+registry",
+      "status": "reserved",
+      "scheme_properties": {
+        "content_borne": false,
+        "identity_bearing": false,
+        "verifiable": false
+      },
+      "fingerprint_tier_ceiling": "claim",
+      "limitations": [
+        "Reserved for a future profile combining ISCC content identification with a separately specified registry and verification procedure.",
+        "No profile is registered and no tier above claim is available from this entry."
+      ]
+    }
+  ]
+}

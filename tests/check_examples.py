@@ -15,8 +15,8 @@ top-level documents and cannot be validated against a top-level schema. They are
 counted and listed rather than validated.
 
 Usage:
-    uv run --with jsonschema python tests/check_examples.py
-    # or: pip install jsonschema && python tests/check_examples.py
+    uv run --locked python tests/check_examples.py
+    # or: pip install jsonschema==4.26.0 rfc8785==0.1.4 && python tests/check_examples.py
 """
 
 import json
@@ -25,15 +25,17 @@ import sys
 from pathlib import Path
 
 try:
-    from jsonschema import Draft202012Validator
+    from jsonschema import Draft202012Validator, FormatChecker
     from referencing import Registry, Resource
 except ImportError:
-    print("ERROR: jsonschema package required. Install with: pip install jsonschema")
+    print("ERROR: jsonschema and rfc8785 packages required. Install pinned versions from pyproject.toml")
     sys.exit(1)
 
 REPO = Path(__file__).resolve().parent.parent
 SOURCES = [REPO / "SPECIFICATION.md", REPO / "README.md"]
 FENCE = re.compile(r"```json\n(.*?)\n```", re.DOTALL)
+
+from validate import check_application_layer, check_manifest_application_layer
 
 
 def load_validators():
@@ -52,7 +54,7 @@ def load_validators():
             schema.get("$id", name), Resource.from_contents(schema)
         )
     return {
-        name: Draft202012Validator(schema, registry=registry)
+        name: Draft202012Validator(schema, registry=registry, format_checker=FormatChecker())
         for name, schema in schemas.items()
     }
 
@@ -116,12 +118,19 @@ def main():
         checked += 1
         by_schema[schema_name] = by_schema.get(schema_name, 0) + 1
         errors = sorted(validators[schema_name].iter_errors(doc), key=lambda e: e.path)
-        if errors:
+        application_errors = (
+            check_manifest_application_layer(doc)
+            if schema_name == "manifest.json"
+            else check_application_layer(doc)
+        )
+        if errors or application_errors:
             failed += 1
             print(f"  FAIL  {loc}  (against {schema_name})")
-            for e in errors[:3]:
-                path = "/".join(str(p) for p in e.path) or "(root)"
-                print(f"        {path}: {e.message}")
+            for error in errors[:3]:
+                path = "/".join(str(part) for part in error.path) or "(root)"
+                print(f"        {path}: {error.message}")
+            for error in application_errors[:3]:
+                print(f"        application-layer: {error}")
         else:
             print(f"  PASS  {loc}  ({schema_name})")
 

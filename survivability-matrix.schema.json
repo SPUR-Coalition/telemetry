@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contenttelemetry.org/schema/v0.2/survivability-matrix.json",
+  "title": "Content Fingerprint Survivability Matrix",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["matrix_version", "scheme", "profile_ref", "profile_digest", "tested_at", "implementation", "runner", "runner_version", "scope", "qualification", "fixture", "test_conditions", "transforms"],
+  "properties": {
+    "$schema": { "const": "https://contenttelemetry.org/schema/v0.2/survivability-matrix.json" },
+    "matrix_version": { "type": "string", "minLength": 1 },
+    "scheme": { "type": "string", "minLength": 1 },
+    "profile_ref": { "type": "string", "format": "uri" },
+    "profile_digest": { "$ref": "#/$defs/Sha256Digest" },
+    "tested_at": { "type": "string", "format": "date-time" },
+    "implementation": { "type": "string", "minLength": 1 },
+    "runner": { "type": "string", "minLength": 1 },
+    "runner_version": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "qualification": { "type": "string", "minLength": 1 },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["source_text", "manifest_hex", "marked_text_utf8_sha256", "marked_text_unicode_escape"],
+      "properties": {
+        "source_text": { "type": "string" },
+        "manifest_hex": { "type": "string", "pattern": "^[a-f0-9]+$" },
+        "marked_text_utf8_sha256": { "$ref": "#/$defs/Sha256Digest" },
+        "marked_text_unicode_escape": { "type": "string", "minLength": 1 }
+      }
+    },
+    "test_conditions": {
+      "type": "object",
+      "additionalProperties": true,
+      "minProperties": 1
+    },
+    "transforms": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/TransformResult" }
+    }
+  },
+  "$defs": {
+    "Sha256Digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "TransformResult": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["transform", "operation", "observed_result", "full_c2pa_validation"],
+      "properties": {
+        "transform": { "type": "string", "minLength": 1 },
+        "operation": { "type": "string", "minLength": 1 },
+        "observed_result": {
+          "enum": ["association_recovered", "association_removed", "association_removed_by_definition", "not_tested"]
+        },
+        "full_c2pa_validation": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

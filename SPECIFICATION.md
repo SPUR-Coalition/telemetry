@@ -10,7 +10,7 @@
 2. [Normative references](#2-normative-references)
 3. [Terms and definitions](#3-terms-and-definitions)
 4. [Concepts](#4-concepts) - roles, sessions, event lifecycle, source roles, content identification
-5. [Schema](#5-schema) - session, event, event types, conversation turn, privacy, intent, conformance levels
+5. [Schema](#5-schema) - session, event, event types, conversation turn, privacy, conformance levels, evidence tiers
 6. [Data profiles](#6-data-profiles) - retrieval, edge enrichment, origin enrichment, grounding, citation, display, engagement
 7. [Transport](#7-transport) - delivery formats, Content-Telemetry-ID header
 8. [Manifest](#8-manifest) - discovery, schema, operator, keys, telemetry, domains
@@ -80,6 +80,10 @@ The following documents are referenced in this specification:
 | [RFC 8174](https://www.rfc-editor.org/rfc/rfc8174) | Ambiguity of uppercase vs lowercase in RFC 2119 key words |
 | [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562) | Universally Unique IDentifiers (UUIDs); obsoletes RFC 4122 |
 | [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) | Date and time on the internet: timestamps |
+| [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986) | Uniform Resource Identifier syntax and reference resolution |
+| [RFC 4648](https://www.rfc-editor.org/rfc/rfc4648) | Base encodings, including canonical base64 |
+| [RFC 6901](https://www.rfc-editor.org/rfc/rfc6901) | JavaScript Object Notation (JSON) Pointer |
+| [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) | JSON Canonicalization Scheme (JCS) |
 | [ISO 8601-1](https://www.iso.org/standard/70907.html) | Date and time representations |
 | [ISO 3166-1](https://www.iso.org/standard/72482.html) | Country codes (alpha-2) |
 | [JSON Schema draft 2020-12](https://json-schema.org/draft/2020-12/json-schema-core) | JSON Schema validation |
@@ -101,6 +105,9 @@ For the purposes of this specification, the following terms apply.
 | **privacy level** | data sharing tier controlling which conversation fields are populated: `full`, `summary`, `intent`, or `minimal` (section 5.5) |
 | **conformance level** | emitter capability tier: Retrieval, Grounding, or Citation (section 5.7) |
 | **content scope** | opaque identifier grouping sessions by their content access context (section 5.1.1) |
+| **assertion** | one precisely scoped proposition identified by an RFC 6901 path within a telemetry event (section 5.8) |
+| **evidence tier** | classification of the evidence supporting one assertion: Claim, Origin-corroborated, or Independently verifiable (section 5.8) |
+| **effective tier** | highest tier a telemetry consumer derives for one assertion under its independently selected trust policy (section 5.8) |
 
 ## 4. Concepts
 
@@ -330,6 +337,7 @@ Format: the URL of a manifest served at `/.well-known/content-telemetry.json` un
 | `content_id` | string | No | Content owner's stable content identifier (see 4.5) |
 | `license_ref` | string | No | Reference to the licence under which content was accessed |
 | `turn` | ConversationTurn | No | Conversation data (for turn events) |
+| `evidence` | EvidenceAssertion[] | No | Assertion-scoped evidence and requested evidentiary tier (see 5.8) |
 | `data` | object | No | Type-specific metadata (see section 6) |
 
 #### 5.2.1 Turn association
@@ -508,8 +516,141 @@ The JSON Schema (`telemetry-session.json`) validates structure and types but can
 - An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above (section 7.1).
 - Conversation-turn fields MUST NOT exceed the turn's declared `privacy_level` (section 5.5).
 - The conformance-level requirements (sections 5.7.1 to 5.7.3) are cumulative.
+- Evidence entries requesting a tier above `claim` MUST satisfy the assertion binding, artifact, verification-profile, and consumer-derivation rules in section 5.8.
 
 The `tests/` directory provides an informative reference suite for these rules. A consumer that receives a privacy-violating turn (e.g., `query_text` present at `minimal` level) SHOULD strip the offending fields rather than reject the document carrying them.
+
+### 5.8 Evidentiary tiers
+
+Telemetry events are reports. The optional `evidence` array lets an emitter identify the evidence supporting one precisely scoped assertion within an event. An evidence tier applies only to that assertion and its exact subjects. It MUST NOT be applied to an event as a whole, a session, scheme, emitter, product, conformance level, or deployment.
+
+The three tiers are:
+
+| Tier | Value | Requirement |
+|------|-------|-------------|
+| **Tier 1, Claim** | `claim` | The emitter reports the assertion without qualifying evidence from another observation or verifier. Signing by the emitter authenticates the claim but does not raise its tier. |
+| **Tier 2, Origin-corroborated** | `origin_corroborated` | A separately authenticated origin-side or access-path observation supports the same assertion, occurrence, and subjects. |
+| **Tier 3, Independently verifiable** | `independently_verifiable` | A portable independent-verifier attestation for the bounded assertion is publicly checkable for subject binding, signer identity, integrity, key status, trust policy, and trusted time. No origin-side counterpart is required. |
+
+Tier 3 verifies the provenance, integrity, time, and exact binding of the independent verifier's attestation. It does not prove undisclosed model reasoning, detector efficacy, factual truth beyond the attested observation, or reporting completeness. A consumer decides whether to trust the verifier and whether the attested proposition is sufficient for its use case.
+
+#### 5.8.1 Assertion scope
+
+Each evidence entry carries an `assertion_path`, an RFC 6901 JSON Pointer that MUST resolve within the containing event. The path MUST NOT resolve to `evidence` or any descendant of `evidence`. Evidence from another event MUST be referenced as a typed artifact, not selected by a cross-event pointer.
+
+Examples:
+
+| Assertion path | Bounded proposition |
+|----------------|---------------------|
+| `/type` on a `content_grounded` event | The selected evidence supports the occurrence reported as `content_grounded` for the bound subjects. |
+| `/data/content_fingerprint/detected` | The selected evidence supports the exact boolean fingerprint-detection assertion. |
+| `/data/content_fingerprint/preserved_in_output` | The selected evidence supports the exact preservation assertion and binds both input and output subjects. |
+
+The containing event MUST carry `id` when it requests a tier above `claim`. The asserted value is the value obtained by resolving `assertion_path` against the containing event.
+
+#### 5.8.2 Assertion and subject binding
+
+For a tier above `claim`, the evidence entry MUST carry `assertion_digest`, `subjects`, `artifacts`, `verification_profile`, and `verification`. The assertion digest is computed as follows:
+
+1. Construct `delivery_context` with exactly eight members from the containing document: `document_type` (`session` when absent), `schema_version`, `session_id`, `ctx_token`, `agent_id`, `content_scope`, `manifest_ref`, and `started_at`. Use JSON `null` for an absent optional member.
+2. Remove the top-level `evidence` member from the containing event. Construct an object with exactly two members, `delivery_context` and `event`, canonicalise it with RFC 8785 JCS, hash its UTF-8 bytes with SHA-256, and encode the result as `sha256:{lowercase-hex}`. This is the `occurrence_digest`; it binds delivery kind, session or context token, agent, session start, event time, turn, source role, event data, and content identifiers without recursion.
+3. Construct an object with exactly six members: `event_id`, `event_type`, `occurrence_digest`, `assertion_path`, `assertion_value`, and `subjects`.
+4. Set `event_id` and `event_type` from the containing event and `occurrence_digest` to the value from step 2.
+5. Set `assertion_value` to the value obtained by resolving the pointer against the evidence-free event. The selected value MUST be valid RFC 8785 input; values containing integers or finite IEEE 754 binary64 numbers are canonicalised exactly as RFC 8785 specifies.
+6. Copy `subjects` from the evidence entry and sort them lexicographically by `role`, then by `digest`. Subject roles MUST be unique within an evidence entry.
+7. Canonicalise the six-member object using RFC 8785 JCS, hash the resulting UTF-8 bytes with SHA-256, and encode it as `sha256:{lowercase-hex}`.
+
+Each subject has a role and the SHA-256 digest of its exact bytes under the verification profile's canonicalisation rules. Core subject roles are `grounded_content`, `generation_context`, `generated_output`, and `event`. Profiles MAY define additional roles.
+
+Evidence for `/data/content_fingerprint/detected` above `claim` MUST include a `grounded_content` subject matching `data.content_hash`. Evidence for `/data/content_fingerprint/preserved_in_output` above `claim` MUST include a `grounded_content` subject matching `data.content_hash` and a `generated_output` subject, and MUST bind the specific generation occurrence through `occurrence_digest`. Evidence for `/type` on a `content_grounded` event MUST include `grounded_content` and `generation_context`. Evidence for `/type` on a `content_cited` event MUST include `grounded_content` and `generated_output`. A profile MAY support an event type only when it defines the required subject roles for that event and assertion.
+
+#### 5.8.3 Evidence artifacts
+
+Every artifact above `claim` MUST declare:
+
+- its role in `type`;
+- its `media_type`;
+- a SHA-256 `digest`; and
+- exactly one of inline base64 `content` or an absolute, immutable or version-specific `uri`.
+
+The artifact digest is calculated over decoded inline bytes or retrieved representation-data bytes after transfer and HTTP content codings are removed, but before media parsing, charset conversion, or normalisation. A URI fragment is not sent during retrieval and therefore does not change those bytes. The digest is never calculated over base64 text or URI text. Inline base64 MUST be decoded strictly. A consumer MUST verify the digest before parsing or trusting any artifact. A URI for which bytes have not been retrieved and digest-verified cannot raise the tier.
+
+Artifact and profile URIs are identifiers and MUST be absolute. They are not automatically retrieval locations. A verification profile or local consumer policy MAY define a retrieval mapping for an identifier. When it does, the consumer MUST resolve any relative location against the single immutable base named by that profile using RFC 3986.
+
+Consumers MUST apply the same safe retrieval policy to every dereferenceable reference. The policy MUST reject credential-bearing references, disallowed schemes, and loopback, link-local, private-network, or otherwise disallowed destinations; resolve and re-check DNS and destination IP before each connection; repeat scheme, credential, DNS, and IP checks at every redirect; send no ambient credentials; and enforce redirect, byte, elapsed-time, decompression, and verification-work limits. Evidence references MUST NOT contain raw prompts, user text, bearer credentials, private keys, or other secrets.
+
+An event MUST contain no more than 32 evidence entries. An entry MUST contain no more than 16 subjects and 16 artifacts. An inline artifact MUST decode to no more than 8 MiB; its encoded `content` MUST be rejected before decoding when longer than 11,184,812 characters. Decoded or retrieved artifact bytes MUST total no more than 16 MiB per evidence entry and 32 MiB per event. Retrieval MUST allow no more than three redirects per artifact, 8 MiB per response after decompression, and 30 seconds total elapsed retrieval time per event. Consumers MAY apply lower local limits. Evidence exceeding any limit cannot raise a tier, but the containing telemetry event SHOULD be retained as a claim.
+
+#### 5.8.4 Verification profiles and scheme capability
+
+A verification profile defines the public interoperability contract for evidence. A profile used above `claim` MUST have an absolute, immutable or version-specific identifier and MUST be bound by `verification_profile.digest`. It MUST define:
+
+- assertion and subject canonicalisation;
+- artifact and receipt parsing;
+- signature and key-status validation;
+- trust-anchor and trust-policy processing;
+- trusted-time validation where required;
+- interoperable `pass`, `fail`, `indeterminate`, and `not_checked` outcomes;
+- the assertion types, event types, and subject roles it supports;
+- positive and negative interoperability vectors for the public evidence envelope and verifier; and
+- any survivability claim as a transform-by-transform matrix naming the transform, profile version, corpus or fixture set, test conditions, and observed result.
+
+Evidence above `claim` MUST include exactly one `verification_material` artifact whose digest equals `verification_profile.digest`. A consumer MUST verify those profile bytes before evaluating its supported assertions, event types, subject roles, capability ceiling, or verification rules. A profile URI alone is non-upgrading until its retrieved bytes pass the same digest and retrieval checks as every other artifact.
+
+All cryptographic material needed to validate a Tier 3 attestation MUST be obtainable under the profile's published rules. The profile MAY use proprietary observation, marker-generation, or detection methods. This specification does not require disclosure of marker construction, carrier locations, detector features, scores, thresholds, calibration, training data, private keys, or reconciliation and compensation formulae. A proprietary detector MAY support Tier 1 or Tier 2. It is eligible for Tier 3 only when it produces a portable, signed independent-verifier attestation whose public verification does not require access to that proprietary detector.
+
+Survivability MUST NOT be inferred from a generic `content_borne` value or described as universal. A profile claiming survival through copy-paste, Unicode normalisation, encoding conversion, serialisation, sanitisation, aggregation, or fragment extraction MUST report each transform separately and provide reproducible evidence for that claim. The vectors and transform results MAY be synthetic and need not reveal marker placement or detector internals.
+
+`content_fingerprint.scheme_properties` describes three scheme capabilities: `content_borne`, `identity_bearing`, and `verifiable`. For a fingerprint assertion, all three values MUST be `true` in the digest-bound profile before the assertion is eligible to request `independently_verifiable`. Any false value caps the requested fingerprint tier at `origin_corroborated`. Self-declared values, registry presence, or a scheme name MUST NOT raise an effective tier. A digest-bound profile recognised by the consumer sets a ceiling only; instance evidence and tier-specific checks still determine the effective tier.
+
+The canonical discovery registry is `content-fingerprint-schemes.json` in this repository and, when published, `https://contenttelemetry.org/.well-known/content-fingerprint-schemes.json`. Registry entries provide canonical scheme names, status, profile identifiers and digests, capability ceilings, and limitations. A `registered` entry is available for discovery; a `reserved` entry records a name without a usable profile. Registration is non-exclusive, is not a trust decision or participation gate, and does not certify a vendor, deployment, or detector. Consumers MUST NOT infer an effective tier from registration, registry signatures, or a registry-declared ceiling.
+
+An event requesting a fingerprint tier above `claim` MUST carry `scheme_profile_ref` and `scheme_profile_digest`. The evidence profile MUST set `verification_profile.scheme_profile_digest` to that same digest, and artifacts MUST include exactly one digest-verified `verification_material` artifact for the scheme profile. The scheme profile and evidence verification profile MAY be the same artifact, but need not be. Their supported assertion, subject, and ceiling relationship MUST be accepted by consumer policy or the evidence is invalid. A registry lookup MAY locate the scheme profile, but local policy decides whether to recognise it.
+
+#### 5.8.5 Tier-specific rules
+
+For `origin_corroborated`, artifacts MUST include at least one separately authenticated `origin_event` or `access_record` that supports the same bounded proposition, occurrence, and subjects. A matching `content_telemetry_id`, `license_ref`, or retrieval record can corroborate a retrieval or access assertion, but MUST NOT by itself corroborate grounding, citation, fingerprint detection, output preservation, display, or engagement. Those sensitive assertions additionally require `verification.verifier_attestation_digest` to select exactly one profile-defined `verifier_attestation` bound to their exact assertion digest and subjects; an unrelated or unselected artifact does not satisfy this requirement.
+
+The authenticated Tier 2 receipt payload MUST bind the protocol domain and profile version, `assertion_digest`, every subject role and digest, origin identity, event ID, `occurrence_digest`, and occurrence time. The profile MUST define signature validation, acceptable timestamp ordering and age, and a nonce, sequence, or event-ID replay rule. A valid receipt for a different assertion, subject, origin, occurrence, or time MUST NOT raise the tier.
+
+For `independently_verifiable`:
+
+- artifacts MUST include exactly one selected `verifier_attestation` and exactly one selected `trusted_timestamp`, each addressed by its digest;
+- `verification.status` MUST be `pass`;
+- `verification.verifier` MUST be an absolute, version-specific identifier;
+- `verification.trust_policy` and `verification.trust_anchor` MUST each carry an absolute identifier and material digest that match consumer-preconfigured local policy;
+- `verification.verifier_attestation_digest` MUST equal the digest of the selected `verifier_attestation` artifact;
+- `verification.trusted_timestamp_digest` MUST equal the digest of the selected `trusted_timestamp` artifact;
+- the trusted timestamp MUST cryptographically bind the selected verifier attestation or signed assertion envelope, and that signed object MUST bind the protocol domain/profile version, `assertion_digest`, every subject, verifier identity, and the selected trust-policy and trust-anchor identifiers and digests;
+- the verifier attestation signature, signer certificate or key identifier, signature algorithm, signed bytes, and validation material MUST be explicit under the profile and publicly verifiable;
+- key status, revocation, and trusted-time checks MUST pass under the selected profile;
+- the verifier's identity and independence MUST be accepted under policy selected independently by the consumer; and
+- no artifact controlled only by the telemetry emitter can satisfy the independent-verifier requirement.
+
+
+The Tier 3 profile MUST likewise define acceptable ordering and age among the occurrence time, attestation signing time, trusted timestamp, and verification time, plus replay handling for repeated event IDs and occurrence digests. An exact duplicate MAY be deduplicated; the same event ID with a different occurrence digest MUST be surfaced as a conflict and MUST NOT upgrade either occurrence automatically.
+Signature validation proves control of the signing key and integrity of the signed statement. It does not by itself prove that the asserted observation is true. A different key, process, hostname, or legal name does not by itself establish independence. Profiles or governing agreements MUST define the required separation of operators, key custody, incentives, and ability to suppress or alter observations. The event cannot self-assert that its verifier is independent.
+
+Consumers MUST NOT bootstrap trust by fetching `verification.trust_policy.id` or `verification.trust_anchor.id` from the event. The serialized objects are claimed identifiers and digests to compare with preconfigured local trust. A consumer MAY use a locally configured authenticated retrieval mapping, but MUST apply section 5.8.3 and reject unknown, mutable, digest-mismatched, or attacker-selected material.
+
+#### 5.8.6 Consumer derivation
+
+The serialized `tier` is the emitter's requested classification. A consumer MUST derive the effective tier independently and MUST NOT copy the requested value into local results without verification.
+
+For each assertion path, a consumer:
+
+1. starts at `claim`;
+2. resolves the pointer and recomputes the assertion digest;
+3. validates subject roles and digests;
+4. strictly decodes inline artifacts, or retrieves URI artifacts under section 5.8.3, and verifies every digest before parsing;
+5. verifies the digest-bound profile, its applicable capability ceiling, and all tier-specific checks under consumer-selected local policy; and
+6. selects the highest successfully established tier no higher than the requested tier and applicable ceiling.
+
+Missing, unresolved, malformed, unavailable, expired, revoked, indeterminate, or failed evidence MUST NOT raise the assertion above `claim`. A consumer MAY reject the evidence entry, but SHOULD retain the containing telemetry event as a claim.
+
+Multiple evidence entries are evaluated independently and in array-order-independent fashion. Exact duplicates have no additional effect. The highest valid tier for the same path wins. An entry whose resolved assertion value, assertion digest, subjects, or artifacts conflict with the containing event is invalid and MUST be surfaced as an evidence mismatch; it does not cancel a separate valid entry.
+
+No evidence tier establishes reporting completeness, copyright ownership, licence validity, legal attribution, an amount owed, or a compensation formula. Those determinations remain subject to independent evidence, trust policy, and governing terms.
 
 ## 6. Data profiles
 
@@ -574,13 +715,39 @@ Emitting a `training`-category `content_retrieved` event is permitted but non-at
 |-------|------|-------------|
 | `scope` | string | Influence scope: `session` or `turn` (see below) |
 | `cached` | boolean | Content served from agent-side cache rather than a live fetch |
+| `provenance` | string | How content reached the context: `agent_fetched`, `agent_cached`, or `third_party_sourced` |
 | `tokens_ingested` | integer | Token count of content placed in the generation context (see below) |
 | `content_version` | string | Content version identifier (ETag, revision ID, CMS version) |
 | `content_last_modified` | datetime | When the content was last modified at source |
 | `content_hash` | string | SHA-256 of the content as ingested (`sha256:{hex}`) |
 | `media_type` | string | Content medium: `text`, `image`, `video`, `audio` (open vocabulary, see 6.1) |
+| `content_fingerprint` | object | Agent-reported fingerprint detection and optional output-preservation claim (see below) |
 
 `tokens_ingested` counts tokens actually placed in the generation model's context. For chunked retrieval, count only the tokens used, not the full source document. The token count uses the generation model's tokeniser (the model identified in `model_id` on the corresponding `turn_completed` event), not the retrieval or embedding model's tokeniser.
+
+#### Provenance and content fingerprints
+
+`provenance` disambiguates `cached`: `agent_fetched` means the agent retrieved from the content owner in this session; `agent_cached` means the agent reuses content it fetched earlier; `third_party_sourced` means the content arrived through an intermediary and no retrieval against the content owner exists for this grounding. It describes the delivery path, not evidence quality.
+
+An emitter declaring Grounding or Citation conformance SHOULD include `provenance` on `content_grounded` when it knows the delivery path. The field remains optional because an emitter may not be able to distinguish its own prior fetch from intermediary delivery; consumers MUST NOT infer a provenance value when it is absent.
+
+Emitters SHOULD keep these fields consistent: `agent_fetched` implies `cached: false`, `agent_cached` implies `cached: true`, and `third_party_sourced` leaves `cached` unconstrained.
+
+`content_fingerprint` contains:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `scheme` | string | Yes | Open identifier for the fingerprint or provenance scheme checked. |
+| `detected` | boolean | Yes | Agent-reported claim that the scheme's signal was found in the grounded content. |
+| `preserved_in_output` | boolean | No | Agent-reported claim that the same signal remained recoverable in generated output. |
+| `scheme_profile_ref` | absolute URI | No | Immutable or version-specific public profile identifier for scheme capabilities and verification semantics. |
+| `scheme_profile_digest` | string | No | SHA-256 digest binding the referenced scheme profile bytes. |
+| `scheme_properties` | object | No | Informational `content_borne`, `identity_bearing`, and `verifiable` capability flags. |
+
+The booleans remain claims unless assertion-scoped evidence in the containing event establishes a higher effective tier under section 5.8. For backward compatibility, a claim-only v0.1 document with `preserved_in_output: true` and `detected: false` remains structurally valid and is retained as a claim. To qualify the preservation assertion above `claim`, `detected` MUST be `true` and evidence subjects MUST bind both the exact grounded content and exact generated output.
+
+Scheme identifiers remain open so new techniques can interoperate without changing the wire format. A registry MAY canonicalise Tier 3 scheme names and profile discovery, but registration, a scheme name, or self-declared properties MUST NOT establish evidence for a particular detection.
+
 
 #### Grounding scope
 
@@ -1444,3 +1611,119 @@ The same turn from B.3 at `minimal` privacy. No intent, no topics, no platform m
 ```
 
 Compare with the `intent` version in B.3: `query_intent`, `topics`, `response_type`, `response_mode`, and `ad_rendered` are all absent.
+
+### B.5 Independently verifiable grounding evidence
+
+This standalone grounding event illustrates the wire shape for a scheme-neutral signed-meter profile. The base64 strings are structural placeholders, not cryptographically executable COSE or RFC 3161 objects, so this example validates schema shape but cannot itself establish Tier 3. A real profile must let an eligible consumer validate the attestation's signer, integrity, trusted time, assertion digest, and subject digests under its own policy without exposing how the content mark was constructed or detected.
+
+```json
+{
+  "document_type": "event",
+  "schema_version": "0.1",
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "agent_id": "example-answer-agent",
+  "started_at": "2026-07-11T12:00:00Z",
+  "event": {
+    "id": "860e8400-e29b-41d4-a716-446655440000",
+    "type": "content_grounded",
+    "timestamp": "2026-07-11T12:00:02Z",
+    "turn_id": "turn-1",
+    "content_id": "example:article:42",
+    "evidence": [
+      {
+        "assertion_path": "/type",
+        "tier": "independently_verifiable",
+        "assertion_digest": "sha256:82d158af864da6b72f85d54558728400833e21405a9162f098d3778c0fbc8bd4",
+        "subjects": [
+          {
+            "role": "generation_context",
+            "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          {
+            "role": "grounded_content",
+            "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "artifacts": [
+          {
+            "type": "verification_material",
+            "media_type": "text/plain",
+            "digest": "sha256:99f513f6b84d975f501bf27c07da8035467c54721c59f290348ad8806d925b17",
+            "content": "bmV1dHJhbCB2ZXJpZmljYXRpb24gcHJvZmlsZSBmaXh0dXJlIHYx"
+          },
+          {
+            "type": "verifier_attestation",
+            "media_type": "application/cose",
+            "digest": "sha256:e9d5119e22b707ab7845ca05182b793fbd926476c3ca138e7fe8a63fe88b4b9f",
+            "content": "bmV1dHJhbCBpbmRlcGVuZGVudCBtZXRlciBhdHRlc3RhdGlvbiBmaXh0dXJlIHYx"
+          },
+          {
+            "type": "trusted_timestamp",
+            "media_type": "application/timestamp-reply",
+            "digest": "sha256:739330df22728de1ad417192a28106e99b0d8e5afd9c57117f049a0151708145",
+            "content": "bmV1dHJhbCB0cnVzdGVkIHRpbWVzdGFtcCBmaXh0dXJlIHYx"
+          }
+        ],
+        "verification_profile": {
+          "ref": "https://contenttelemetry.org/profiles/signed-meter-attestation/v1",
+          "digest": "sha256:99f513f6b84d975f501bf27c07da8035467c54721c59f290348ad8806d925b17",
+          "scheme_profile_digest": "sha256:99f513f6b84d975f501bf27c07da8035467c54721c59f290348ad8806d925b17"
+        },
+        "verification": {
+          "status": "pass",
+          "verifier": "https://verifier.example/profile/v1",
+          "verified_at": "2026-07-11T12:00:04Z",
+          "trust_policy": {
+            "id": "https://consumer.example/trust/meter-v1",
+            "digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "trust_anchor": {
+            "id": "https://trust.example/anchors/meter-root-v1",
+            "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+          },
+          "verifier_attestation_digest": "sha256:e9d5119e22b707ab7845ca05182b793fbd926476c3ca138e7fe8a63fe88b4b9f",
+          "trusted_timestamp_digest": "sha256:739330df22728de1ad417192a28106e99b0d8e5afd9c57117f049a0151708145"
+        }
+      }
+    ],
+    "data": {
+      "scope": "turn",
+      "cached": false,
+      "provenance": "agent_fetched",
+      "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "content_fingerprint": {
+        "scheme": "example-content-mark",
+        "detected": true,
+        "scheme_profile_ref": "https://contenttelemetry.org/profiles/signed-meter-attestation/v1",
+        "scheme_profile_digest": "sha256:99f513f6b84d975f501bf27c07da8035467c54721c59f290348ad8806d925b17",
+        "scheme_properties": {
+          "content_borne": true,
+          "identity_bearing": true,
+          "verifiable": true
+        }
+      }
+    }
+  }
+}
+```
+
+The serialized Tier 3 value is only a request. The placeholder vector remains an effective claim because its artifacts are not executable. A consumer obtains an effective Tier 3 result only after completing the section 5.8.6 derivation against real signed and timestamped bytes. The same wire structure can carry C2PA content credentials, publisher-seeded markers, signed boundary observations, or other schemes without making any one implementation mandatory.
+
+### B.6 C2PA text provenance as one scheme
+
+C2PA text provenance can be registered as one non-exclusive `content_fingerprint.scheme`. Its profile may declare `content_borne`, `identity_bearing`, and `verifiable` when those properties are supported by the specific version and trust policy. The effective tier remains assertion-specific:
+
+| Assertion | What C2PA evidence can establish | What it does not establish |
+|-----------|----------------------------------|----------------------------|
+| `/data/content_fingerprint/detected` | A valid content credential or extracted proof is bound to the exact `grounded_content` subject and accepted signer policy. | That the content entered a model context. |
+| `/data/content_fingerprint/preserved_in_output` | The same scheme is successfully verified against a bound `generated_output` subject as well as the grounded input. | That every generated output preserved the signal. |
+| `/type` on `content_grounded` | An independent meter attestation can bind the C2PA-verified subject to the observed generation-context boundary. | Hidden model reasoning, causal reliance, or reporting completeness. |
+| `/type` on `content_cited` | An independent meter attestation can bind the verified source and exact generated output carrying the citation. | Semantic correctness of the cited claim unless separately evaluated. |
+
+C2PA verification and independent meter observation therefore compose without either replacing the other. The C2PA profile verifies content identity, integrity, signer, and applicable time assertions. The meter profile attests the bounded usage observation. Neither profile determines attribution weight or compensation.
+
+A C2PA text profile that claims survivability MUST publish the transform matrix required by section 5.8.4. Whole-document copy-paste, Unicode normalisation, encoding or serialisation round-trips, sanitisation, aggregation, and fragment extraction are separate test rows. A passing row for one transform, corpus, or profile version MUST NOT be generalised to another.
+
+The attached [C2PA text survivability matrix](./survivability-matrix-c2pa-text.json) is a carrier-recovery vector, not a signed-claim validation claim. It records successful association recovery for UTF-8, UTF-16LE, NFC, NFD, JSON-string, exact-Unicode-copy, and wrapper-retaining aggregation transforms; default-ignorable stripping removes the association. WordPress, SPIP, Arc XP, named-editor plain-text export, fragment binding, whitespace modification, and paraphrase remain explicitly `not_tested` or expected to invalidate hard binding rather than being presented as successes.
+
+Run `uv run --locked python tests/check_survivability.py` to regenerate and compare the ten executable rows; the runner reports the seven intentionally untested rows separately rather than treating them as passes.
