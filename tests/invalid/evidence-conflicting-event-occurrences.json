@@ -1,0 +1,19 @@
+{
+  "_test_description": "The same event id used for two different delivery occurrences is surfaced as a replay conflict.",
+  "document_type": "event_batch",
+  "schema_version": "0.1",
+  "events": [
+    {
+      "id": "860e8400-e29b-41d4-a716-446655440099",
+      "type": "content_retrieved",
+      "timestamp": "2026-07-11T12:00:02Z",
+      "content_id": "example:article:42"
+    },
+    {
+      "id": "860e8400-e29b-41d4-a716-446655440099",
+      "type": "content_retrieved",
+      "timestamp": "2026-07-11T12:00:03Z",
+      "content_id": "example:article:42"
+    }
+  ]
+}

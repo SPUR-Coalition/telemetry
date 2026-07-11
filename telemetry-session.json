@@ -106,6 +106,12 @@
           "oneOf": [{ "$ref": "#/$defs/ConversationTurn" }, { "type": "null" }],
           "description": "Conversation turn data (for turn_started/turn_completed)"
         },
+        "evidence": {
+          "type": "array",
+          "maxItems": 32,
+          "items": { "$ref": "#/$defs/EvidenceAssertion" },
+          "description": "Evidence for precisely scoped assertions in this event. Tiers classify one assertion, never the event, session, emitter, or deployment as a whole (section 5.8)."
+        },
         "data": {
           "type": "object",
           "additionalProperties": true,
@@ -319,13 +325,118 @@
     },
     "ContentFingerprint": {
       "type": "object",
-      "description": "An inferred, agent-reported claim that a publisher-side provenance mark was found in the grounded content. Scheme-agnostic: 'scheme' is a free string so techniques can evolve (e.g. ISCC, C2PA text provenance, syntactic watermarking). This is the only publisher-side corroboration path available for grounding, citation, and engagement events, which have no independent origin-side counterpart (section 7.3). Because the fields are agent-reported with no origin-side corroboration, they are claims, not observed facts, and consumers MUST treat them as inference. The same object covers derived-content tracing: where an intermediary serves a summary (or a summary of a summary) and the original never enters the final context, a preserved and detectable fingerprint is the one signal that the derived content traces back to the source.",
+      "description": "An agent-reported claim that a publisher-side provenance mark was checked in grounded content. Scheme properties describe capability ceilings only; they do not prove an instance or establish an effective evidence tier (sections 5.8 and 6.4).",
       "properties": {
-        "scheme": { "type": "string", "description": "Identifier of the provenance scheme the agent checked for (free string; not a closed enum). Examples: 'iscc', 'c2pa-text', 'homoglyph', 'syntactic'." },
-        "detected": { "type": "boolean", "description": "Agent-reported claim that a mark of the named scheme was found in the grounded content. Inference, not an observed fact: there is no origin-side counterpart to corroborate it (section 7.3)." },
-        "preserved_in_output": { "type": "boolean", "description": "Agent-reported claim that the detected mark survived into the generated output (i.e. the fingerprint is recoverable downstream of generation). Inference, not an observed fact." }
+        "scheme": { "type": "string", "minLength": 1, "description": "Identifier of the provenance scheme checked by the agent (free string; not a closed enum)." },
+        "detected": { "type": "boolean", "description": "Agent-reported claim that a mark of the named scheme was found. Evidence for this assertion is carried in the containing event's evidence array." },
+        "preserved_in_output": { "type": "boolean", "description": "Agent-reported claim that the detected mark remained recoverable in a generated output. Evidence must bind both grounded content and generated output." },
+        "scheme_profile_ref": { "type": "string", "format": "uri", "minLength": 1, "description": "Absolute, immutable or version-specific scheme profile identifier. Registry presence does not confer trust or a tier." },
+        "scheme_profile_digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 of the referenced scheme profile bytes." },
+        "scheme_properties": { "$ref": "#/$defs/SchemeProperties" }
       },
       "required": ["scheme", "detected"]
+    },
+    "SchemeProperties": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Scheme capability ceiling. All three core properties true make a fingerprint assertion eligible to request independently_verifiable; any false value caps it at origin_corroborated. A consumer still verifies the digest-bound profile and instance evidence.",
+      "properties": {
+        "content_borne": { "type": "boolean", "description": "The verification signal is carried with the content rather than only in detachable side metadata." },
+        "identity_bearing": { "type": "boolean", "description": "Successful verification can bind the subject to an identified issuer under a trust policy." },
+        "verifiable": { "type": "boolean", "description": "The profile defines a public verification procedure and interoperable outcomes." }
+      },
+      "required": ["content_borne", "identity_bearing", "verifiable"]
+    },
+    "EvidenceTier": {
+      "type": "string",
+      "enum": ["claim", "origin_corroborated", "independently_verifiable"],
+      "description": "Emitter-requested classification for one assertion. Consumers derive the effective tier under section 5.8."
+    },
+    "EvidenceSubject": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["role", "digest"],
+      "properties": {
+        "role": { "type": "string", "minLength": 1, "description": "Subject role. Core values include grounded_content, generated_output, generation_context, and event." },
+        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 of exact subject bytes under the profile's canonicalisation rules." }
+      }
+    },
+    "EvidenceArtifact": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["type", "media_type", "digest"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1, "description": "Core values: origin_event, access_record, verifier_attestation, verification_material, trusted_timestamp. Consumers tolerate extension values." },
+        "media_type": { "type": "string", "minLength": 1 },
+        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 of decoded inline bytes or retrieved response-body bytes, never base64 or URI text." },
+        "uri": { "type": "string", "format": "uri", "minLength": 1, "description": "Absolute immutable or version-specific reference; consumers apply safe retrieval policy and verify the digest." },
+        "content": { "type": "string", "contentEncoding": "base64", "maxLength": 11184812, "description": "Base64-encoded artifact bytes when carried inline; at most 8 MiB after decoding." }
+      },
+      "oneOf": [
+        { "required": ["uri"], "not": { "required": ["content"] } },
+        { "required": ["content"], "not": { "required": ["uri"] } }
+      ]
+    },
+    "VerificationProfile": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["ref", "digest"],
+      "properties": {
+        "ref": { "type": "string", "format": "uri", "minLength": 1, "description": "Absolute immutable or version-specific public verification procedure identifier." },
+        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 of the verification profile bytes." },
+        "scheme_profile_digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "For fingerprint assertions, digest of the separate scheme profile this evidence profile verifies." }
+      }
+    },
+    "VerificationMaterialReference": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "digest"],
+      "properties": {
+        "id": { "type": "string", "format": "uri", "minLength": 1, "description": "Absolute policy or trust-anchor identifier compared against consumer-preconfigured local trust." },
+        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 binding the immutable policy or trust-anchor material/version." }
+      }
+    },
+    "EvidenceVerification": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["status", "verifier", "verified_at"],
+      "properties": {
+        "status": { "type": "string", "enum": ["pass", "fail", "indeterminate", "not_checked"] },
+        "verifier": { "type": "string", "format": "uri", "minLength": 1, "description": "Absolute verifier implementation/service and version identifier; not by itself a trust assertion." },
+        "verified_at": { "type": "string", "format": "date-time", "description": "Time verification ran; not a trusted timestamp." },
+        "reason_code": { "type": "string", "description": "Open reason code; consumers tolerate unknown values." },
+        "trust_policy": { "$ref": "#/$defs/VerificationMaterialReference" },
+        "trust_anchor": { "$ref": "#/$defs/VerificationMaterialReference" },
+        "verifier_attestation_digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "Digest selecting exactly one verifier_attestation artifact that binds the assertion digest and subjects." },
+        "trusted_timestamp_digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "Digest selecting exactly one trusted_timestamp artifact whose message imprint covers the verifier attestation or signed assertion envelope." }
+      }
+    },
+    "EvidenceAssertion": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["assertion_path", "tier"],
+      "properties": {
+        "assertion_path": { "type": "string", "pattern": "^/", "minLength": 2, "description": "RFC 6901 JSON Pointer resolving within the containing event; it cannot target evidence." },
+        "tier": { "$ref": "#/$defs/EvidenceTier" },
+        "assertion_digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 of the RFC 8785 occurrence-bound assertion binding defined in section 5.8." },
+        "subjects": { "type": "array", "minItems": 1, "maxItems": 16, "uniqueItems": true, "items": { "$ref": "#/$defs/EvidenceSubject" } },
+        "artifacts": { "type": "array", "minItems": 1, "maxItems": 16, "uniqueItems": true, "items": { "$ref": "#/$defs/EvidenceArtifact" } },
+        "verification_profile": { "$ref": "#/$defs/VerificationProfile" },
+        "verification": { "$ref": "#/$defs/EvidenceVerification" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "tier": { "enum": ["origin_corroborated", "independently_verifiable"] } }, "required": ["tier"] },
+          "then": {
+            "required": ["assertion_digest", "subjects", "artifacts", "verification_profile", "verification"],
+            "properties": { "verification": { "properties": { "status": { "const": "pass" } } } }
+          }
+        },
+        {
+          "if": { "properties": { "tier": { "const": "independently_verifiable" } }, "required": ["tier"] },
+          "then": { "properties": { "verification": { "required": ["trust_policy", "trust_anchor", "verifier_attestation_digest", "trusted_timestamp_digest"] } } }
+        }
+      ]
     },
     "CitationType": {
       "type": "string",

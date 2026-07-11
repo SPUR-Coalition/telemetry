@@ -6,21 +6,27 @@ Tests for the Content Telemetry Specification v0.1.
 
 - `valid/` - JSON files that MUST pass JSON Schema validation
 - `invalid/` - JSON files that MUST fail validation (either JSON Schema or application-layer conformance)
-- `validate.py` - Conformance test runner (requires `jsonschema`)
-- `check_examples.py` - Validates the worked examples in SPECIFICATION.md and README.md against the schemas
+- `validate.py` - Conformance test runner (requires the locked `jsonschema` and `rfc8785` dependencies)
+- `check_examples.py` - Validates worked examples against schemas and application-layer rules
+- `check_registry.py` - Validates all registry and survivability-matrix entries
+- `check_survivability.py` - Reproduces executable C2PA text carrier transforms and reports untested rows
 
 ## Running
 
-From a clean checkout, with no setup beyond [uv](https://docs.astral.sh/uv/):
+From a clean checkout, with no setup beyond [uv](https://docs.astral.sh/uv/), use the checked-in Python and dependency lock:
 
 ```sh
-uv run --with jsonschema python tests/validate.py
-uv run --with jsonschema python tests/check_examples.py
+uv run --locked python tests/validate.py
+uv run --locked python tests/check_examples.py
+uv run --locked python tests/check_registry.py
+uv run --locked python tests/check_survivability.py
 ```
 
-Run from the repository root. Without uv: `pip install jsonschema`, then `python3 tests/validate.py`. Both commands run in CI on every pull request.
+Run from the repository root. Without uv: use Python 3.12 and `pip install jsonschema==4.26.0 rfc8785==0.1.4`, then run the scripts with `python3`. All four commands run in CI on every pull request.
 
 `check_examples.py` extracts every fenced `json` block from the spec and README, validates the complete top-level documents (sessions, standalone events, manifests) against the matching schema, and reports the number of fragments it skipped. A worked example that no longer matches its schema fails the build.
+
+`check_registry.py` validates every registry entry and matrix row. `check_survivability.py` reconstructs the checked-in C2PA text fixture and executes each supported transform, while listing `not_tested` rows separately rather than treating them as passes.
 
 ## What it covers
 
@@ -46,5 +52,7 @@ Some rules cannot be expressed in JSON Schema alone. These are tested as applica
 - `content_url` or `content_id` requirement on every content event (section 5.7.5)
 - `session_id` or `ctx_token` on a standalone event or event batch envelope at Grounding conformance and above (sections 5.7.5, 7.1)
 - Manifest rejection rules: duplicate `keys[].id`, and `domains` entries that are not the manifest's own host or a subdomain of it (sections 8.6, 8.7)
+- Assertion-scoped evidence binding, artifact integrity, profile relationships, consumer-gated derivation, replay conflicts, safe references, and resource ceilings (section 5.8)
+- Fingerprint registry and survivability-matrix schemas plus semantic invariants
 
 Valid fixtures must pass both JSON Schema and these checks; `invalid/` fixtures that pass JSON Schema but fail a check are documented in `validate.py`. The `agent_id`-at-Grounding requirement is not fixture-tested: it depends on the emitter's declared conformance level, which the fixtures do not carry.
