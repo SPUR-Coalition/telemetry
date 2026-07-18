@@ -11,7 +11,7 @@
 3. [Terms and definitions](#3-terms-and-definitions)
 4. [Concepts](#4-concepts) - roles, sessions, event lifecycle, source roles, content identification
 5. [Schema](#5-schema) - session, event, event types, conversation turn, privacy, intent, conformance levels
-6. [Data profiles](#6-data-profiles) - retrieval, edge enrichment, origin enrichment, grounding, citation, display, engagement
+6. [Data profiles](#6-data-profiles) - retrieval, edge enrichment, origin enrichment, grounding, citation, presentation, engagement
 7. [Transport](#7-transport) - delivery formats, Content-Telemetry-ID header
 8. [Manifest](#8-manifest) - discovery, schema, operator, keys, telemetry, domains
 9. [Privacy](#9-privacy) - data minimisation, recommended levels, retention
@@ -169,7 +169,7 @@ Session
 │   ├── content_retrieved    (HTTP layer)
 │   ├── content_grounded     (influence layer)
 │   ├── content_cited        (response layer)
-│   ├── content_displayed    (UI layer)
+│   ├── content_presented    (recipient-facing surface)
 │   ├── turn_completed
 │   ├── content_engaged      (user action layer)
 │   └── ...
@@ -190,19 +190,19 @@ Content moves through five stages during an agent interaction:
 
    Grounding is architecture-neutral: same event whether the agent uses RAG, chain-of-thought reasoning, embeddings, or multi-step delegation (see section 6.4 for architecture-specific guidance). Grounding is decoupled from retrieval: content may be grounded from a live fetch, from agent-side cache, or from a pre-loaded index. Only the agent can report grounding events.
 
-3. **Cited** - Content explicitly referenced in the agent's response: quoted, paraphrased, or linked. A subset of grounded content. Content can influence every response in a session without being cited once.
+3. **Cited** - An output artifact explicitly associates identified source content with a response, claim, passage, quotation, or other output element. Citation is an output-construction relationship, not evidence that the output was delivered. A subset of grounded content is commonly cited, but a citation can also be emitted without a matching grounding event when an agent produces an uncorroborated or hallucinated source association.
 
-4. **Displayed** - Content presented to the end user: a reference (a link, snippet, inline quote, or preview card) or the content itself embedded in the response surface (an iframe, a page rendered by an agentic browser, an embedded media player). Not all citations result in display (e.g., when the agent uses content internally without surfacing the source).
+4. **Presented** - Content or a source reference was rendered, played, spoken, embedded, or otherwise made perceivable on a recipient-facing surface. Presentation does not assert that a person noticed or attended to it. `presentation_kind` distinguishes source content (including a reproduced excerpt or media) from a source reference (such as a link, credit, or card). Not all citations are presented: an output can be stored, suppressed, or passed to another system before delivery.
 
-   Grounding and display record two different kinds of influence: grounding records that content influenced the agent, display records that it reached the user. As agent experiences evolve beyond the chat window the two diverge - content can shape an answer whose source the user never sees, and an agent can render content to the user that never entered a generation context (see *Departures from the funnel model* below).
+   Grounding and presentation record different boundary crossings: grounding records entry into a generation context, while presentation records a recipient-facing delivery occurrence. As agent experiences evolve beyond the chat window the two diverge - content can shape an answer whose source is never presented, and an agent can present content that never entered a generation context (see *Departures from the funnel model* below).
 
-5. **Engaged** - The user acted on displayed or cited content: clicked a link, expanded a preview, copied text, shared the response, or directed the agent to act on the content on their behalf (opening the linked page, retrieving more from the source). Engagement connects the preceding events to down-funnel activity: a click-out carries a `ctx_token` that a destination can resolve to the session's click manifest - the content that influenced the response (section 7.1).
+5. **Engaged** - The recipient or agent performed an observable action on a presentation: clicked a link, expanded a preview, copied text, shared the response, or directed the agent to act on the content. It does not imply attention beyond the reported action. `presentation_id` links the action to the exact presentation occurrence; a click-out can also carry a `ctx_token` that a destination resolves to the session's click manifest (section 7.1).
 
 ```
 Retrieved (HTTP layer, cacheable)
   → Grounded (influence layer, per-session or per-turn)
     → Cited (response layer, per-turn)
-      → Displayed (UI layer, per-turn)
+      → Presented (recipient-facing surface, per-turn)
         → Engaged (user action layer)
 ```
 
@@ -210,16 +210,16 @@ Each stage is typically a progressively narrower subset. The ratios between stag
 
 - **Retrieval-to-grounding** measures content fetched but not used (irrelevant, stale, or a competing source was preferred)
 - **Grounding-to-citation** measures content that influenced the response without explicit attribution
-- **Citation-to-display** measures content attributed internally but not shown to the user
-- **Display-to-engagement** measures interactions where the user did or did not visit the source
+- **Citation-to-presentation** measures source associations constructed in output but not made perceivable
+- **Presentation-to-engagement** measures observable actions on exact presentation occurrences
 
 #### Departures from the funnel model
 
 Three cases break the strict subset model:
 
-- **Displayed without cited.** An agent may display content references (e.g., a "Sources" sidebar) without citing the content in the response text. In this case, a `content_displayed` event exists with no corresponding `content_cited` event.
+- **Presented without cited.** An agent may present content references (e.g., a "Sources" sidebar) without semantically associating them with a response element. In this case, a `content_presented` event exists with no corresponding `content_cited` event.
 - **Cited without grounded.** A hallucinated citation references content the agent never retrieved or loaded into context. The `content_cited` event has no preceding `content_grounded` event. Telemetry consumers SHOULD treat uncorroborated citations (no matching grounding event) as lower-confidence signals.
-- **Displayed without grounded.** An agent can render content to the user without that content entering a generation context: an agentic browser showing a page, an embedded video played in the response surface. A `content_displayed` event (typically `display_type: embed`) exists with no corresponding `content_grounded` event. The content influenced the user directly rather than through the model, and the engagement that follows it is consumption the content owner cannot otherwise observe.
+- **Presented without grounded.** An agent can present content without that content entering a generation context: an agentic browser showing a page or an embedded video played on a response surface. A `content_presented` event (typically `presentation_kind: content` and `presentation_type: embed`) exists with no corresponding `content_grounded` event.
 
 These cases are valid. Emitters SHOULD produce the events that reflect what actually happened, even when the result does not follow the typical funnel ordering.
 
@@ -230,7 +230,7 @@ Conversation turns overlay this lifecycle:
 1. **Turn started** - user submits a query
 2. **Turn completed** - agent finishes response
 
-A single grounding event with session scope influences all subsequent turns. Citation, display, and engagement events occur within specific turns.
+A single grounding event with session scope influences all subsequent turns. Citation, presentation, and engagement events occur within specific turns.
 
 ### 4.4 Source roles
 
@@ -247,7 +247,7 @@ The `origin` and `edge` source roles enable content owners to report AI agent tr
 
 A marketplace operating as both emitter and telemetry consumer receives telemetry from platforms (as a consumer), resolves content owner identity from `content_id` or `content_url`, and generates per-content-owner usage reports. The marketplace's own `source_role: index` events provide a corroboration layer - it can cross-reference what it served against what platforms reported using.
 
-`content_grounded`, `content_cited`, and `content_displayed` events are reported by the agent (or agent operator) only. These events describe what happened inside the agent or in the agent's user interface, which is not observable from the content owner's infrastructure.
+`content_grounded`, `content_cited`, and `content_presented` events are reported by the agent (or agent operator) only. These events describe what happened inside the agent, during output construction, or on a recipient-facing surface, which is not observable from the content owner's infrastructure.
 
 `content_engaged` events are usually reported by the agent for in-product interactions. For a click-out to a landing page, a downstream marketplace, affiliate network, or destination site MAY report a corroborating `content_engaged` event using `ctx_token` in place of `session_id` (section 7.1).
 
@@ -324,6 +324,10 @@ Format: the URL of a manifest served at `/.well-known/content-telemetry.json` un
 | `type` | EventType | Yes | Event type (see 5.3) |
 | `timestamp` | datetime | Yes | Event timestamp (UTC) |
 | `turn_id` | string | No | Associates this event with a conversation turn (see 5.2.1) |
+| `output_id` | string | For cited/presented | Opaque output-artifact identifier joining construction to later delivery |
+| `output_element_id` | string | No | Opaque element within `output_id`, such as a passage, media track, caption, link, or card |
+| `citation_id` | UUID | No | On `content_presented`, the `id` of the associated citation event; absent for uncited presentations |
+| `presentation_id` | UUID | For engaged | On `content_engaged`, the `id` of the exact presentation occurrence acted upon |
 | `source_role` | SourceRole | No | Who is reporting: `origin`, `edge`, `index`, `agent` (see 4.4) |
 | `content_telemetry_id` | UUID | No | Correlation ID for cross-observer deduplication (see 7.2) |
 | `content_url` | string | No | Content URL as fetched or canonical URL |
@@ -334,7 +338,7 @@ Format: the URL of a manifest served at `/.well-known/content-telemetry.json` un
 
 #### 5.2.1 Turn association
 
-The `turn_id` field associates content events with a specific conversation turn. Emitters SHOULD set `turn_id` on `content_cited`, `content_displayed`, and `content_engaged` events. Emitters SHOULD also set `turn_id` on `content_grounded` events when `scope` is `turn`. The corresponding `turn_started` and `turn_completed` events SHOULD carry the same `turn_id`.
+The `turn_id` field associates content events with a specific conversation turn. Emitters SHOULD set `turn_id` on `content_cited`, `content_presented`, and `content_engaged` events. Emitters SHOULD also set `turn_id` on `content_grounded` events when `scope` is `turn`. The corresponding `turn_started` and `turn_completed` events SHOULD carry the same `turn_id`.
 
 `turn_id` is scoped to the session. Format is emitter-defined (sequential integers, UUIDs, or any opaque string).
 
@@ -356,9 +360,9 @@ The `license_ref` field connects a telemetry event to the content access licence
 |------|-------------|-----------------|
 | `content_retrieved` | Content fetched from source | `content_url`, `source_role`, `data.media_type` |
 | `content_grounded` | Content loaded into agent context | `content_url` or `content_id`, `data.scope`, `data.cached` |
-| `content_cited` | Content referenced in response | `content_url`, `data.citation_type`, `data.position` |
-| `content_displayed` | Content or a reference to it shown to user | `content_url`, `data.display_type` |
-| `content_engaged` | User acted on content | `content_url`, `data.engagement_type` (see 6.7) |
+| `content_cited` | Output explicitly associates source content with an output element | `id`, `output_id`, `content_url` or `content_id`, `data.citation_type` |
+| `content_presented` | Content or a source reference was made perceivable | `id`, `output_id`, `content_url` or `content_id`, `data.presentation_kind`, `data.presentation_type` |
+| `content_engaged` | Observable action on an exact presentation | `presentation_id`, `content_url` or `content_id`, `data.engagement_type` (see 6.7) |
 
 #### Conversation events
 
@@ -389,7 +393,7 @@ A conversation turn represents one query-response exchange. Turn data is carried
 | `query_tokens` | integer | No | Query token count |
 | `response_tokens` | integer | No | Response token count |
 | `model_id` | string | No | Model identifier |
-| `ad_rendered` | boolean | No | Whether advertising was displayed alongside the response |
+| `ad_rendered` | boolean | No | Whether advertising was rendered alongside the response |
 
 #### 5.4.1 Response modes
 
@@ -449,7 +453,7 @@ Each level is named for the event it adds: a level proves the emitter produces t
 | **Grounding** | Above + `content_grounded`, turn events | Content entered the agent's context | Agent with basic instrumentation |
 | **Citation** | Above + `content_cited` | Content was explicitly referenced in the agent's response | Agent with citation instrumentation |
 
-Display and engagement events are optional lifecycle signals. A Citation emitter SHOULD emit them when applicable (section 5.7.3), but the Citation level proves citation support, not full retrieval-to-engagement coverage.
+Presentation and engagement events are optional lifecycle signals. A Citation emitter SHOULD emit them when applicable (section 5.7.3), but the Citation level proves citation support, not full retrieval-to-engagement coverage.
 
 #### 5.7.1 Retrieval conformance
 
@@ -481,15 +485,16 @@ Emitters using standalone event delivery (section 7.1) MUST include `agent_id`, 
 
 A conforming **Citation** emitter MUST satisfy Grounding requirements and also:
 
-- Emit `content_cited` events with `data.citation_type`
+- Emit `content_cited` events with `id`, `output_id`, and `data.citation_type`
 
 The privacy-level field restriction (section 5.5) applies to Citation emitters as it does to any emitter producing conversation turns; it is inherited through the Grounding requirements above.
 
 A Citation emitter SHOULD:
 
-- Emit `content_displayed` and `content_engaged` events when applicable
+- Emit `content_presented` and `content_engaged` events when applicable
 - Include `data.position` on citation events
-- Include `data.display_type` on display events
+- Include `output_element_id` when the cited or presented element has a stable identity
+- Include `citation_id` on a presentation of a cited source association
 
 #### 5.7.4 Telemetry consumers
 
@@ -653,14 +658,17 @@ The `unclassified` value for `citation_type` indicates the agent did not classif
 
 When `content_hash` is absent or does not match any grounding event's hash (for example, because the agent re-chunked content between grounding and citation), consumers SHOULD fall back to matching on `content_url` or `content_id`, accepting that the correlation may be imprecise when the same content appears in multiple grounding events.
 
-### 6.6 Display data (`content_displayed`)
+### 6.6 Presentation data (`content_presented`)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `display_type` | string | How the content or a reference to it was presented (see below) |
-| `media_type` | string | Content medium: `text`, `image`, `video`, `audio` (open vocabulary, see 6.1). Defaults to `text` when absent. Most useful on `embed` displays (an embedded video reports `media_type: video`). |
+| `presentation_kind` | string | What was made perceivable: `content` or `source_reference` |
+| `presentation_type` | string | How it was made perceivable (see below) |
+| `media_type` | string | Medium made perceivable: `text`, `image`, `video`, `audio` (open vocabulary, see 6.1). Defaults to `text` when absent. |
 
-#### Display types
+`presentation_kind: content` means source content itself, a bounded excerpt, or a derived representation was made perceivable. It does not claim that the whole source was reproduced. `presentation_kind: source_reference` means a credit, identifier, link, card, or other reference to the source was made perceivable. This distinction is independent of modality: a spoken credit is a source reference; played source audio is content.
+
+#### Presentation types
 
 | Value | Description |
 |-------|-------------|
@@ -670,12 +678,15 @@ When `content_hash` is absent or does not match any grounding event's hash (for 
 | `card` | Rich preview card (title, description, image) |
 | `detail_view` | Expanded or full-content presentation within the agent's own interface |
 | `embed` | Source content rendered in the response surface: an iframe, a page rendered by an agentic browser, an embedded media player |
+| `spoken_credit` | Source reference spoken in an audio output or assistive surface |
 
-The first five values present a reference or excerpt within the agent's interface; `embed` presents the source content itself. An `embed` display can occur without a grounding event when the content never entered a generation context (section 4.3, *Departures from the funnel model*).
+`presentation_kind`, rather than `presentation_type`, determines whether the occurrence carries source content or a source reference. For example, a snippet may be an attributed source reference or an uncredited content excerpt. An embed can occur without a grounding event when the content never entered a generation context (section 4.3, *Departures from the funnel model*).
 
-These are the core values. Platforms with additional presentation surfaces MAY use custom string values. Telemetry consumers MUST tolerate unknown `display_type` values.
+These are the core values. Platforms with additional presentation surfaces MAY use custom string values. Telemetry consumers MUST tolerate unknown `presentation_type` values.
 
-When a session includes `content_displayed` events but no subsequent `content_engaged` events, the user saw a content reference but did not interact with it. Whether this pattern is meaningful depends on the commercial agreement - a per-citation deal may not care about clickthrough, while a traffic-based deal will. This pattern is only detectable from platform-reported `content_displayed` and `content_engaged` events. Retrieval is the only event stage observable from the CDN edge.
+Each presentation event MUST have an `id` and `output_id`. When it presents a citation, `citation_id` references that `content_cited` event's `id`; an uncited presentation omits `citation_id`. Repeated presentations of the same source or output element receive distinct event IDs. This allows a later `content_engaged.presentation_id` to identify the exact surface occurrence rather than matching only by URL.
+
+When a session includes `content_presented` events but no subsequent `content_engaged` events, the telemetry establishes only that content or a reference was made perceivable and no reported interaction followed. It does not establish human attention. Whether this pattern is meaningful depends on the governing terms. Retrieval remains the only lifecycle stage observable from the CDN edge.
 
 ### 6.7 Engagement data (`content_engaged`)
 
@@ -683,7 +694,7 @@ When a session includes `content_displayed` events but no subsequent `content_en
 |-------|------|-------------|
 | `engagement_type` | string | Type of interaction (see below) |
 
-The content URL is identified by the event-level `content_url` field (section 5.2), not duplicated in `data`.
+The content URL is identified by the event-level `content_url` field (section 5.2), not duplicated in `data`. Every engagement MUST carry `presentation_id`, referencing the exact `content_presented.id` on which the action occurred. Matching on URL alone is insufficient because the same source reference can be presented more than once.
 
 #### Engagement types
 
@@ -699,7 +710,7 @@ These are the core values. Extensions MAY define additional engagement actions -
 
 `agent_navigate` is the agent-mediated counterpart of a click: the user reached the source through the agent rather than through a browser. Consumers measuring traffic SHOULD count it alongside `link_click`, distinguishing the two where the commercial agreement does.
 
-`link_click` is the primary signal for clickthrough rate calculation. Telemetry consumers can derive per-content-owner and aggregate clickthrough rates from the ratio of `link_click` engagements to `content_displayed` events for the same `content_url`.
+`link_click` is the primary signal for clickthrough rate calculation. Telemetry consumers can derive per-content-owner and aggregate clickthrough rates from `link_click` engagements and link presentations, joining each engagement through `presentation_id` rather than URL alone.
 
 A `link_click` or `agent_navigate` engagement reported from the landing page after a click-out crosses a trust boundary. Such events carry a `ctx_token` in place of `session_id`, which the telemetry consumer resolves to the originating session's click manifest (see section 7.1).
 
@@ -754,8 +765,10 @@ An event batch carries the same envelope fields with `"document_type": "event_ba
       "content_url": "https://www.ft.com/content/abc123"
     },
     {
+      "id": "770e8400-e29b-41d4-a716-446655440301",
       "type": "content_cited",
       "timestamp": "2026-01-15T10:30:04Z",
+      "output_id": "response:1",
       "source_role": "agent",
       "content_url": "https://www.ft.com/content/abc123"
     }
@@ -769,7 +782,7 @@ For origin-side emitters at Retrieval conformance level, `session_id` MAY be omi
 
 For `content_engaged` events emitted from a landing page after a click-out (typically by a content marketplace, affiliate network, or destination site), `session_id` MAY be replaced by a `ctx_token` field that carries an opaque click-token issued by the originating agent. Telemetry consumers resolve the token to the owning session. This lets a downstream observer report a corroborating engagement event without sharing the session UUID across trust boundaries. An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above.
 
-**ctx_token resolution.** A telemetry consumer that supports `ctx_token` resolution exposes, for a resolved token, the **click manifest**: the set of `content_grounded`, `content_cited`, and `content_displayed` events belonging to the resolved session, identifying every source that informed the response that produced the click. The manifest is gated by the resolved session's `privacy_level` and by consent. A consumer MUST return the manifest only when the issuing agent has opted in to sharing sessions via click tokens; when the agent opt-in is absent, the consumer MUST NOT disclose the manifest. Within a returned manifest, a source MUST appear only when its content owner has opted in to being visible in click-token lookups; the consumer MUST withhold the events of any content owner whose opt-in is absent while returning the remainder of the manifest. A resolution response MUST NOT include the resolved session's raw `session_id`: the token exists so that the session UUID never crosses the trust boundary, and a resolution response that returned it would undo that. The mechanism by which an agent and a content owner record these opt-ins is operator-defined; the consent gate is normative.
+**ctx_token resolution.** A telemetry consumer that supports `ctx_token` resolution exposes, for a resolved token, the **click manifest**: the set of `content_grounded`, `content_cited`, and `content_presented` events belonging to the resolved session, identifying every source that informed the response that produced the click. The manifest is gated by the resolved session's `privacy_level` and by consent. A consumer MUST return the manifest only when the issuing agent has opted in to sharing sessions via click tokens; when the agent opt-in is absent, the consumer MUST NOT disclose the manifest. Within a returned manifest, a source MUST appear only when its content owner has opted in to being visible in click-token lookups; the consumer MUST withhold the events of any content owner whose opt-in is absent while returning the remainder of the manifest. A resolution response MUST NOT include the resolved session's raw `session_id`: the token exists so that the session UUID never crosses the trust boundary, and a resolution response that returned it would undo that. The mechanism by which an agent and a content owner record these opt-ins is operator-defined; the consent gate is normative.
 
 The primary schema (`telemetry-session.json`) validates session documents. A standalone event envelope schema (`telemetry-event.json`) validates the event delivery format, and a batch envelope schema (`telemetry-event-batch.json`) validates the event batch format. All three schemas share the `TelemetryEvent` definition.
 
@@ -873,7 +886,7 @@ A manifest MAY declare multiple roles (e.g. `["content_owner", "agent"]`). A mor
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `name` | string | Yes | Display name of the operating organisation. |
+| `name` | string | Yes | Presentation name of the operating organisation. |
 | `domain` | string | No | Primary domain. Defaults to the manifest URL's host. |
 
 ### 8.4 Keys
@@ -1063,7 +1076,7 @@ Content can influence every response in a session without being explicitly cited
 
 - At the **grounding** level: counts all content that was in the agent's context, regardless of citation. This captures the full extent of content influence, including silent grounding.
 - At the **citation** level: counts only explicitly attributed content. Simpler to verify but undercounts content influence.
-- At the **display** level: counts only content references shown to users. Narrowest scope, highest confidence.
+- At the **presentation** level: counts content or source references made perceivable. It does not prove attention.
 
 Content owners and platforms should agree on which level to count at. The telemetry data supports all three; the choice is commercial, not technical.
 
@@ -1126,6 +1139,23 @@ Telemetry consumers MUST tolerate unknown `response_mode` values.
 
 ## 12. Versioning
 
+### 12.1 Migration from the v0.1 preview
+
+V1 replaces `content_displayed` with `content_presented`; emitters MUST NOT send
+the old event name on the v1 integration line. Rename `data.display_type` to
+`data.presentation_type` and add `data.presentation_kind` with either `content`
+or `source_reference`. This is an intentional pre-1.0 breaking change: merely
+renaming the event would preserve the visual-only ambiguity and would not say
+what crossed the presentation boundary.
+
+For every `content_cited` event, assign an event `id` and `output_id`. For every
+`content_presented` event, assign a distinct event `id` and the `output_id` of the
+artifact made perceivable; add `output_element_id` when a stable element identity
+exists and `citation_id` when the presentation carries a citation. For every
+`content_engaged` event, add `presentation_id` referencing the exact presentation
+event. Do not migrate clicks by matching URL alone: repeated presentations of the
+same URL are distinct occurrences.
+
 Preview versions (0.x) use two-component version numbers. From 1.0.0 onward, versions follow [semantic versioning](https://semver.org/):
 
 - **Major** (1.0.0 → 2.0.0) - breaking changes to required fields
@@ -1186,9 +1216,12 @@ A user asks a shopping assistant to compare noise-cancelling headphones. The age
       }
     },
     {
+      "id": "770e8400-e29b-41d4-a716-446655440302",
       "type": "content_cited",
       "timestamp": "2026-01-15T10:30:05Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:recommendation:1",
       "content_url": "https://www.wirecutter.com/reviews/best-wireless-headphones",
       "content_id": "wirecutter:best-wireless-headphones-2026",
       "data": {
@@ -1198,13 +1231,18 @@ A user asks a shopping assistant to compare noise-cancelling headphones. The age
       }
     },
     {
-      "type": "content_displayed",
+      "id": "770e8400-e29b-41d4-a716-446655440303",
+      "type": "content_presented",
       "timestamp": "2026-01-15T10:30:05Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:recommendation:1",
+      "citation_id": "770e8400-e29b-41d4-a716-446655440302",
       "content_url": "https://www.wirecutter.com/reviews/best-wireless-headphones",
       "content_id": "wirecutter:best-wireless-headphones-2026",
       "data": {
-        "display_type": "link"
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
       }
     },
     {
@@ -1230,6 +1268,7 @@ A user asks a shopping assistant to compare noise-cancelling headphones. The age
       "type": "content_engaged",
       "timestamp": "2026-01-15T10:32:00Z",
       "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440303",
       "content_url": "https://www.wirecutter.com/reviews/best-wireless-headphones",
       "content_id": "wirecutter:best-wireless-headphones-2026",
       "data": {
@@ -1321,9 +1360,12 @@ An AI agent previously fetched an FT article and cached it. In a new session, th
       }
     },
     {
+      "id": "770e8400-e29b-41d4-a716-446655440304",
       "type": "content_cited",
       "timestamp": "2026-03-28T09:00:05Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:paragraph:2",
       "content_url": "https://www.ft.com/content/abc123",
       "content_id": "ft:abc123",
       "data": {
@@ -1335,13 +1377,18 @@ An AI agent previously fetched an FT article and cached it. In a new session, th
       }
     },
     {
-      "type": "content_displayed",
+      "id": "770e8400-e29b-41d4-a716-446655440305",
+      "type": "content_presented",
       "timestamp": "2026-03-28T09:00:05Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:paragraph:2",
+      "citation_id": "770e8400-e29b-41d4-a716-446655440304",
       "content_url": "https://www.ft.com/content/abc123",
       "content_id": "ft:abc123",
       "data": {
-        "display_type": "link"
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
       }
     },
     {
@@ -1368,9 +1415,11 @@ An AI agent previously fetched an FT article and cached it. In a new session, th
       }
     },
     {
+      "id": "770e8400-e29b-41d4-a716-446655440306",
       "type": "content_cited",
       "timestamp": "2026-03-28T09:01:08Z",
       "turn_id": "2",
+      "output_id": "response:2",
       "content_url": "https://www.ft.com/content/abc123",
       "content_id": "ft:abc123",
       "data": {
@@ -1420,11 +1469,11 @@ In this session:
 - 1 article grounded from cache (no `content_retrieved` event - the CDN saw nothing)
 - 3 turns of conversation
 - 2 explicit citations (turns 1 and 2)
-- 1 display event (link shown in turn 1)
-- 0 engagement events (user did not click through to ft.com)
+- 1 presentation event (link made perceivable in turn 1)
+- 0 engagement events (no click-through was reported)
 - Advertising was rendered alongside the first response
 
-The content owner can derive: article `ft:abc123` was in context for all turns, cited twice, displayed once, never clicked. The content was 14.5 hours old (cached from previous day). The response was monetised with advertising.
+The content owner can derive: article `ft:abc123` was in context for all turns, cited twice, presented once, and had no reported engagement. The content was 14.5 hours old (cached from previous day). The response was monetised with advertising.
 
 ### B.4 Minimal privacy level
 

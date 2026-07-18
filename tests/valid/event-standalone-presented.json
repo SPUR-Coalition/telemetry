@@ -1,0 +1,20 @@
+{
+  "_test_description": "Standalone presentation envelope using the shared modality-neutral presentation schema.",
+  "document_type": "event",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440080",
+  "agent_id": "voice-assistant-v1",
+  "started_at": "2026-07-18T12:30:00Z",
+  "event": {
+    "id": "770e8400-e29b-41d4-a716-446655440081",
+    "type": "content_presented",
+    "timestamp": "2026-07-18T12:30:05Z",
+    "output_id": "audio-response:1",
+    "content_id": "publisher:article:1",
+    "data": {
+      "presentation_kind": "source_reference",
+      "presentation_type": "spoken_credit",
+      "media_type": "audio"
+    }
+  }
+}

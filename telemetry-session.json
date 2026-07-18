@@ -78,7 +78,27 @@
         },
         "turn_id": {
           "type": ["string", "null"],
-          "description": "Associates this event with a conversation turn. Scoped to the session. SHOULD be set on turn_started, turn_completed, content_cited, content_displayed, content_engaged events, and content_grounded events when scope is turn."
+          "description": "Associates this event with a conversation turn. Scoped to the session. SHOULD be set on turn_started, turn_completed, content_cited, content_presented, content_engaged events, and content_grounded events when scope is turn."
+        },
+        "output_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque identifier for the output artifact. REQUIRED on content_cited and content_presented events so output construction and later presentation can be correlated across services or times."
+        },
+        "output_element_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque identifier for the element within output_id that carries the citation or presentation, such as a passage, media track, caption, link, or card."
+        },
+        "citation_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "The id of the content_cited event associated with this presentation. Valid only on content_presented events and absent when the presentation is not a citation."
+        },
+        "presentation_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "The id of the exact content_presented event on which the engagement occurred. REQUIRED on content_engaged events."
         },
         "source_role": {
           "$ref": "#/$defs/SourceRole",
@@ -140,6 +160,7 @@
             "required": ["type"]
           },
           "then": {
+            "required": ["id", "output_id"],
             "properties": {
               "data": {
                 "properties": {
@@ -158,14 +179,17 @@
         },
         {
           "if": {
-            "properties": { "type": { "const": "content_displayed" } },
+            "properties": { "type": { "const": "content_presented" } },
             "required": ["type"]
           },
           "then": {
+            "required": ["id", "output_id", "data"],
             "properties": {
               "data": {
+                "required": ["presentation_kind", "presentation_type"],
                 "properties": {
-                  "display_type": { "$ref": "#/$defs/DisplayType" },
+                  "presentation_kind": { "$ref": "#/$defs/PresentationKind" },
+                  "presentation_type": { "$ref": "#/$defs/PresentationType" },
                   "media_type": { "$ref": "#/$defs/MediaType" }
                 }
               }
@@ -178,6 +202,7 @@
             "required": ["type"]
           },
           "then": {
+            "required": ["presentation_id"],
             "properties": {
               "data": {
                 "properties": {
@@ -223,7 +248,7 @@
         "content_retrieved",
         "content_grounded",
         "content_cited",
-        "content_displayed",
+        "content_presented",
         "content_engaged",
         "turn_started",
         "turn_completed"
@@ -334,9 +359,14 @@
       "description": "Whether content informed all subsequent responses in the session or a specific turn only",
       "enum": ["session", "turn"]
     },
-    "DisplayType": {
+    "PresentationKind": {
       "type": "string",
-      "description": "How content or a content reference was presented to the user. Core values: link, snippet, inline_quote, card, detail_view, embed. Platforms MAY use custom values for additional presentation surfaces. Consumers MUST tolerate unknown values."
+      "description": "What was made perceivable: source content itself, including a bounded excerpt or derived representation, or a reference to the source.",
+      "enum": ["content", "source_reference"]
+    },
+    "PresentationType": {
+      "type": "string",
+      "description": "How content or a source reference was made perceivable. Core values: link, snippet, inline_quote, card, detail_view, embed, spoken_credit. Platforms MAY use custom values for additional presentation surfaces. Consumers MUST tolerate unknown values."
     }
   }
 }

@@ -1,0 +1,96 @@
+{
+  "_test_description": "Modality-neutral citation and presentation: an image excerpt is presented as content, an audio output speaks a source credit, a video is embedded without citation, a constructed citation is suppressed, and a repeated link presentation receives the engagement.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440070",
+  "agent_id": "multimodal-assistant-v1",
+  "started_at": "2026-07-18T12:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-07-18T12:00:01Z",
+      "content_id": "museum:image:42",
+      "data": { "scope": "turn", "cached": true, "media_type": "image" }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440071",
+      "type": "content_cited",
+      "timestamp": "2026-07-18T12:00:04Z",
+      "turn_id": "1",
+      "output_id": "output:mixed:1",
+      "output_element_id": "image:region:credit",
+      "content_id": "museum:image:42",
+      "data": { "citation_type": "reference", "media_type": "image" }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440072",
+      "type": "content_presented",
+      "timestamp": "2026-07-18T12:00:05Z",
+      "turn_id": "1",
+      "output_id": "output:mixed:1",
+      "output_element_id": "image:region:1",
+      "content_id": "museum:image:42",
+      "data": { "presentation_kind": "content", "presentation_type": "embed", "media_type": "image" }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440073",
+      "type": "content_presented",
+      "timestamp": "2026-07-18T12:00:06Z",
+      "turn_id": "1",
+      "output_id": "output:mixed:1",
+      "output_element_id": "audio:credit:1",
+      "citation_id": "770e8400-e29b-41d4-a716-446655440071",
+      "content_id": "museum:image:42",
+      "data": { "presentation_kind": "source_reference", "presentation_type": "spoken_credit", "media_type": "audio" }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440074",
+      "type": "content_presented",
+      "timestamp": "2026-07-18T12:00:07Z",
+      "turn_id": "1",
+      "output_id": "output:mixed:1",
+      "output_element_id": "video:1",
+      "content_id": "archive:video:7",
+      "data": { "presentation_kind": "content", "presentation_type": "embed", "media_type": "video" }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440075",
+      "type": "content_cited",
+      "timestamp": "2026-07-18T12:00:08Z",
+      "turn_id": "1",
+      "output_id": "output:suppressed:1",
+      "output_element_id": "caption:1",
+      "content_id": "audio:interview:9",
+      "data": { "citation_type": "reference", "media_type": "audio" }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440076",
+      "type": "content_presented",
+      "timestamp": "2026-07-18T12:00:09Z",
+      "turn_id": "1",
+      "output_id": "output:mixed:1",
+      "output_element_id": "sources:link:1",
+      "citation_id": "770e8400-e29b-41d4-a716-446655440071",
+      "content_id": "museum:image:42",
+      "data": { "presentation_kind": "source_reference", "presentation_type": "link", "media_type": "text" }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440077",
+      "type": "content_presented",
+      "timestamp": "2026-07-18T12:00:10Z",
+      "turn_id": "1",
+      "output_id": "output:mixed:1",
+      "output_element_id": "sidebar:link:1",
+      "citation_id": "770e8400-e29b-41d4-a716-446655440071",
+      "content_id": "museum:image:42",
+      "data": { "presentation_kind": "source_reference", "presentation_type": "link", "media_type": "text" }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-07-18T12:00:12Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440077",
+      "content_id": "museum:image:42",
+      "data": { "engagement_type": "link_click" }
+    }
+  ]
+}
