@@ -1,0 +1,14 @@
+{
+  "_test_description": "The v1 presentation event replaces the preview content_displayed name.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440093",
+  "started_at": "2026-07-18T13:00:00Z",
+  "events": [
+    {
+      "type": "content_displayed",
+      "timestamp": "2026-07-18T13:00:03Z",
+      "content_id": "publisher:article:1",
+      "data": { "display_type": "link" }
+    }
+  ]
+}

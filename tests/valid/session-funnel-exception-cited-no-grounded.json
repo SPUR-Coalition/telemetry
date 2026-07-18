@@ -16,9 +16,12 @@
       }
     },
     {
+      "id": "880e8400-e29b-41d4-a716-446655440021",
       "type": "content_cited",
       "timestamp": "2026-03-28T20:00:05Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:claim:1",
       "content_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration",
       "data": {
         "citation_type": "reference",
@@ -27,12 +30,17 @@
       }
     },
     {
-      "type": "content_displayed",
+      "id": "880e8400-e29b-41d4-a716-446655440022",
+      "type": "content_presented",
       "timestamp": "2026-03-28T20:00:05Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:claim:1",
+      "citation_id": "880e8400-e29b-41d4-a716-446655440021",
       "content_url": "https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration",
       "data": {
-        "display_type": "link"
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
       }
     },
     {

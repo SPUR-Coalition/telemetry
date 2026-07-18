@@ -41,9 +41,12 @@
       }
     },
     {
+      "id": "880e8400-e29b-41d4-a716-446655440011",
       "type": "content_cited",
       "timestamp": "2026-03-28T14:00:06Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:recommendation:1",
       "content_url": "https://www.runnersworld.com/gear/best-trail-running-shoes",
       "content_id": "rw:best-trail-shoes-2026",
       "data": {
@@ -56,13 +59,18 @@
       }
     },
     {
-      "type": "content_displayed",
+      "id": "880e8400-e29b-41d4-a716-446655440012",
+      "type": "content_presented",
       "timestamp": "2026-03-28T14:00:06Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:recommendation:1",
+      "citation_id": "880e8400-e29b-41d4-a716-446655440011",
       "content_url": "https://www.runnersworld.com/gear/best-trail-running-shoes",
       "content_id": "rw:best-trail-shoes-2026",
       "data": {
-        "display_type": "card"
+        "presentation_kind": "source_reference",
+        "presentation_type": "card"
       }
     },
     {
@@ -88,6 +96,7 @@
       "type": "content_engaged",
       "timestamp": "2026-03-28T14:02:30Z",
       "turn_id": "1",
+      "presentation_id": "880e8400-e29b-41d4-a716-446655440012",
       "content_url": "https://www.runnersworld.com/gear/best-trail-running-shoes",
       "content_id": "rw:best-trail-shoes-2026",
       "data": {

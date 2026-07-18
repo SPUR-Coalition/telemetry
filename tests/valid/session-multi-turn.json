@@ -35,9 +35,11 @@
       }
     },
     {
+      "id": "880e8400-e29b-41d4-a716-446655440051",
       "type": "content_cited",
       "timestamp": "2026-03-28T16:00:08Z",
       "turn_id": "1",
+      "output_id": "response:1",
       "content_url": "https://www.bbc.co.uk/news/science-environment-68234567",
       "content_id": "bbc:68234567",
       "data": {
@@ -47,12 +49,16 @@
       }
     },
     {
-      "type": "content_displayed",
+      "id": "880e8400-e29b-41d4-a716-446655440052",
+      "type": "content_presented",
       "timestamp": "2026-03-28T16:00:08Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "citation_id": "880e8400-e29b-41d4-a716-446655440051",
       "content_url": "https://www.bbc.co.uk/news/science-environment-68234567",
       "data": {
-        "display_type": "link"
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
       }
     },
     {
@@ -100,9 +106,11 @@
       }
     },
     {
+      "id": "880e8400-e29b-41d4-a716-446655440053",
       "type": "content_cited",
       "timestamp": "2026-03-28T16:05:12Z",
       "turn_id": "3",
+      "output_id": "response:3",
       "content_url": "https://www.bbc.co.uk/news/science-environment-68234567",
       "content_id": "bbc:68234567",
       "data": {

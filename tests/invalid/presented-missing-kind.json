@@ -1,0 +1,16 @@
+{
+  "_test_description": "content_presented must distinguish source content from a source reference.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440090",
+  "started_at": "2026-07-18T13:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440091",
+      "type": "content_presented",
+      "timestamp": "2026-07-18T13:00:01Z",
+      "output_id": "response:1",
+      "content_id": "publisher:article:1",
+      "data": { "presentation_type": "link" }
+    }
+  ]
+}

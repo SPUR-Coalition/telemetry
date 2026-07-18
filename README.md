@@ -18,7 +18,7 @@ This is a preview specification. Field names, event types, and schema structure 
 
 ## Problem
 
-AI agents retrieve a content owner's content, use it to generate responses, and sometimes cite it. Content owners currently see an initial retrieval event - HTTP requests hitting their servers or access logs from content repositories. Whether the content actually influenced the response, whether it was cited, whether a user saw the citation, whether they clicked through - is not reported back to content owners.
+AI agents retrieve a content owner's content, use it to generate responses, and sometimes cite it. Content owners currently see an initial retrieval event - HTTP requests hitting their servers or access logs from content repositories. Whether the content actually entered a generation context, whether it was cited, whether content or a source reference was made perceivable, and whether anyone interacted with that presentation is not reported back to content owners.
 
 Platforms self-report usage metrics (if they report at all), and content owners have no way to verify the numbers or compare across platforms.
 
@@ -30,7 +30,7 @@ Content Telemetry tracks content through five stages:
 Retrieved    →  content fetched over HTTP (content owner can see this today)
   Grounded   →  content loaded into the agent's generation context
     Cited    →  content explicitly referenced in the response
-      Displayed  →  user saw it - a reference, or the content embedded in the answer
+      Presented  →  content or a source reference made perceivable on a recipient-facing surface
         Engaged  →  user clicked, copied, shared, or directed the agent to act
 ```
 
@@ -44,7 +44,7 @@ The gaps between stages show how content was used:
 
 The grounding event captures the boundary "this content entered the agent's generation context." It is architecture-neutral and decoupled from retrieval: content cached by the agent for days still produces a grounding event in every session it influences.
 
-Grounding and display record two different kinds of influence: grounding means the content influenced the agent, display means it reached the user. The two diverge as agent experiences move beyond the chat window - an agentic browser can render a page to the user that never entered a generation context, reported as a `content_displayed` event with `display_type: embed` and no grounding event.
+Grounding and presentation record different boundary crossings: grounding means the content entered a generation context; presentation means content or a source reference was made perceivable on a recipient-facing surface. Presentation does not prove attention. The two diverge as agent experiences move beyond the chat window - an agentic browser can render a page that never entered a generation context, reported as a `content_presented` event with `presentation_kind: content` and `presentation_type: embed` and no grounding event.
 
 ## Design principles
 
@@ -101,9 +101,12 @@ A user asks an AI agent about UK interest rates. The agent grounds its response 
       }
     },
     {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
       "type": "content_cited",
       "timestamp": "2026-03-28T09:00:05Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:paragraph:2",
       "content_url": "https://www.ft.com/content/abc123",
       "content_id": "ft:abc123",
       "data": {
@@ -112,12 +115,19 @@ A user asks an AI agent about UK interest rates. The agent grounds its response 
       }
     },
     {
-      "type": "content_displayed",
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "type": "content_presented",
       "timestamp": "2026-03-28T09:00:05Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:paragraph:2",
+      "citation_id": "550e8400-e29b-41d4-a716-446655440001",
       "content_url": "https://www.ft.com/content/abc123",
       "content_id": "ft:abc123",
-      "data": { "display_type": "link" }
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
     },
     {
       "type": "turn_completed",
@@ -134,7 +144,7 @@ A user asks an AI agent about UK interest rates. The agent grounds its response 
 }
 ```
 
-The content owner can derive: FT article `abc123` was in context for the response, cited as a paraphrase, link was displayed, user never clicked, ads were shown alongside.
+The content owner can derive: FT article `abc123` was in context for the response, cited as a paraphrase, its link was made perceivable, and no engagement was reported; ads were shown alongside.
 
 ## Relationship to other protocols
 
