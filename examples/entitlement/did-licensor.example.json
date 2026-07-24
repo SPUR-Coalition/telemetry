@@ -1,0 +1,22 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security/suites/jws-2020/v1"
+  ],
+  "id": "did:web:licensor.example",
+  "verificationMethod": [
+    {
+      "id": "did:web:licensor.example#key-1",
+      "type": "JsonWebKey2020",
+      "controller": "did:web:licensor.example",
+      "publicKeyJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "9lvfjYSox6ipnUJnLJoc6y_EYYXcgj0rDQ-GO5VZakA"
+      }
+    }
+  ],
+  "assertionMethod": [
+    "did:web:licensor.example#key-1"
+  ]
+}

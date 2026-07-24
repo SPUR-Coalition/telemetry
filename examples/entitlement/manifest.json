@@ -1,0 +1,29 @@
+{
+  "description": "license_ref -> credential resolution map for offline verification",
+  "credentials": [
+    {
+      "license_ref": "grant-valid-001",
+      "credential": "credential-valid.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt"
+    },
+    {
+      "license_ref": "grant-revoked-002",
+      "credential": "credential-revoked.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt"
+    },
+    {
+      "license_ref": "grant-expired-003",
+      "credential": "credential-expired.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt"
+    },
+    {
+      "license_ref": "pub-grant-001",
+      "credential": "credential-other-issuer.jwt",
+      "did_document": "did-publisher.example.json",
+      "status_list": "statuslist-publisher.jwt"
+    }
+  ]
+}
