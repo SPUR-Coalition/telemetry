@@ -1,0 +1,15 @@
+{
+  "type": "content_grounded",
+  "timestamp": "2026-07-01T10:00:00Z",
+  "content_url": "https://publisher.example/articles/8123",
+  "content_id": "ct:publisher.example:8123",
+  "license_ref": "grant-expired-003",
+  "data": {
+    "content_fingerprint": {
+      "sha256": "ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c"
+    },
+    "provenance": {
+      "source": "publisher-feed"
+    }
+  }
+}
