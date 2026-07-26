@@ -1,29 +1,41 @@
 {
-  "description": "license_ref -> credential resolution map for offline verification",
+  "description": "license_ref -> credential resolution map for offline verification. status_list_retrieved_at records the snapshot time for historical-status reasoning (profile section 5.4(b)); expect states the reference outcome, reported as 'grant evidence verified' at the stated class \u2014 never as an adjudication of entitlement.",
+  "status_list_retrieved_at": "2026-07-24T09:00:00Z",
   "credentials": [
     {
       "license_ref": "grant-valid-001",
       "credential": "credential-valid.jwt",
       "did_document": "did-licensor.example.json",
-      "status_list": "statuslist-licensor.jwt"
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "grant evidence verified (independently_verifiable)"
     },
     {
       "license_ref": "grant-revoked-002",
       "credential": "credential-revoked.jwt",
       "did_document": "did-licensor.example.json",
-      "status_list": "statuslist-licensor.jwt"
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "fails 5.4(b): status bit set"
     },
     {
       "license_ref": "grant-expired-003",
       "credential": "credential-expired.jwt",
       "did_document": "did-licensor.example.json",
-      "status_list": "statuslist-licensor.jwt"
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "fails 5.4(a): outside validity window"
     },
     {
       "license_ref": "pub-grant-001",
       "credential": "credential-other-issuer.jwt",
       "did_document": "did-publisher.example.json",
-      "status_list": "statuslist-publisher.jwt"
+      "status_list": "statuslist-publisher.jwt",
+      "expect": "grant evidence verified (independently_verifiable), second issuer"
+    },
+    {
+      "license_ref": "grant-unknownkid-004",
+      "credential": "credential-unknown-kid.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "fails 5.3/4.1: kid absent from DID document, no fallback"
     }
   ]
 }

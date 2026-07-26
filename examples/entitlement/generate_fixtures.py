@@ -114,15 +114,30 @@ def credential(issuer, kid, priv, *, jti, index, sl_url,
                     payload), payload
 
 
-def event(ref: str, ts: str) -> dict:
+def event(ref: str, ts: str, event_id: str) -> dict:
+    """A valid v1 standalone event document (telemetry-event.json)."""
     return {
-        "type": "content_grounded",
-        "timestamp": ts,
-        "content_url": "https://publisher.example/articles/8123",
-        "content_id": "ct:publisher.example:8123",
-        "license_ref": ref,
-        "data": {"content_fingerprint": {"sha256": ASSET_SHA},
-                 "provenance": {"source": "publisher-feed"}},
+        "document_type": "event",
+        "schema_version": "0.1",
+        "session_id": "6f1c2a54-0000-4000-8000-000000000001",
+        "agent_id": "agent.assistant.example",
+        "started_at": "2026-07-01T09:58:00Z",
+        "event": {
+            "id": event_id,
+            "type": "content_grounded",
+            "timestamp": ts,
+            "turn_id": "turn-1",
+            "source_role": "agent",
+            "content_url": "https://publisher.example/articles/8123",
+            "content_id": "ct:publisher.example:8123",
+            "license_ref": ref,
+            "data": {
+                "scope": "turn",
+                "media_type": "text",
+                "tokens_ingested": 512,
+                "content_hash": f"sha256:{ASSET_SHA}",
+            },
+        },
     }
 
 
@@ -150,34 +165,58 @@ def main() -> None:
     b_valid_jwt, _ = credential(b_issuer, b_kid, b_priv,
                                 jti="pub-grant-001", index=0, sl_url=b_sl_url)
 
+    # negative fixture: signed with key-1 but header names an unpublished key-2 —
+    # verifiers MUST fail this (no fallback to another published key)
+    unknown_kid_jwt, _ = credential(a_issuer, f"{a_issuer}#key-2", a_priv,
+                                    jti="grant-unknownkid-004", index=3, sl_url=a_sl_url)
+
     files = {
         "credential-valid.jwt": valid_jwt,
         "credential-revoked.jwt": revoked_jwt,
         "credential-expired.jwt": expired_jwt,
         "credential-tampered.jwt": tampered_jwt,
         "credential-other-issuer.jwt": b_valid_jwt,
+        "credential-unknown-kid.jwt": unknown_kid_jwt,
         "did-licensor.example.json": json.dumps(did_document(a_issuer, a_kid, a_priv), indent=2),
         "did-publisher.example.json": json.dumps(did_document(b_issuer, b_kid, b_priv), indent=2),
         "statuslist-licensor.jwt": status_list(a_issuer, a_sl_url, a_priv, [1]),
         "statuslist-publisher.jwt": status_list(b_issuer, b_sl_url, b_priv, []),
-        "event-valid.json": json.dumps(event("grant-valid-001", "2026-07-01T10:00:00Z"), indent=2),
-        "event-revoked.json": json.dumps(event("grant-revoked-002", "2026-07-01T10:00:00Z"), indent=2),
-        "event-expired.json": json.dumps(event("grant-expired-003", "2026-07-01T10:00:00Z"), indent=2),
+        "event-valid.json": json.dumps(event(
+            "grant-valid-001", "2026-07-01T10:00:00Z",
+            "9a3c7c10-0000-4000-8000-000000000101"), indent=2),
+        "event-revoked.json": json.dumps(event(
+            "grant-revoked-002", "2026-07-01T10:00:00Z",
+            "9a3c7c10-0000-4000-8000-000000000102"), indent=2),
+        "event-expired.json": json.dumps(event(
+            "grant-expired-003", "2026-07-01T10:00:00Z",
+            "9a3c7c10-0000-4000-8000-000000000103"), indent=2),
     }
     for name, content in files.items():
         (OUT / name).write_text(content, encoding="utf-8")
 
     manifest = {
-        "description": "license_ref -> credential resolution map for offline verification",
+        "description": "license_ref -> credential resolution map for offline verification. "
+                       "status_list_retrieved_at records the snapshot time for historical-status "
+                       "reasoning (profile section 5.4(b)); expect states the reference outcome, "
+                       "reported as 'grant evidence verified' at the stated class — never as an "
+                       "adjudication of entitlement.",
+        "status_list_retrieved_at": "2026-07-24T09:00:00Z",
         "credentials": [
             {"license_ref": "grant-valid-001", "credential": "credential-valid.jwt",
-             "did_document": "did-licensor.example.json", "status_list": "statuslist-licensor.jwt"},
+             "did_document": "did-licensor.example.json", "status_list": "statuslist-licensor.jwt",
+             "expect": "grant evidence verified (independently_verifiable)"},
             {"license_ref": "grant-revoked-002", "credential": "credential-revoked.jwt",
-             "did_document": "did-licensor.example.json", "status_list": "statuslist-licensor.jwt"},
+             "did_document": "did-licensor.example.json", "status_list": "statuslist-licensor.jwt",
+             "expect": "fails 5.4(b): status bit set"},
             {"license_ref": "grant-expired-003", "credential": "credential-expired.jwt",
-             "did_document": "did-licensor.example.json", "status_list": "statuslist-licensor.jwt"},
+             "did_document": "did-licensor.example.json", "status_list": "statuslist-licensor.jwt",
+             "expect": "fails 5.4(a): outside validity window"},
             {"license_ref": "pub-grant-001", "credential": "credential-other-issuer.jwt",
-             "did_document": "did-publisher.example.json", "status_list": "statuslist-publisher.jwt"},
+             "did_document": "did-publisher.example.json", "status_list": "statuslist-publisher.jwt",
+             "expect": "grant evidence verified (independently_verifiable), second issuer"},
+            {"license_ref": "grant-unknownkid-004", "credential": "credential-unknown-kid.jwt",
+             "did_document": "did-licensor.example.json", "status_list": "statuslist-licensor.jwt",
+             "expect": "fails 5.3/4.1: kid absent from DID document, no fallback"},
         ],
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
