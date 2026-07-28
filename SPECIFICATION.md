@@ -6,7 +6,7 @@
 
 ## Contents
 
-1. [Introduction](#1-introduction) - problem, goals, non-goals, relationship to access protocols, conventions
+1. [Introduction](#1-introduction) - problem, goals, non-goals, inference-time scope, relationship to access protocols, conventions
 2. [Normative references](#2-normative-references)
 3. [Terms and definitions](#3-terms-and-definitions)
 4. [Concepts](#4-concepts) - roles, sessions, event lifecycle, source roles, content identification
@@ -53,8 +53,16 @@ Content Telemetry does not:
 - Mandate specific privacy policies (left to agreements between parties)
 - Require specific transport protocols (HTTP, gRPC, etc. all valid)
 - Define content access or licensing protocols (see 1.4)
-- Model content usage for model training. The five-stage lifecycle covers inference-time usage only. The `bot_category` field on retrieval events (section 6.2) can distinguish training crawls from inference fetches, but training-specific telemetry is out of scope.
+- Model what a system does with content other than at inference time. Assembling a training corpus, training or fine-tuning a model, computing embeddings and constructing a retrieval index are all outside scope (see 1.3.1).
 - Define accreditation tiers, conformance marks, or community-specific conformance requirements. These belong in profiles layered on this specification (see [GOVERNANCE.md](./GOVERNANCE.md)).
+
+#### 1.3.1 Inference-time scope
+
+The five-stage lifecycle reports content use observable at inference time: identified content entered a generation context for a particular response, and what the resulting output did with it.
+
+Retrieval is the boundary case. A crawl whose purpose is training or index building can be reported as a `content_retrieved` event, and `bot_category` (section 6.2) distinguishes it, but the event is non-attributable: no grounding, citation, presentation or engagement follows it. What the system then does with the content, whether it enters a training corpus, a fine-tuning set, an embedding store or a search index, is outside this specification. Nothing here reports that a model was trained on a work, and a conforming implementation says nothing either way about it.
+
+Using such a store at inference time is inside scope. When an index built over a content owner's material is queried during a response and returns content that grounds the answer, that is a `content_grounded` event like any other, with `source_role: index` on the retrieval that served it (section 4.4). The line is between constructing a derived artefact and using one to answer a query, not whether an index was involved.
 
 ### 1.4 Relationship to content access protocols
 
@@ -252,6 +260,12 @@ A marketplace operating as both emitter and telemetry consumer receives telemetr
 `content_engaged` events are usually reported by the agent for in-product interactions. For a click-out to a landing page, a downstream marketplace, affiliate network, or destination site MAY report a corroborating `content_engaged` event using `ctx_token` in place of `session_id` (section 7.1).
 
 When multiple observers report the same retrieval, events are correlated using the `Content-Telemetry-ID` header (see section 7.2). A retrieval corroborated by multiple sources is a stronger signal than either alone. An uncorroborated origin- or edge-reported retrieval (no matching agent event) may indicate a scraper that does not support the telemetry protocol, or missing header propagation.
+
+#### Supply paths with a non-emitting intermediary
+
+Telemetry cannot describe a supply path whose middle does not emit. Where an agent obtains content from an intermediary that is not a telemetry participant, the agent's events are the only record, and they carry what the agent was told: usually a URL or identifier supplied by that intermediary. Core provides no way to establish from telemetry alone that the intermediary held the content lawfully, or that the content owner ever served it.
+
+An origin or edge event correlated by `Content-Telemetry-ID` is what closes the gap, and it exists only where the content owner observed the original request. Where it is absent, a consumer SHOULD treat the path back to the content owner as unestablished rather than infer it from the agent's report. This is a limit of the observation model, not a defect in the emitter: an agent reporting honestly cannot supply evidence about a party it did not observe.
 
 ### 4.5 Content identification
 
