@@ -124,7 +124,8 @@
                 "properties": {
                   "scope": { "$ref": "#/$defs/GroundingScope" },
                   "cached": { "type": "boolean" },
-                  "tokens_ingested": { "type": "integer", "minimum": 0 },
+                  "chars_ingested": { "type": "integer", "minimum": 0, "description": "Unicode code points of content placed in the generation context. Portable across emitters; preferred over tokens_ingested (section 6.4)." },
+                  "tokens_ingested": { "type": "integer", "minimum": 0, "description": "Token count of the same content in the emitter's own tokeniser. Supplementary: not comparable between emitters (section 6.4)." },
                   "content_version": { "type": "string" },
                   "content_last_modified": { "type": "string", "format": "date-time" },
                   "content_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },

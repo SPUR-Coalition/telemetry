@@ -20,6 +20,7 @@
       "data": {
         "scope": "session",
         "cached": false,
+        "chars_ingested": 9600,
         "tokens_ingested": 2400,
         "media_type": "text"
       }
