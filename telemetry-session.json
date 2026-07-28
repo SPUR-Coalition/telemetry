@@ -207,8 +207,7 @@
                   "ja4": { "type": "string", "description": "JA4 TLS client fingerprint" },
                   "asn": { "type": "integer", "description": "Client AS number" },
                   "asn_org": { "type": "string", "description": "Client AS organisation name" },
-                  "country": { "type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2 country code" },
-                  "ip_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 of client IP (sha256:{hex})" }
+                  "country": { "type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2 country code" }
                 }
               }
             }

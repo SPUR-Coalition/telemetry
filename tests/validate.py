@@ -96,6 +96,19 @@ APPLICATION_LAYER_VIOLATIONS = {
         "Violates section 8.6: every entry MUST be the manifest's own host or a "
         "subdomain of it. Consumers reject the manifest as malformed (section 8.7)."
     ),
+    "withdrawn-ip-hash.json": (
+        "Retrieval event carries ip_hash in data. "
+        "Violates section 9.1: the field was withdrawn in v1 and emitters "
+        "MUST NOT populate it."
+    ),
+}
+
+# Fields withdrawn in v1 that emitters MUST NOT populate (section 9.1). The
+# schemas cannot catch these: event `data` accepts additional properties by
+# design, so a withdrawn field validates as an ordinary extension unless it is
+# checked here.
+WITHDRAWN_EVENT_DATA_FIELDS = {
+    "ip_hash": "withdrawn in v1; hashing does not anonymise an IP address",
 }
 
 # Event types that carry content and therefore require an identifier
@@ -312,12 +325,31 @@ def check_session_or_ctx_token(data):
     return []
 
 
+def check_withdrawn_fields(data):
+    """
+    Check that no event carries a field withdrawn in v1 (section 9.1).
+    Returns a list of violation descriptions.
+    """
+    violations = []
+    for event in _iter_events(data):
+        event_data = event.get("data")
+        if not isinstance(event_data, dict):
+            continue
+        for field, reason in WITHDRAWN_EVENT_DATA_FIELDS.items():
+            if field in event_data:
+                violations.append(
+                    f"Event '{event.get('type')}' carries '{field}' in data ({reason})"
+                )
+    return violations
+
+
 def check_application_layer(data):
     """Run every application-layer conformance rule and return all violations."""
     return (
         check_privacy_conformance(data)
         + check_content_identifier(data)
         + check_session_or_ctx_token(data)
+        + check_withdrawn_fields(data)
     )
 
 
