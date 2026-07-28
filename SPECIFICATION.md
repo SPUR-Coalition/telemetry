@@ -328,7 +328,7 @@ Format: the URL of a manifest served at `/.well-known/content-telemetry.json` un
 | `content_telemetry_id` | UUID | No | Correlation ID for cross-observer deduplication (see 7.2) |
 | `content_url` | string | No | Content URL as fetched or canonical URL |
 | `content_id` | string | No | Content owner's stable content identifier (see 4.5) |
-| `license_ref` | string | No | Reference to the licence under which content was accessed |
+| `license_ref` | string | No | Reference to a licence or grant the emitter associates with this event (see 5.2.3) |
 | `turn` | ConversationTurn | No | Conversation data (for turn events) |
 | `data` | object | No | Type-specific metadata (see section 6) |
 
@@ -346,7 +346,11 @@ The `source_role` field SHOULD be set on `content_retrieved` events. When multip
 
 #### 5.2.3 Licence reference
 
-The `license_ref` field connects a telemetry event to the content access licence that authorised it. The format depends on the access protocol: a JWT `jti` claim, a CoMP package ID, or any opaque identifier that both parties can resolve. When present, telemetry consumers can verify that content usage was licensed.
+The `license_ref` field associates a telemetry event with a licence or grant the emitter references. The format depends on the access protocol: a JWT `jti` claim, a CoMP package ID, or any opaque identifier that both parties can resolve.
+
+Core does not resolve, validate or interpret the reference. `license_ref` is part of the emitter's claim about the event: it records which grant the emitter says applied. It does not establish that the grant existed, that it covered this content, that it was valid at the time of use, or that the use was permitted. A consumer that needs any of those has to check the issuer's own records, or use evidence defined outside this specification.
+
+`license_ref` also does not identify the party whose entitlement was used. Where a publisher issues one grant per subscriber the value may work as a proxy for that subscriber, but only within the issuing publisher's namespace: nothing here requires the value to be typed, stable across sessions, or comparable between emitters.
 
 ### 5.3 Event types
 
@@ -618,7 +622,7 @@ The `cached` field distinguishes live fetches from cached reuse. A live fetch pr
 
 Telemetry consumers may weight cached and live groundings differently. An agent may cache an article for days or weeks, grounding it in multiple sessions from a single retrieval. A single retrieval produces one `content_retrieved` event but potentially many `content_grounded` events across subsequent sessions.
 
-Agents SHOULD preserve the `license_ref` from the original retrieval when emitting cached grounding events. Without this, telemetry consumers cannot link cached usage to the licence that authorised the original access.
+Agents SHOULD preserve the `license_ref` from the original retrieval when emitting cached grounding events. Without this, telemetry consumers cannot link cached usage to the grant referenced at the original access.
 
 #### Freshness and verification
 

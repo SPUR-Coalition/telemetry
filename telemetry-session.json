@@ -100,7 +100,7 @@
         },
         "license_ref": {
           "type": ["string", "null"],
-          "description": "Reference to the content access licence (JWT jti, CoMP package ID, or opaque identifier)"
+          "description": "Reference to a licence or grant the emitter associates with this event (JWT jti, CoMP package ID, or opaque identifier). Core does not resolve or interpret it. See section 5.2.3."
         },
         "turn": {
           "oneOf": [{ "$ref": "#/$defs/ConversationTurn" }, { "type": "null" }],
