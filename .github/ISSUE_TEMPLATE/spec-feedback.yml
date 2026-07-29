@@ -6,9 +6,10 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reviewing the Content Telemetry standard. This template is for
-        feedback on the specification itself - design questions, unclear or
-        contradictory requirements, gaps, or proposed changes to the wire format.
+        The formal v1 public comment period closed on 24 July 2026. This template
+        remains available for design questions, unclear or contradictory
+        requirements, implementation evidence, gaps, or proposed changes to the
+        wire format. New proposals are not automatically part of the v1 scope.
 
         For a concrete bug in a schema file or a worked example, use the
         **Schema or example bug** template instead.

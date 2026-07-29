@@ -4,6 +4,13 @@
 
 This is a preview specification. Field names, event types, and schema structure may change before 1.0.
 
+> **Consultation status — 29 July 2026:** The public comment period closed on
+> **24 July 2026**. SPUR is reviewing the submissions and preparing a disposition
+> for every consultation issue. Focused v1 changes are being prepared on the
+> `v1-draft` integration line, but no proposed change is adopted until it has
+> completed review and been merged. Version 0.1 remains the current published
+> preview. See [Consultation status](#consultation-status) below.
+
 ## Contents
 
 - [Problem](#problem)
@@ -12,7 +19,7 @@ This is a preview specification. Field names, event types, and schema structure 
 - [Repo contents](#repo-contents)
 - [Example](#example)
 - [Relationship to other protocols](#relationship-to-other-protocols)
-- [Request for comment](#request-for-comment)
+- [Consultation status](#consultation-status)
 - [Open questions in v0.1](#open-questions-in-v01)
 - [Versioning](#versioning)
 
@@ -140,25 +147,38 @@ The content owner can derive: FT article `abc123` was in context for the respons
 
 Content Telemetry is focussed on **reporting**, while content **access** protocols (Really Simple Licensing, peek-then-pay, IAB CoMP, bilateral APIs) aim to govern how agents discover and license content. The `license_ref` field on events connects telemetry to whatever access protocol issued the licence, but the schemas are independent - telemetry works with any access protocol, or none.
 
-## Request for comment
+## Consultation status
 
-This specification is open for public comment from **12 June to 24 July 2026** (extended from 10 July).
+The public comment period ran from **12 June to 24 July 2026** and is now closed.
+Thank you to everyone who opened an issue, submitted a pull request, joined a
+working session or supplied implementation evidence.
 
-Feedback is triaged on the issue tracker as it arrives and incorporated into the next revision after the window closes, and the wire format is held stable during the window.
+The consultation produced 29 specification issue threads, three profile issue
+threads and five pull requests. The maintainers are now:
 
-Comment is most useful on:
+- [x] reviewing the full consultation record;
+- [x] preparing a proposed disposition for every thread;
+- [ ] recording the approved dispositions on the issue tracker;
+- [ ] completing focused v1 changes and migration fixtures on `v1-draft`;
+- [ ] publishing a v1 release candidate for implementer testing; and
+- [ ] publishing final v1 only after publisher, intermediary and agent/platform
+  acceptance cases pass.
 
-- The [open questions below](#open-questions-in-v01).
-- Whether the conformance and privacy levels (sections 5.5 and 5.7) are implementable as written by a team building an emitter or consumer.
-- How the five-stage event model fits real agent architectures (section 6.4).
-- Anything that would require an implementer to depend on a particular operator or service to participate. The standard should be implementable from the public schemas alone.
-- Any worked example that does not validate against its schema, or any mismatch between the prose and the schemas.
+Consultation issues remain open while their dispositions are recorded. An open
+issue does not mean its proposal has been accepted, and a preparation branch does
+not change the published specification. The issue tracker and pull-request
+history will remain the public decision record.
 
-File an issue on this repository using the available templates: *Spec feedback / open question* for design questions and proposed changes, and *Schema or example bug* for concrete defects. Pull requests are welcome for specific schema or text fixes; for larger changes, open an issue first (see [CONTRIBUTING.md](./CONTRIBUTING.md)). Feedback on accreditation, the Compliant tier, or the conformance mark belongs on the [profile repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
+Concrete schema, fixture and documentation bugs may still be filed. New design
+proposals are welcome but are not automatically part of the v1 consultation
+scope. Pull requests remain welcome for specific fixes; for larger changes, open
+an issue first (see [CONTRIBUTING.md](./CONTRIBUTING.md)). Feedback on
+accreditation or the conformance mark belongs on the
+[profile repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
 
-Some areas are out of scope for this round. The non-goals are in [section 1.3](./SPECIFICATION.md#13-non-goals) and the deferred manifest features in [section 8.9](./SPECIFICATION.md#89-out-of-scope-for-v01); please read those before filing. Comments on whether a non-goal is the right call are welcome, provided they say which one and why.
-
-Required fields, event types, and schema structure may all change before 1.0 (section 12). Nothing is settled except the items listed as out of scope.
+Required fields, event types and schema structure may still change before 1.0
+(section 12). Version 0.1 remains the current published preview until a later
+version is released.
 
 ## Open questions in v0.1
 
