@@ -103,12 +103,12 @@ APPLICATION_LAYER_VIOLATIONS = {
     ),
 }
 
-# Fields withdrawn in v1 that emitters MUST NOT populate (section 9.1). The
-# schemas cannot catch these: event `data` accepts additional properties by
-# design, so a withdrawn field validates as an ordinary extension unless it is
-# checked here.
-WITHDRAWN_EVENT_DATA_FIELDS = {
-    "ip_hash": "withdrawn in v1; hashing does not anonymise an IP address",
+# V0.1 fields prohibited by the v1 migration rule (section 9.1). This is a
+# compatibility check for the v1 transition, not a general registry of every
+# field the specification may ever withdraw. The schemas cannot catch it:
+# event `data` accepts additional properties by design.
+V1_PROHIBITED_V0_1_EVENT_DATA_FIELDS = {
+    "ip_hash": "prohibited by the v1 migration rule; hashing does not anonymise an IP address",
 }
 
 # Event types that carry content and therefore require an identifier
@@ -325,9 +325,9 @@ def check_session_or_ctx_token(data):
     return []
 
 
-def check_withdrawn_fields(data):
+def check_v1_migration_prohibitions(data):
     """
-    Check that no event carries a field withdrawn in v1 (section 9.1).
+    Check v1's explicit prohibitions on fields carried forward from v0.1.
     Returns a list of violation descriptions.
     """
     violations = []
@@ -335,7 +335,7 @@ def check_withdrawn_fields(data):
         event_data = event.get("data")
         if not isinstance(event_data, dict):
             continue
-        for field, reason in WITHDRAWN_EVENT_DATA_FIELDS.items():
+        for field, reason in V1_PROHIBITED_V0_1_EVENT_DATA_FIELDS.items():
             if field in event_data:
                 violations.append(
                     f"Event '{event.get('type')}' carries '{field}' in data ({reason})"
@@ -349,7 +349,7 @@ def check_application_layer(data):
         check_privacy_conformance(data)
         + check_content_identifier(data)
         + check_session_or_ctx_token(data)
-        + check_withdrawn_fields(data)
+        + check_v1_migration_prohibitions(data)
     )
 
 

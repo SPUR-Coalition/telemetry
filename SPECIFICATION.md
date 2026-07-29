@@ -1012,7 +1012,7 @@ Emitters SHOULD:
 
 Hashing does not anonymise a value drawn from a space small enough to enumerate. The entire IPv4 address space can be hashed and compared against a candidate digest on commodity hardware, so a hashed IP address is a pseudonym rather than an anonymous value and should be treated as personal data. Version 0.1 defined an `ip_hash` field in the edge and origin data profiles (sections 6.2 and 6.3). Version 1 withdraws it, and emitters MUST NOT populate it.
 
-The schemas cannot enforce this: event `data` accepts additional properties by design, so a withdrawn field validates as an ordinary extension. The conformance suite checks it at the application layer instead.
+The schemas cannot enforce this v1 migration rule: event `data` accepts additional properties by design, so `ip_hash` would otherwise validate as an ordinary extension. The conformance suite therefore checks this specific prohibition at the application layer. This does not establish a general registry of withdrawn extension names.
 
 ### 9.2 Recommended levels
 
