@@ -415,7 +415,7 @@ These are the recommended values. Platforms with additional product surfaces (co
 
 An emitter that populates a conversation turn MUST NOT include a field above that turn's declared `privacy_level` - for example, `query_text` MUST NOT be present when `privacy_level` is `intent` or `minimal`. This restriction is a property of `privacy_level` itself: it applies wherever conversation turns are emitted, independent of the emitter's conformance level.
 
-**Token counts** includes `query_tokens` and `response_tokens`. These are available at all levels because they are needed for token-based counting models and do not reveal user intent or platform strategy. They carry the same portability limit as `tokens_ingested` (section 6.4): both are measured in the emitter's own tokeniser and are not comparable between agents.
+**Token counts** includes `query_tokens` and `response_tokens`. These are available at all levels because they are needed for token-based counting models and do not reveal user intent or platform strategy. They carry the same portability limit as `tokens_ingested` (section 6.4): both are measured in the emitter's own tokeniser and are not comparable between agents. Version 1 does not define corresponding turn-level character counts; `chars_ingested` measures source content placed in a generation context, not query or response length.
 
 **Response classification** includes `response_type` (e.g., `"recommendation"`, `"explanation"`). Available at `intent` level and above, as it can reveal the nature of the user's query.
 
@@ -583,7 +583,7 @@ Emitting a `training`-category `content_retrieved` event is permitted but non-at
 
 Both fields measure the content actually placed in the generation model's context. For chunked retrieval, count only the portion used, not the full source document.
 
-`chars_ingested` counts Unicode code points in that content. It is the portable measure: two emitters counting the same text agree, so a content owner can compare volumes across agents and over time without knowing which model produced the number.
+`chars_ingested` counts Unicode code points in the exact text placed in context. Count the string as ingested: an emitter MUST NOT apply Unicode normalisation solely to calculate this field. It is the portable measure: two emitters that ingest the same code-point sequence agree, so a content owner can compare volumes across agents and over time without knowing which model produced the number. Different normalised representations remain different ingested sequences and may therefore produce different counts.
 
 `tokens_ingested` counts the same content in the generation model's tokeniser (the model identified in `model_id` on the corresponding `turn_completed` event), not the retrieval or embedding model's tokeniser. It is supplementary. Token counts are model-specific, change when a vendor revises a tokeniser, and are not comparable between agents, so a consumer cannot aggregate them across emitters or treat a difference as a difference in volume. Emitters SHOULD send `chars_ingested` where they send `tokens_ingested`, and consumers that receive only token counts SHOULD record which model produced them.
 
