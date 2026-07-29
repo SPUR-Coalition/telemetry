@@ -30,8 +30,11 @@ CREDENTIALS = [
     "credential-tampered.jwt",   # forged payload is still schema-valid; crypto catches it
     "credential-other-issuer.jwt",
     "credential-unknown-kid.jwt",  # schema-valid; fails at signature step (no kid fallback)
+    "credential-grantee-mismatch.jwt",  # schema-valid; fails the 5.5 grantee match
+    "credential-revoked-late.jwt",  # bit set in current list, clear in signed snapshot
 ]
-EVENTS = ["event-valid.json", "event-revoked.json", "event-expired.json"]
+EVENTS = ["event-valid.json", "event-revoked.json", "event-expired.json",
+          "event-grantee-mismatch.json", "event-revoked-late.json"]
 
 
 def _jwt_payload(token: str) -> dict:
@@ -129,9 +132,55 @@ def test_status_list_issuer_matches_credential_issuer():
         assert sl["issuer"] == cred["issuer"], entry["license_ref"]
 
 
-def test_manifest_records_snapshot_time():
-    manifest = json.loads((EX / "manifest.json").read_text("utf-8"))
-    assert "status_list_retrieved_at" in manifest
+def _bit(status_list_jwt: str, index: int) -> bool:
+    import gzip
+    payload = _jwt_payload(status_list_jwt)
+    encoded = payload["credentialSubject"]["encodedList"].lstrip("u")
+    bits = gzip.decompress(base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)))
+    return bool(bits[index // 8] & (1 << (7 - (index % 8))))
+
+
+def test_status_purpose_is_monotonic_revocation():
+    """4.2/5.4(c): the snapshot inference (clear at s >= t implies clear at t) is only
+    sound for the monotonic revocation purpose — never reversible suspension. Enforce
+    it on every credentialStatus entry and every status-list credential."""
+    for name in CREDENTIALS:
+        cs = _jwt_payload((EX / name).read_text("utf-8")).get("credentialStatus")
+        if cs:
+            assert cs.get("statusPurpose") == "revocation", name
+    for name in ("statuslist-licensor.jwt", "statuslist-licensor-snapshot.jwt",
+                 "statuslist-publisher.jwt"):
+        subject = _jwt_payload((EX / name).read_text("utf-8"))["credentialSubject"]
+        assert subject.get("statusPurpose") == "revocation", name
+
+
+def test_grantee_mismatch_is_a_real_mismatch():
+    """5.5: the fixture's credential names a different grantee than the reporting agent."""
+    cred = _jwt_payload((EX / "credential-grantee-mismatch.jwt").read_text("utf-8"))
+    doc = json.loads((EX / "event-grantee-mismatch.json").read_text("utf-8"))
+    assert cred["credentialSubject"]["grantee"] != doc["agent_id"]
+    # and the positive case really does match, so the pair is discriminating
+    valid = _jwt_payload((EX / "credential-valid.jwt").read_text("utf-8"))
+    valid_doc = json.loads(json.dumps(doc))
+    assert valid["credentialSubject"]["grantee"] == valid_doc["agent_id"]
+
+
+def test_revoked_late_snapshot_semantics():
+    """5.4(c): bit SET in the current list, CLEAR in the issuer-signed snapshot, and the
+    snapshot's own signed validFrom is at or after the event time — issuer-attested
+    time, not locally recorded retrieval time, is what carries evidential weight."""
+    cred = _jwt_payload((EX / "credential-revoked-late.jwt").read_text("utf-8"))
+    index = int(cred["credentialStatus"]["statusListIndex"])
+    current = (EX / "statuslist-licensor.jwt").read_text("utf-8")
+    snapshot = (EX / "statuslist-licensor-snapshot.jwt").read_text("utf-8")
+    assert _bit(current, index) is True
+    assert _bit(snapshot, index) is False
+    doc = json.loads((EX / "event-revoked-late.json").read_text("utf-8"))
+    event_time = doc["event"]["timestamp"]
+    snapshot_signed_time = _jwt_payload(snapshot)["validFrom"]
+    assert snapshot_signed_time >= event_time  # ISO-8601 UTC strings compare lexically
+    # the snapshot is issuer-signed: same issuer as the credential it vouches for
+    assert _jwt_payload(snapshot)["issuer"] == cred["issuer"]
 
 
 if __name__ == "__main__":

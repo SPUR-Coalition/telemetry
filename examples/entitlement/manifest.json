@@ -1,6 +1,5 @@
 {
-  "description": "license_ref -> credential resolution map for offline verification. status_list_retrieved_at records the snapshot time for historical-status reasoning (profile section 5.4(b)); expect states the reference outcome, reported as 'grant evidence verified' at the stated class \u2014 never as an adjudication of entitlement.",
-  "status_list_retrieved_at": "2026-07-24T09:00:00Z",
+  "description": "license_ref -> credential resolution map for offline verification. Historical-status reasoning (profile section 5.4(c)) trusts only the signed validFrom inside a status-list credential \u2014 issuer-attested time \u2014 never a locally recorded retrieval time, which proves nothing about what the issuer had published. expect states the reference outcome, reported as 'grant evidence verified' at the stated class \u2014 never as an adjudication of entitlement.",
   "credentials": [
     {
       "license_ref": "grant-valid-001",
@@ -36,6 +35,21 @@
       "did_document": "did-licensor.example.json",
       "status_list": "statuslist-licensor.jwt",
       "expect": "fails 5.3/4.1: kid absent from DID document, no fallback"
+    },
+    {
+      "license_ref": "grant-granteemismatch-005",
+      "credential": "credential-grantee-mismatch.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "fails 5.5: credential grantee agent.other.example does not match reporting agent_id"
+    },
+    {
+      "license_ref": "grant-revokedlate-006",
+      "credential": "credential-revoked-late.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "snapshot_status_list": "statuslist-licensor-snapshot.jwt",
+      "expect": "current list: bit set -> fails 5.4(c) by default (retroactive). With the issuer-signed snapshot (signed validFrom 2026-07-05 >= event time, bit clear): grant evidence verified (independently_verifiable) via the 5.4(c) signed-snapshot path"
     }
   ]
 }
