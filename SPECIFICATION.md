@@ -288,6 +288,7 @@ Additional content metadata - version, last-modified timestamp, content hash, me
 |-------|------|----------|-------------|
 | `schema_version` | string | Yes | Schema version (e.g., "0.1") |
 | `session_id` | UUID | Yes | Unique session identifier |
+| `parent_session_id` | UUID | No | Immediate parent session that delegated work to this session |
 | `agent_id` | string | No | Responding agent identifier |
 | `content_scope` | string | No | Opaque content collection identifier (see 5.1.1) |
 | `manifest_ref` | string | No | Manifest reference (see 5.1.2 and section 8) |
@@ -296,6 +297,19 @@ Additional content metadata - version, last-modified timestamp, content hash, me
 | `conformance_level` | string | No | Informational conformance level advertised by the emitter (see section 5.7). Values: `retrieval`, `grounding`, `citation` |
 | `document_type` | string | No | `"session"` for session documents (see section 7.1 for the standalone event and event batch formats) |
 | `events` | Event[] | No | Ordered list of events |
+
+`parent_session_id` links a delegated session to its immediate parent without
+requiring an emitter to disclose the agent system's full internal topology. A
+child session retains its own `session_id`, events and conformance obligations.
+Emitters MAY omit the link when the relationship is unavailable or its disclosure
+is not appropriate. Consumers MUST NOT infer that an unlinked session had no
+parent.
+
+The event boundary does not change in a multi-agent system. Content entering a
+sub-agent's generation context is grounded in the child session. A source
+reference that appears only in the sub-agent's response to its orchestrator is
+not thereby a citation or presentation to the end user; those events require the
+corresponding relationship or presentation in the recipient-facing output.
 
 #### 5.1.1 Content scope
 
@@ -717,7 +731,7 @@ The schema supports three delivery formats:
 
 **Event batch.** Multiple events sharing one session context, delivered together. The envelope carries the same fields as a standalone event, with an `events` array in place of the single `event`. Suitable for emitters that buffer events and flush periodically: edge platforms aggregating detections across requests, or SDKs batching events within a session.
 
-A standalone event carries `document_type`, `schema_version`, and optionally `session_id` alongside the event fields. The `document_type` field distinguishes standalone events from session documents:
+A standalone event carries `document_type`, `schema_version`, and optionally `session_id` and `parent_session_id` alongside the event fields. The `document_type` field distinguishes standalone events from session documents:
 
 ```json
 {
@@ -739,7 +753,7 @@ A standalone event carries `document_type`, `schema_version`, and optionally `se
 }
 ```
 
-An event batch carries the same envelope fields with `"document_type": "event_batch"` and an `events` array. Envelope-level fields (`session_id`, `ctx_token`, `agent_id`, `started_at`) apply to every event in the batch; events belonging to different sessions MUST be delivered in separate batches or as session documents.
+An event batch carries the same envelope fields with `"document_type": "event_batch"` and an `events` array. Envelope-level fields (`session_id`, `parent_session_id`, `ctx_token`, `agent_id`, `started_at`) apply to every event in the batch; events belonging to different sessions MUST be delivered in separate batches or as session documents.
 
 ```json
 {
