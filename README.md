@@ -57,6 +57,7 @@ Grounding and display record two different kinds of influence: grounding means t
 ## Repo contents
 
 - [SPECIFICATION.md](./SPECIFICATION.md) - the full protocol specification
+- [SCOPE.md](./SCOPE.md) - the boundary between core, profiles, governing terms and external services
 - [telemetry-session.json](./telemetry-session.json) - JSON Schema for session documents
 - [telemetry-event.json](./telemetry-event.json) - JSON Schema for standalone event envelopes
 - [telemetry-event-batch.json](./telemetry-event-batch.json) - JSON Schema for event batch envelopes
