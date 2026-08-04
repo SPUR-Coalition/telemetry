@@ -27,6 +27,11 @@
       "format": "uuid",
       "description": "Unique session identifier"
     },
+    "parent_session_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Optional identifier of the immediate parent session that delegated work to this session. See section 5.1."
+    },
     "agent_id": {
       "type": ["string", "null"],
       "description": "Responding agent identifier"

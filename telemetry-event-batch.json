@@ -21,6 +21,11 @@
       "format": "uuid",
       "description": "Session identifier, applying to every event in the batch. MAY be omitted by origin-side emitters with no session context. REQUIRED for emitters at Grounding conformance or above (unless ctx_token is carried instead - see section 7.1). Events belonging to different sessions MUST be delivered in separate batches."
     },
+    "parent_session_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Optional identifier of the immediate parent session that delegated work to this session. Applies to every event in the batch. See section 5.1."
+    },
     "ctx_token": {
       "type": "string",
       "description": "Opaque click-token issued by the originating agent, carried in place of session_id on batches of content_engaged events emitted from a landing page after a click-out. Applies to every event in the batch and is resolved by the telemetry consumer to the owning session. See section 7.1. An event MUST carry either session_id or ctx_token at Grounding conformance and above."
