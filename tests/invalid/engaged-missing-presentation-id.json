@@ -1,0 +1,14 @@
+{
+  "_test_description": "content_engaged must identify the exact presentation occurrence rather than matching only by URL.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440092",
+  "started_at": "2026-07-18T13:00:00Z",
+  "events": [
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-07-18T13:00:02Z",
+      "content_id": "publisher:article:1",
+      "data": { "engagement_type": "link_click" }
+    }
+  ]
+}

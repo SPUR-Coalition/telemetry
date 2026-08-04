@@ -1,5 +1,5 @@
 {
-  "_test_description": "Funnel exception: content_displayed without content_cited. This is the Sources sidebar pattern - the agent shows source links without explicitly citing the content in the response text. Valid per section 4.3.",
+  "_test_description": "Funnel exception: content_presented without content_cited. This is the Sources sidebar pattern - the agent makes source links perceivable without semantically associating them with an output element. Valid per section 4.3.",
   "schema_version": "0.1",
   "session_id": "660e8400-e29b-41d4-a716-446655440010",
   "agent_id": "search-assistant-v1",
@@ -32,12 +32,16 @@
       }
     },
     {
-      "type": "content_displayed",
+      "id": "880e8400-e29b-41d4-a716-446655440031",
+      "type": "content_presented",
       "timestamp": "2026-03-28T19:00:06Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "sources:1",
       "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance",
       "data": {
-        "display_type": "link"
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
       }
     },
     {

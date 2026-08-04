@@ -20,10 +20,25 @@
       "content_url": "https://arstechnica.com/science/2026/03/new-battery-chemistry-breakthrough/"
     },
     {
+      "id": "990e8400-e29b-41d4-a716-446655440062",
       "type": "content_cited",
       "timestamp": "2026-03-28T08:20:05Z",
+      "output_id": "response:1",
       "source_role": "agent",
       "content_url": "https://arstechnica.com/science/2026/03/new-battery-chemistry-breakthrough/"
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440063",
+      "type": "content_presented",
+      "timestamp": "2026-03-28T08:20:06Z",
+      "output_id": "response:1",
+      "citation_id": "990e8400-e29b-41d4-a716-446655440062",
+      "source_role": "agent",
+      "content_url": "https://arstechnica.com/science/2026/03/new-battery-chemistry-breakthrough/",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
     }
   ]
 }

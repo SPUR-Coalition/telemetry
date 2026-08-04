@@ -103,7 +103,7 @@ APPLICATION_LAYER_VIOLATIONS = {
 # turn_completed are turn events, not content events, and are exempt.
 CONTENT_EVENT_TYPES = {
     "content_retrieved", "content_grounded", "content_cited",
-    "content_displayed", "content_engaged",
+    "content_presented", "content_engaged",
 }
 
 # Fields that MUST NOT appear at each privacy level (section 5.5).

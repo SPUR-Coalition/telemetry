@@ -1,5 +1,5 @@
 {
-  "_test_description": "Funnel exception: content_displayed without content_grounded. An agentic browser renders a publisher's page to the user (display_type: embed) without the content entering a generation context, and the user directs the agent to open a second page (engagement_type: agent_navigate). Valid per section 4.3. Also exercises media_type on display data and the open display_type/engagement_type vocabularies.",
+  "_test_description": "Funnel exception: content_presented without content_grounded. An agentic browser renders a publisher's page on a recipient-facing surface (presentation_type: embed) without the content entering a generation context, and the recipient directs the agent to open a second page (engagement_type: agent_navigate). Valid per section 4.3. Also exercises media_type on presentation data and the open presentation_type/engagement_type vocabularies.",
   "schema_version": "0.1",
   "session_id": "660e8400-e29b-41d4-a716-446655440020",
   "agent_id": "browser-agent-v1",
@@ -22,22 +22,28 @@
       "content_url": "https://www.fitnessmedia.example/guides/home-workouts"
     },
     {
-      "type": "content_displayed",
+      "id": "880e8400-e29b-41d4-a716-446655440041",
+      "type": "content_presented",
       "timestamp": "2026-03-29T11:00:02Z",
       "turn_id": "1",
+      "output_id": "browser-view:1",
       "content_url": "https://www.fitnessmedia.example/guides/home-workouts",
       "data": {
-        "display_type": "embed",
+        "presentation_kind": "content",
+        "presentation_type": "embed",
         "media_type": "text"
       }
     },
     {
-      "type": "content_displayed",
+      "id": "880e8400-e29b-41d4-a716-446655440042",
+      "type": "content_presented",
       "timestamp": "2026-03-29T11:00:04Z",
       "turn_id": "1",
+      "output_id": "browser-view:1",
       "content_url": "https://www.fitnessmedia.example/videos/beginner-routine",
       "data": {
-        "display_type": "embed",
+        "presentation_kind": "content",
+        "presentation_type": "embed",
         "media_type": "video"
       }
     },
@@ -56,6 +62,7 @@
       "type": "content_engaged",
       "timestamp": "2026-03-29T11:01:00Z",
       "turn_id": "1",
+      "presentation_id": "880e8400-e29b-41d4-a716-446655440041",
       "content_url": "https://www.fitnessmedia.example/guides/home-workouts",
       "data": {
         "engagement_type": "agent_navigate"
