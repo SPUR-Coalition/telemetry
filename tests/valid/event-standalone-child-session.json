@@ -1,0 +1,20 @@
+{
+  "_test_description": "Standalone event envelope from a child agent session in a multi-agent topology: parent_session_id on the envelope identifies the orchestrating session. The grounded content entered the sub-agent's generation context.",
+  "document_type": "event",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440170",
+  "parent_session_id": "660e8400-e29b-41d4-a716-446655440171",
+  "agent_id": "research-subagent-v2",
+  "started_at": "2026-08-01T16:00:00Z",
+  "event": {
+    "type": "content_grounded",
+    "timestamp": "2026-08-01T16:00:02Z",
+    "content_url": "https://www.example-journal.org/analysis/press-freedom-ruling",
+    "data": {
+      "scope": "turn",
+      "cached": false,
+      "chars_ingested": 4100,
+      "tokens_ingested": 1000
+    }
+  }
+}

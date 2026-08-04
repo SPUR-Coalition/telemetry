@@ -17,7 +17,11 @@
       "type": "content_grounded",
       "timestamp": "2026-03-28T08:20:03Z",
       "source_role": "agent",
-      "content_url": "https://arstechnica.com/science/2026/03/new-battery-chemistry-breakthrough/"
+      "content_url": "https://arstechnica.com/science/2026/03/new-battery-chemistry-breakthrough/",
+      "data": {
+        "scope": "session",
+        "chars_ingested": 5200
+      }
     },
     {
       "id": "990e8400-e29b-41d4-a716-446655440062",

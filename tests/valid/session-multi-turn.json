@@ -1,11 +1,21 @@
 {
-  "_test_description": "Session-scoped grounding, 3 turns, citations in turns 1 and 3, zero-click outcome (browse with new_query exit). Turn 2 has no citation - the grounded content was in context but not explicitly referenced.",
+  "_test_description": "Session-scoped grounding, 3 turns, citations in turns 1 and 3, zero-click outcome. Turn 2 has no citation - the grounded content was in context but not explicitly referenced.",
   "schema_version": "0.1",
   "session_id": "660e8400-e29b-41d4-a716-446655440006",
   "agent_id": "copilot-v3",
   "started_at": "2026-03-28T16:00:00Z",
   "ended_at": "2026-03-28T16:10:00Z",
   "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T16:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "question",
+        "topics": ["fusion energy", "ITER"]
+      }
+    },
     {
       "type": "content_retrieved",
       "timestamp": "2026-03-28T16:00:01Z",
@@ -23,16 +33,6 @@
         "chars_ingested": 9600,
         "tokens_ingested": 2400,
         "media_type": "text"
-      }
-    },
-    {
-      "type": "turn_started",
-      "timestamp": "2026-03-28T16:00:00Z",
-      "turn_id": "1",
-      "turn": {
-        "privacy_level": "intent",
-        "query_intent": "question",
-        "topics": ["fusion energy", "ITER"]
       }
     },
     {

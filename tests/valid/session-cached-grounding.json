@@ -1,5 +1,5 @@
 {
-  "_test_description": "Grounding from agent-side cache with no retrieval event. license_ref preserved from the original retrieval, as recommended by section 6.6.",
+  "_test_description": "Grounding from agent-side cache with no retrieval event. license_ref preserved from the original retrieval, as recommended by section 6.4.",
   "schema_version": "0.1",
   "session_id": "660e8400-e29b-41d4-a716-446655440004",
   "agent_id": "copilot-v3",

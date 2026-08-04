@@ -6,9 +6,11 @@
   "started_at": "2026-08-01T12:00:00Z",
   "events": [
     {
+      "id": "770e8400-e29b-41d4-a716-446655440142",
       "type": "content_cited",
       "timestamp": "2026-08-01T12:00:01Z",
       "turn_id": "1",
+      "output_id": "response:1",
       "data": {
         "citation_type": "reference",
         "position": "primary"

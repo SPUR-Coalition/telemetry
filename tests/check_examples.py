@@ -8,6 +8,7 @@ against the matching schema:
 
     session document  -> telemetry-session.json
     standalone event  -> telemetry-event.json
+    event batch       -> telemetry-event-batch.json
     manifest          -> manifest.json
 
 Fragments (a bare event object, a single turn, a one-field snippet) are not

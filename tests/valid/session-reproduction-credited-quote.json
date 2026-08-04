@@ -32,6 +32,7 @@
       "data": {
         "scope": "turn",
         "cached": false,
+        "chars_ingested": 9800,
         "tokens_ingested": 2400,
         "content_hash": "sha256:e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6",
         "media_type": "text"

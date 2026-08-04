@@ -2,7 +2,7 @@
 
 **Version:** 0.1
 **Status:** Preview
-**Last updated:** 2026-06-11
+**Last updated:** 2026-08-04
 
 ## Contents
 
@@ -58,9 +58,9 @@ Content Telemetry does not:
 
 #### 1.3.1 Inference-time scope
 
-The five-stage lifecycle reports content use observable at inference time: identified content entered a generation context for a particular response, and what the resulting output did with it.
+The six-stage lifecycle reports content use observable at inference time: identified content entered a generation context for a particular response, and what the resulting output did with it.
 
-Retrieval is the boundary case. A crawl whose purpose is training or index building can be reported as a `content_retrieved` event, and `bot_category` (section 6.2) distinguishes it, but the event is non-attributable: no grounding, citation, presentation or engagement follows it. What the system then does with the content, whether it enters a training corpus, a fine-tuning set, an embedding store or a search index, is outside this specification. Nothing here reports that a model was trained on a work, and a conforming implementation says nothing either way about it.
+Retrieval is the boundary case. A crawl whose purpose is training or index building can be reported as a `content_retrieved` event, and `bot_category` (section 6.2) distinguishes it, but the event is non-attributable: no grounding, reproduction, citation, presentation or engagement follows it. What the system then does with the content, whether it enters a training corpus, a fine-tuning set, an embedding store or a search index, is outside this specification. Nothing here reports that a model was trained on a work, and a conforming implementation says nothing either way about it.
 
 Using such a store at inference time is inside scope. When an index built over a content owner's material is queried during a response and returns content that grounds the answer, that is a `content_grounded` event like any other, with `source_role: index` on the retrieval that served it (section 4.4). The line is between constructing a derived artefact and using one to answer a query, not whether an index was involved.
 
@@ -106,6 +106,7 @@ For the purposes of this specification, the following terms apply.
 | **agent operator** | entity running the AI agent that uses content |
 | **grounding** | content entering the generation model's context, the boundary where content can directly influence output (section 4.3) |
 | **reproduction** | verbatim or near-verbatim appearance of identified source content in an output artifact, independent of credit and delivery (section 4.3) |
+| **presentation** | content or a source reference made perceivable on a recipient-facing surface (section 4.3) |
 | **source role** | classification of the observer reporting a retrieval event: `origin`, `edge`, `index`, or `agent` (section 4.4) |
 | **privacy level** | data sharing tier controlling which conversation fields are populated: `full`, `summary`, `intent`, or `minimal` (section 5.5) |
 | **conformance level** | emitter capability tier: Retrieval, Grounding, or Citation (section 5.7) |
@@ -204,7 +205,7 @@ Content moves through six stages during an agent interaction:
 
 4. **Cited** - An output artifact explicitly associates identified source content with a response, claim, passage, quotation, or other output element. Citation is an output-construction relationship, not evidence that the output was delivered. A subset of grounded content is commonly cited, but a citation can also be emitted without a matching grounding event when an agent produces an uncorroborated or hallucinated source association.
 
-   A citation MUST carry a resolvable reference to the source it associates: a `content_url` or a `content_id`. A source association with no resolvable reference is not a citation and MUST NOT be emitted as `content_cited`. Unlike other content events, where the identifier requirement is an application-layer rule (section 5.7.5), for `content_cited` it is enforced by the JSON Schema.
+   A citation MUST carry a resolvable reference to the source it associates: a `content_url` or a `content_id`. A source association with no resolvable reference is not a citation and MUST NOT be emitted as `content_cited`. Unlike other content events, where the identifier requirement is an application-layer rule (section 5.7.5), for `content_cited` and `content_reproduced` it is enforced by the JSON Schema.
 
    Reproduction and citation are sibling claims about the same artifact: reproduction records the material, citation records the credit. Neither implies the other. A credited quotation produces both events; an uncredited excerpt produces only a reproduction; a reference citation with no quoted material produces only a citation.
 
@@ -364,9 +365,9 @@ Format: the URL of a manifest served at `/.well-known/content-telemetry.json` un
 | `type` | EventType | Yes | Event type (see 5.3) |
 | `timestamp` | datetime | Yes | Event timestamp (UTC) |
 | `turn_id` | string | No | Associates this event with a conversation turn (see 5.2.1) |
-| `output_id` | string | For cited/presented | Opaque output-artifact identifier joining construction to later delivery |
+| `output_id` | string | For reproduced/cited/presented | Opaque output-artifact identifier joining construction to later delivery |
 | `output_element_id` | string | No | Opaque element within `output_id`, such as a passage, media track, caption, link, or card |
-| `citation_id` | UUID | No | On `content_presented`, the `id` of the associated citation event; absent for uncited presentations |
+| `citation_id` | UUID | No | On `content_presented` or `content_reproduced`, the `id` of the associated citation event; absent for uncited presentations and uncredited reproductions |
 | `presentation_id` | UUID | For engaged | On `content_engaged`, the `id` of the exact presentation occurrence acted upon |
 | `source_role` | SourceRole | No | Who is reporting: `origin`, `edge`, `index`, `agent` (see 4.4) |
 | `content_telemetry_id` | UUID | No | Correlation ID for cross-observer deduplication (see 7.2) |
@@ -555,7 +556,7 @@ A conforming **telemetry consumer** MUST:
 
 The JSON Schema (`telemetry-session.json`) validates structure and types but cannot express every conformance rule. The following are normative requirements verified at the application layer, not by schema validation:
 
-- At least one of `content_url` or `content_id` MUST be present on every content event (section 4.5). For `content_cited` events this requirement is additionally enforced by the JSON Schema, which rejects a citation whose reference is absent or null (section 6.5).
+- At least one of `content_url` or `content_id` MUST be present on every content event (section 4.5). For `content_cited` and `content_reproduced` events this requirement is additionally enforced by the JSON Schema, which rejects an event whose reference is absent or null (sections 6.5, 6.6).
 - An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above (section 7.1).
 - Conversation-turn fields MUST NOT exceed the turn's declared `privacy_level` (section 5.5).
 - The conformance-level requirements (sections 5.7.1 to 5.7.3) are cumulative.
@@ -564,7 +565,7 @@ The `tests/` directory provides an informative reference suite for these rules. 
 
 ## 6. Data profiles
 
-The `data` field on events carries type-specific metadata. These profiles document the recommended fields by event type and source role, in lifecycle order. None are required, but emitting them enables richer attribution.
+The `data` field on events carries type-specific metadata. These profiles document the recommended fields by event type and source role, in lifecycle order. None are required except where a section states otherwise (`reproduction_type` in 6.6; `presentation_kind` and `presentation_type` in 6.7), but emitting them enables richer attribution.
 
 ### 6.1 Retrieved content metadata (`content_retrieved`)
 
@@ -917,7 +918,7 @@ Any party may operate a consumer: an agent operator, a licensing intermediary, o
 
 **Content owner resolution.** Telemetry consumers resolve content owner identity from `content_url` domains. Content owners register and verify their domains with the telemetry consumer; the consumer maps incoming event URLs to the owning organisation. This is the primary resolution path and requires `content_url` to be present on events. Events identified only by `content_id` (e.g., cached groundings where the URL was not preserved, or marketplace API content with no canonical URL) cannot be resolved by domain alone. Telemetry consumers SHOULD support `content_id` prefix-based resolution as a secondary path when content owners register their identifier schemes, but this is not yet a normative requirement.
 
-**Cross-consumer correlation.** Origin-side emitters and agent-side emitters MAY use different telemetry consumers. A content owner's CDN sends retrieval events to one telemetry consumer; an agent sends sessions to another. The `content_telemetry_id` field (section 7.2) correlates the same retrieval across consumers - both sides share the same UUID from the HTTP request. This correlation operates at the retrieval level only. Grounding, citation, and engagement events have no independent origin-side counterpart to correlate against.
+**Cross-consumer correlation.** Origin-side emitters and agent-side emitters MAY use different telemetry consumers. A content owner's CDN sends retrieval events to one telemetry consumer; an agent sends sessions to another. The `content_telemetry_id` field (section 7.2) correlates the same retrieval across consumers - both sides share the same UUID from the HTTP request. This correlation operates at the retrieval level only. Grounding, reproduction, citation, presentation, and engagement events have no independent origin-side counterpart to correlate against.
 
 ## 8. Manifest
 
@@ -1151,7 +1152,7 @@ Whether this constitutes one royalty event, three, or ten depends on the commerc
 | Per-turn-influenced | One event per turn where content was in context | Usage-based licensing ("our content informed N answers") |
 | Per-reproduction | One event per reproduced portion appearing in output | Excerpt-based licensing ("N characters of our content appeared in answers") |
 
-The `content_grounded` event with `scope: session` plus the count of subsequent `turn_completed` events provides the inputs for all three models without requiring the schema to embed a commercial opinion.
+The `content_grounded` event with `scope: session` plus the count of subsequent `turn_completed` events provides the inputs for the first three models; the per-reproduction model additionally draws on `content_reproduced` events and their `reproduced_chars`. None of the four requires the schema to embed a commercial opinion.
 
 ### 10.2 Grounding without citation
 
@@ -1162,7 +1163,7 @@ Content can influence every response in a session without being explicitly cited
 - At the **citation** level: counts only explicitly attributed content. Simpler to verify but undercounts content influence.
 - At the **presentation** level: counts content or source references made perceivable. It does not prove attention.
 
-Content owners and platforms should agree on which level to count at. The telemetry data supports all three; the choice is commercial, not technical.
+Content owners and platforms should agree on which level to count at. The telemetry data supports all four; the choice is commercial, not technical.
 
 ## 11. Extensibility
 

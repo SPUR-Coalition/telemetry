@@ -1,0 +1,16 @@
+{
+  "_test_description": "content_presented event carrying presentation_kind but no presentation_type. Both are required: the kind says what crossed the presentation boundary, the type says how it was made perceivable.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440163",
+  "started_at": "2026-08-01T15:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440164",
+      "type": "content_presented",
+      "timestamp": "2026-08-01T15:00:01Z",
+      "output_id": "response:1",
+      "content_id": "publisher:article:4",
+      "data": { "presentation_kind": "source_reference" }
+    }
+  ]
+}
