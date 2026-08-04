@@ -563,7 +563,6 @@ CDN and edge network integrations SHOULD include these fields:
 | `asn` | integer | Client AS number |
 | `asn_org` | string | Client AS organisation name |
 | `country` | string | ISO 3166-1 alpha-2 country code |
-| `ip_hash` | string | SHA-256 of client IP (`sha256:{hex}`) |
 
 #### Bot categories
 
@@ -584,7 +583,6 @@ Emitting a `training`-category `content_retrieved` event is permitted but non-at
 | Field | Type | Description |
 |-------|------|-------------|
 | `user_agent` | string | Request User-Agent header |
-| `ip_hash` | string | SHA-256 of client IP |
 | `response_status` | integer | HTTP response status code |
 
 ### 6.4 Grounding data (`content_grounded`)
@@ -1065,8 +1063,12 @@ The following are deferred to later versions:
 Emitters SHOULD:
 
 - Use the minimum `privacy_level` necessary
-- Hash or anonymise identifiers where possible
 - Use coarse `topics` values that do not identify sensitive categories (health, political or religious affiliation, sexuality)
+- Carry network-level context about the request rather than about the client: `asn`, `asn_org` and `country` describe the network path and do not identify the individual behind it
+
+Hashing does not anonymise a value drawn from a space small enough to enumerate. The entire IPv4 address space can be hashed and compared against a candidate digest on commodity hardware, so a hashed IP address is a pseudonym rather than an anonymous value and should be treated as personal data. Version 0.1 defined an `ip_hash` field in the edge and origin data profiles (sections 6.2 and 6.3). Version 1 withdraws it, and emitters MUST NOT populate it.
+
+The schemas cannot enforce this v1 migration rule: event `data` accepts additional properties by design, so `ip_hash` would otherwise validate as an ordinary extension. The conformance suite therefore checks this specific prohibition at the application layer. This does not establish a general registry of withdrawn extension names.
 
 ### 9.2 Recommended levels
 
@@ -1367,8 +1369,7 @@ A content owner's CDN detects an AI agent fetching content. The agent also repor
     "ja4": "t13d1517h2_8daaf6152771_02e4c6ae3e16",
     "asn": 14618,
     "asn_org": "Anthropic",
-    "country": "US",
-    "ip_hash": "sha256:d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5"
+    "country": "US"
   }
 }
 ```
