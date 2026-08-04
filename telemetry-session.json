@@ -140,6 +140,10 @@
             "required": ["type"]
           },
           "then": {
+            "anyOf": [
+              { "required": ["content_url"], "properties": { "content_url": { "type": "string" } } },
+              { "required": ["content_id"], "properties": { "content_id": { "type": "string" } } }
+            ],
             "properties": {
               "data": {
                 "properties": {

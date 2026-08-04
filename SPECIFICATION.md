@@ -192,6 +192,8 @@ Content moves through five stages during an agent interaction:
 
 3. **Cited** - Content explicitly referenced in the agent's response: quoted, paraphrased, or linked. A subset of grounded content. Content can influence every response in a session without being cited once.
 
+   A citation MUST carry a resolvable reference to the source it associates: a `content_url` or a `content_id`. A source association with no resolvable reference is not a citation and MUST NOT be emitted as `content_cited`. Unlike other content events, where the identifier requirement is an application-layer rule (section 5.7.5), for `content_cited` it is enforced by the JSON Schema.
+
 4. **Displayed** - Content presented to the end user: a reference (a link, snippet, inline quote, or preview card) or the content itself embedded in the response surface (an iframe, a page rendered by an agentic browser, an embedded media player). Not all citations result in display (e.g., when the agent uses content internally without surfacing the source).
 
    Grounding and display record two different kinds of influence: grounding records that content influenced the agent, display records that it reached the user. As agent experiences evolve beyond the chat window the two diverge - content can shape an answer whose source the user never sees, and an agent can render content to the user that never entered a generation context (see *Departures from the funnel model* below).
@@ -481,7 +483,7 @@ Emitters using standalone event delivery (section 7.1) MUST include `agent_id`, 
 
 A conforming **Citation** emitter MUST satisfy Grounding requirements and also:
 
-- Emit `content_cited` events with `data.citation_type`
+- Emit `content_cited` events with `data.citation_type` and a non-null `content_url` or `content_id` (schema-enforced; section 6.5)
 
 The privacy-level field restriction (section 5.5) applies to Citation emitters as it does to any emitter producing conversation turns; it is inherited through the Grounding requirements above.
 
@@ -504,7 +506,7 @@ A conforming **telemetry consumer** MUST:
 
 The JSON Schema (`telemetry-session.json`) validates structure and types but cannot express every conformance rule. The following are normative requirements verified at the application layer, not by schema validation:
 
-- At least one of `content_url` or `content_id` MUST be present on every content event (section 4.5).
+- At least one of `content_url` or `content_id` MUST be present on every content event (section 4.5). For `content_cited` events this requirement is additionally enforced by the JSON Schema, which rejects a citation whose reference is absent or null (section 6.5).
 - An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above (section 7.1).
 - Conversation-turn fields MUST NOT exceed the turn's declared `privacy_level` (section 5.5).
 - The conformance-level requirements (sections 5.7.1 to 5.7.3) are cumulative.
@@ -638,6 +640,8 @@ Agents SHOULD preserve the `license_ref` from the original retrieval when emitti
 | `position` | string | Prominence in response: `primary`, `supporting`, `mentioned`, `unclassified` |
 | `content_hash` | string | SHA-256 matching the corresponding `content_grounded` event (`sha256:{hex}`). When the agent chunked the source, this is the chunk hash, not the full document hash. |
 | `url_verified` | boolean | Whether the cited URL was verified to resolve to matching content |
+
+A citation MUST carry a resolvable source reference: a non-null `content_url` or `content_id` at the event level. This is what distinguishes a citation from vague attribution - the credit names a source that owner routing (section 7.3) can resolve. The JSON Schema enforces this for `content_cited` events; an association the emitter cannot resolve to a URL or identifier is not reportable as a citation. This is stricter than the application-layer identifier rule that applies to content events generally (section 5.7.5).
 
 `media_type` identifies the content medium. Defaults to `text` when absent.
 

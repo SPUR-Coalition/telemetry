@@ -28,6 +28,7 @@ Run from the repository root. Without uv: `pip install jsonschema`, then `python
 - Event required fields (`type`, `timestamp`)
 - Turn required fields (`privacy_level`)
 - Enum validation (event types, privacy levels, source roles, schema version)
+- Citation source-reference requirement (content_cited rejected when content_url/content_id are missing or null)
 - All three conformance levels (Retrieval, Grounding, Citation)
 - Standalone event envelopes (CDN edge, agent with session FK)
 - Privacy level field gating (application-layer conformance)
