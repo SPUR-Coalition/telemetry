@@ -24,11 +24,12 @@ Platforms self-report usage metrics (if they report at all), and content owners 
 
 ## Telemetry events
 
-Content Telemetry tracks content through five stages:
+Content Telemetry tracks content through six stages:
 
 ```
 Retrieved    →  content fetched over HTTP (content owner can see this today)
   Grounded   →  content loaded into the agent's generation context
+    Reproduced →  content appearing verbatim or near-verbatim in the response
     Cited    →  content explicitly referenced in the response
       Presented  →  content or a source reference made perceivable on a recipient-facing surface
         Engaged  →  user clicked, copied, shared, or directed the agent to act
@@ -40,6 +41,7 @@ The gaps between stages show how content was used:
 
 - **Retrieval without grounding** - your content was fetched but not used
 - **Grounding without citation** - your content influenced the answer but you got no credit
+- **Reproduction without citation** - your content appeared in the answer without credit
 - **Citation without engagement** - your content was cited but the user didn't click through
 
 The grounding event captures the boundary "this content entered the agent's generation context." It is architecture-neutral and decoupled from retrieval: content cached by the agent for days still produces a grounding event in every session it influences.
@@ -50,7 +52,7 @@ Grounding and presentation record different boundary crossings: grounding means 
 
 **Post-hoc, not pre-declared.** Events report what actually happened, not what the agent said it would do at request time. An agent cannot reliably declare how it will use content before reading it.
 
-**Observable boundaries, not agent internals.** The five event types mark boundary crossings. What happens between them - the fan-out, relevance evaluation, re-ranking, reasoning chains - is internal to the agent and changes constantly. The spec does not model it.
+**Observable boundaries, not agent internals.** The six event types mark boundary crossings. What happens between them - the fan-out, relevance evaluation, re-ranking, reasoning chains - is internal to the agent and changes constantly. The spec does not model it.
 
 **Multiple observers, one event.** A content retrieval can be reported by the content owner's CDN, the content owner's origin server, and the AI agent independently. The `Content-Telemetry-ID` header correlates these into a single corroborated event. Uncorroborated retrievals (no matching agent event) may indicate an agent that does not yet support the telemetry protocol.
 
@@ -160,7 +162,7 @@ Comment is most useful on:
 
 - The [open questions below](#open-questions-in-v01).
 - Whether the conformance and privacy levels (sections 5.5 and 5.7) are implementable as written by a team building an emitter or consumer.
-- How the five-stage event model fits real agent architectures (section 6.4).
+- How the six-stage event model fits real agent architectures (section 6.4).
 - Anything that would require an implementer to depend on a particular operator or service to participate. The standard should be implementable from the public schemas alone.
 - Any worked example that does not validate against its schema, or any mismatch between the prose and the schemas.
 

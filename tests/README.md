@@ -32,6 +32,7 @@ Run from the repository root. Without uv: `pip install jsonschema`, then `python
 - Standalone event envelopes (CDN edge, agent with session FK)
 - Privacy level field gating (application-layer conformance)
 - Funnel exceptions (presented-no-cited, cited-no-grounded, presented-no-grounded)
+- Reproduction cases: credited quotation (reproduction + direct_quote citation sharing an output element) and uncredited reproduction in unpresented API output
 - Text, image, audio, video, suppressed-citation, and repeated-presentation cases
 - Exact presentation-to-engagement correlation across session, standalone, and batch envelopes
 - Multi-turn sessions, cached grounding

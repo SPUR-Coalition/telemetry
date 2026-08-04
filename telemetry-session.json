@@ -78,22 +78,22 @@
         },
         "turn_id": {
           "type": ["string", "null"],
-          "description": "Associates this event with a conversation turn. Scoped to the session. SHOULD be set on turn_started, turn_completed, content_cited, content_presented, content_engaged events, and content_grounded events when scope is turn."
+          "description": "Associates this event with a conversation turn. Scoped to the session. SHOULD be set on turn_started, turn_completed, content_reproduced, content_cited, content_presented, content_engaged events, and content_grounded events when scope is turn."
         },
         "output_id": {
           "type": "string",
           "minLength": 1,
-          "description": "Opaque identifier for the output artifact. REQUIRED on content_cited and content_presented events so output construction and later presentation can be correlated across services or times."
+          "description": "Opaque identifier for the output artifact. REQUIRED on content_reproduced, content_cited, and content_presented events so output construction and later presentation can be correlated across services or times."
         },
         "output_element_id": {
           "type": "string",
           "minLength": 1,
-          "description": "Opaque identifier for the element within output_id that carries the citation or presentation, such as a passage, media track, caption, link, or card."
+          "description": "Opaque identifier for the element within output_id that carries the reproduction, citation, or presentation, such as a passage, media track, caption, link, or card."
         },
         "citation_id": {
           "type": "string",
           "format": "uuid",
-          "description": "The id of the content_cited event associated with this presentation. Valid only on content_presented events and absent when the presentation is not a citation."
+          "description": "The id of the content_cited event associated with this presentation or reproduction. Valid only on content_presented and content_reproduced events; absent when the presentation is not a citation or the reproduction is uncredited."
         },
         "presentation_id": {
           "type": "string",
@@ -179,6 +179,28 @@
         },
         {
           "if": {
+            "properties": { "type": { "const": "content_reproduced" } },
+            "required": ["type"]
+          },
+          "then": {
+            "required": ["id", "output_id", "data"],
+            "properties": {
+              "data": {
+                "required": ["reproduction_type"],
+                "properties": {
+                  "reproduction_type": { "$ref": "#/$defs/ReproductionType" },
+                  "media_type": { "$ref": "#/$defs/MediaType" },
+                  "reproduced_chars": { "type": "integer", "minimum": 0, "description": "Unicode code points in the reproduced span as it appears in the output" },
+                  "reproduced_tokens": { "type": "integer", "minimum": 0 },
+                  "reproduced_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 of the reproduced span as it appears in the output (sha256:{hex})" },
+                  "content_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$", "description": "SHA-256 matching the corresponding content_grounded event. When the agent chunked the source, this is the chunk hash." }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
             "properties": { "type": { "const": "content_presented" } },
             "required": ["type"]
           },
@@ -247,6 +269,7 @@
       "enum": [
         "content_retrieved",
         "content_grounded",
+        "content_reproduced",
         "content_cited",
         "content_presented",
         "content_engaged",
@@ -339,6 +362,11 @@
       "type": "string",
       "description": "How content was used in the response",
       "enum": ["direct_quote", "paraphrase", "reference", "contradiction", "unclassified"]
+    },
+    "ReproductionType": {
+      "type": "string",
+      "description": "Fidelity of a reproduction. near_verbatim differs from the source only by bounded surface edits: truncation, elision marks, whitespace, punctuation, or case.",
+      "enum": ["verbatim", "near_verbatim", "unclassified"]
     },
     "CitationPosition": {
       "type": "string",

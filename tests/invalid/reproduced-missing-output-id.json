@@ -1,0 +1,15 @@
+{
+  "_test_description": "content_reproduced must identify the output artifact containing the reproduction: id and output_id are required so reproduction can be correlated with citation and presentation.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440130",
+  "started_at": "2026-08-01T11:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440131",
+      "type": "content_reproduced",
+      "timestamp": "2026-08-01T11:00:01Z",
+      "content_id": "publisher:article:2",
+      "data": { "reproduction_type": "verbatim", "reproduced_chars": 500 }
+    }
+  ]
+}
