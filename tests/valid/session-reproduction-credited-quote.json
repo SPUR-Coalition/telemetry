@@ -1,0 +1,114 @@
+{
+  "_test_description": "Credited quotation: the same span produces a content_reproduced event (the material) and a content_cited direct_quote event (the credit), sharing output_element_id, with reproduced_hash equal to the citation's excerpt_hash. The quote is then presented inline. Demonstrates that reproduction and citation are sibling output-construction claims joined to one presentation.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440111",
+  "agent_id": "research-assistant-v5",
+  "started_at": "2026-08-01T15:00:00Z",
+  "ended_at": "2026-08-01T15:00:06Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-08-01T15:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "research",
+        "topics": ["press freedom", "media law"]
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-01T15:00:01Z",
+      "source_role": "agent",
+      "content_telemetry_id": "880e8400-e29b-41d4-a716-446655440112",
+      "content_url": "https://www.example-journal.org/analysis/press-freedom-ruling"
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-01T15:00:02Z",
+      "turn_id": "1",
+      "content_url": "https://www.example-journal.org/analysis/press-freedom-ruling",
+      "content_id": "examplejournal:2026:press-freedom-ruling",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "tokens_ingested": 2400,
+        "content_hash": "sha256:e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6",
+        "media_type": "text"
+      }
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440113",
+      "type": "content_cited",
+      "timestamp": "2026-08-01T15:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:quote:1",
+      "content_url": "https://www.example-journal.org/analysis/press-freedom-ruling",
+      "content_id": "examplejournal:2026:press-freedom-ruling",
+      "data": {
+        "citation_type": "direct_quote",
+        "excerpt_tokens": 54,
+        "excerpt_chars": 236,
+        "excerpt_hash": "sha256:f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1",
+        "position": "primary",
+        "media_type": "text",
+        "url_verified": true
+      }
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440114",
+      "type": "content_reproduced",
+      "timestamp": "2026-08-01T15:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:quote:1",
+      "citation_id": "880e8400-e29b-41d4-a716-446655440113",
+      "content_url": "https://www.example-journal.org/analysis/press-freedom-ruling",
+      "content_id": "examplejournal:2026:press-freedom-ruling",
+      "data": {
+        "reproduction_type": "verbatim",
+        "media_type": "text",
+        "reproduced_chars": 236,
+        "reproduced_tokens": 54,
+        "reproduced_hash": "sha256:f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1",
+        "content_hash": "sha256:e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6"
+      }
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440115",
+      "type": "content_presented",
+      "timestamp": "2026-08-01T15:00:05Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:quote:1",
+      "citation_id": "880e8400-e29b-41d4-a716-446655440113",
+      "content_url": "https://www.example-journal.org/analysis/press-freedom-ruling",
+      "content_id": "examplejournal:2026:press-freedom-ruling",
+      "data": {
+        "presentation_kind": "content",
+        "presentation_type": "inline_quote",
+        "media_type": "text"
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-08-01T15:00:06Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "research",
+        "response_type": "analysis",
+        "response_mode": "standard",
+        "topics": ["press freedom", "media law"],
+        "content_urls_retrieved": [
+          "https://www.example-journal.org/analysis/press-freedom-ruling"
+        ],
+        "content_urls_cited": [
+          "https://www.example-journal.org/analysis/press-freedom-ruling"
+        ],
+        "response_tokens": 380
+      }
+    }
+  ]
+}
