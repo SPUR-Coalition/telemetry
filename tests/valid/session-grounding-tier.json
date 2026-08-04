@@ -30,6 +30,7 @@
       "data": {
         "scope": "session",
         "cached": false,
+        "chars_ingested": 20400,
         "tokens_ingested": 5100,
         "content_last_modified": "2026-03-15T08:00:00Z",
         "media_type": "text"

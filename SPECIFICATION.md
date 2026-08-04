@@ -432,7 +432,7 @@ These are the recommended values. Platforms with additional product surfaces (co
 
 An emitter that populates a conversation turn MUST NOT include a field above that turn's declared `privacy_level` - for example, `query_text` MUST NOT be present when `privacy_level` is `intent` or `minimal`. This restriction is a property of `privacy_level` itself: it applies wherever conversation turns are emitted, independent of the emitter's conformance level.
 
-**Token counts** includes `query_tokens` and `response_tokens`. These are available at all levels because they are needed for token-based counting models and do not reveal user intent or platform strategy.
+**Token counts** includes `query_tokens` and `response_tokens`. These are available at all levels because they are needed for token-based counting models and do not reveal user intent or platform strategy. They carry the same portability limit as `tokens_ingested` (section 6.4): both are measured in the emitter's own tokeniser and are not comparable between agents. Version 1 does not define corresponding turn-level character counts; `chars_ingested` measures source content placed in a generation context, not query or response length.
 
 **Response classification** includes `response_type` (e.g., `"recommendation"`, `"explanation"`). Available at `intent` level and above, as it can reveal the nature of the user's query.
 
@@ -490,7 +490,7 @@ A conforming **Grounding** emitter MUST satisfy Retrieval requirements and also:
 - Emit `turn_started` and `turn_completed` events with `privacy_level`
 - Restrict conversation turn fields to the declared `privacy_level` (section 5.5)
 
-A Grounding emitter SHOULD include `data.tokens_ingested` and `data.cached` on grounding events.
+A Grounding emitter SHOULD include `data.chars_ingested` and `data.cached` on grounding events, and MAY add `data.tokens_ingested` alongside them (section 6.4).
 
 Emitters using standalone event delivery (section 7.1) MUST include `agent_id`, `started_at`, and either `session_id` or, for click-out engagement events, `ctx_token` on the standalone event envelope to satisfy Grounding conformance.
 
@@ -591,13 +591,18 @@ Emitting a `training`-category `content_retrieved` event is permitted but non-at
 |-------|------|-------------|
 | `scope` | string | Influence scope: `session` or `turn` (see below) |
 | `cached` | boolean | Content served from agent-side cache rather than a live fetch |
-| `tokens_ingested` | integer | Token count of content placed in the generation context (see below) |
+| `chars_ingested` | integer | Character count of content placed in the generation context (see below) |
+| `tokens_ingested` | integer | Token count of the same content, supplementary (see below) |
 | `content_version` | string | Content version identifier (ETag, revision ID, CMS version) |
 | `content_last_modified` | datetime | When the content was last modified at source |
 | `content_hash` | string | SHA-256 of the content as ingested (`sha256:{hex}`) |
 | `media_type` | string | Content medium: `text`, `image`, `video`, `audio` (open vocabulary, see 6.1) |
 
-`tokens_ingested` counts tokens actually placed in the generation model's context. For chunked retrieval, count only the tokens used, not the full source document. The token count uses the generation model's tokeniser (the model identified in `model_id` on the corresponding `turn_completed` event), not the retrieval or embedding model's tokeniser.
+Both fields measure the content actually placed in the generation model's context. For chunked retrieval, count only the portion used, not the full source document.
+
+`chars_ingested` counts Unicode code points in the exact text placed in context. Count the string as ingested: an emitter MUST NOT apply Unicode normalisation solely to calculate this field. It is the portable measure: two emitters that ingest the same code-point sequence agree, so a content owner can compare volumes across agents and over time without knowing which model produced the number. Different normalised representations remain different ingested sequences and may therefore produce different counts.
+
+`tokens_ingested` counts the same content in the generation model's tokeniser (the model identified in `model_id` on the corresponding `turn_completed` event), not the retrieval or embedding model's tokeniser. It is supplementary. Token counts are model-specific, change when a vendor revises a tokeniser, and are not comparable between agents, so a consumer cannot aggregate them across emitters or treat a difference as a difference in volume. Emitters SHOULD send `chars_ingested` where they send `tokens_ingested`, and consumers that receive only token counts SHOULD record which model produced them.
 
 #### Grounding scope
 
@@ -1264,6 +1269,7 @@ A user asks a shopping assistant to compare noise-cancelling headphones. The age
       "data": {
         "scope": "session",
         "cached": false,
+        "chars_ingested": 16800,
         "tokens_ingested": 4200,
         "content_last_modified": "2026-01-10T14:00:00Z",
         "media_type": "text"
@@ -1396,6 +1402,7 @@ An AI agent previously fetched an FT article and cached it. In a new session, th
       "data": {
         "scope": "session",
         "cached": true,
+        "chars_ingested": 12800,
         "tokens_ingested": 3200,
         "content_last_modified": "2026-03-27T18:30:00Z",
         "content_hash": "sha256:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",

@@ -28,6 +28,7 @@
       "data": {
         "scope": "turn",
         "cached": false,
+        "chars_ingested": 7200,
         "tokens_ingested": 1800
       }
     },

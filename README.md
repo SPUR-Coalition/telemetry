@@ -88,6 +88,7 @@ A user asks an AI agent about UK interest rates. The agent grounds its response 
       "data": {
         "scope": "session",
         "cached": true,
+        "chars_ingested": 12800,
         "tokens_ingested": 3200,
         "content_last_modified": "2026-03-27T18:30:00Z"
       }

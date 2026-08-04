@@ -15,6 +15,7 @@
       "data": {
         "scope": "session",
         "cached": true,
+        "chars_ingested": 11200,
         "tokens_ingested": 2800,
         "content_last_modified": "2026-03-27T16:00:00Z",
         "content_hash": "sha256:c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
