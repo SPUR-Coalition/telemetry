@@ -28,9 +28,11 @@ The specification is at v0.1 (preview). It moves to 1.0 once the open questions 
 
 ## How to participate
 
-- File feedback, questions, and bugs on the [issue tracker](https://github.com/SPUR-Coalition/telemetry/issues) (see the templates).
+- File questions and bugs on the [issue tracker](https://github.com/SPUR-Coalition/telemetry/issues) (see the templates).
 - Comment during the [public comment window](./README.md#request-for-comment).
-- Propose specific changes by pull request, following [CONTRIBUTING.md](./CONTRIBUTING.md).
+- Propose new capabilities or changes in behaviour as a short human-written note
+  in [`proposals/`](./proposals/), following
+  [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Relationship to the SPUR Content Telemetry Profile
 
@@ -42,7 +44,10 @@ The dependency runs one way. The profile references the standard; the standard d
 
 ## Changes to the specification
 
-Specification changes follow the process in [CONTRIBUTING.md](./CONTRIBUTING.md). Required-field and conformance-level changes are breaking and follow the versioning policy in SPECIFICATION.md section 12.
+Specification changes follow the proposal and maintainer-alignment process in
+[CONTRIBUTING.md](./CONTRIBUTING.md). Required-field and conformance-level
+changes are breaking and follow the versioning policy in SPECIFICATION.md
+section 12.
 
 ## Licensing
 

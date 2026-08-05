@@ -1,5 +1,5 @@
 name: Spec feedback / open question
-description: Raise a design question, an unclear requirement, or a proposed change to the wire format.
+description: Raise a question, ambiguity, or unclear requirement in the wire format.
 title: "[spec] "
 labels: ["needs-discussion"]
 body:
@@ -7,8 +7,12 @@ body:
     attributes:
       value: |
         Thanks for reviewing the Content Telemetry standard. This template is for
-        feedback on the specification itself - design questions, unclear or
-        contradictory requirements, gaps, or proposed changes to the wire format.
+        questions, unclear or contradictory requirements, and gaps in the
+        specification as written.
+
+        For a new capability or change in behaviour, submit a short human-written
+        note to [proposals/](../tree/main/proposals) instead. Please wait for
+        explicit maintainer alignment before beginning implementation.
 
         For a concrete bug in a schema file or a worked example, use the
         **Schema or example bug** template instead.
@@ -37,13 +41,6 @@ body:
     attributes:
       label: Why it matters
       description: What breaks, stays unclear, or gets implemented inconsistently if this isn't resolved? A real implementation scenario helps most.
-    validations:
-      required: false
-  - type: textarea
-    id: proposal
-    attributes:
-      label: Proposed direction (optional)
-      description: If you have one. A rough sketch is fine - you don't need a finished PR.
     validations:
       required: false
   - type: dropdown
