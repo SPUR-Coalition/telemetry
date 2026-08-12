@@ -16,14 +16,59 @@ This repo contains the **specification** - the data model, event types, privacy 
 
 ## Proposing changes
 
-Schema changes affect all implementations. Before submitting a PR:
+We would like proposals for new capabilities or changes in behaviour to begin
+with the people who need them, not with generated specification text or code.
 
-1. Open an issue describing the change and its motivation
-2. Reference the relevant section of SPECIFICATION.md
-3. Consider backwards compatibility - can existing consumers ignore new fields?
-4. Update both SPECIFICATION.md and the relevant JSON schema
-5. Add or update test cases in `tests/` for any new fields or conformance rules
-6. Run the test suite to verify everything passes (see below)
+Submit a pull request adding a short Markdown or text file to
+[`proposals/`](./proposals/). Write it as you would explain the idea to a
+colleague: what you are seeing, what you would like Content Telemetry to
+express, and why it matters. It can be informal. Please do not ask an AI agent
+to expand the idea into a formal proposal or implementation for us.
+
+A proposal starts a discussion. It is not an accepted change, an item on the
+maintainers' implementation backlog, or a commitment to spend time or tokens on
+it. We will first consider whether the proposal:
+
+- belongs in the Content Telemetry wire format rather than a profile,
+  deployment or application;
+- addresses a need shared beyond one implementation;
+- fits the scope and direction of the standard; and
+- can evolve the standard without unacceptable compatibility costs.
+
+A maintainer will explicitly mark a proposal **aligned** if there is agreement
+on the direction. That is the gate for substantial implementation work. Please
+wait for it before asking an agent to implement the proposal or opening a pull
+request that changes the specification, schemas or tests.
+
+Alignment is not final acceptance of every detail. Maintainers may work with
+the proposer to prepare the specification text, schema changes, examples and
+tests, and material changes will be discussed with them. Acceptance remains
+subject to the project's governance, compatibility and review requirements.
+The proposer will be credited as a co-author when their proposal is
+implemented.
+
+See the [`proposals/` README](./proposals/README.md) for proposal statuses and
+the small amount of information to include.
+
+## Bugs and security vulnerabilities
+
+For concrete schema, example or documentation bugs, open an issue using the
+**Schema or example bug** template. A bug fix does not need a proposal first.
+
+Report security vulnerabilities privately as described in
+[`SECURITY.md`](./SECURITY.md), not in an issue or public proposal.
+
+## Implementing an aligned proposal
+
+Schema changes affect all implementations. Once a proposal is aligned, an
+implementation pull request should:
+
+1. Link to the aligned proposal.
+2. Reference the relevant section of SPECIFICATION.md.
+3. Address backwards compatibility - can existing consumers ignore new fields?
+4. Update both SPECIFICATION.md and the relevant JSON schema.
+5. Add or update test cases in `tests/` for any new fields or conformance rules.
+6. Run the test suite to verify everything passes (see below).
 
 ## Running the tests
 

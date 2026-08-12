@@ -170,12 +170,16 @@ issue does not mean its proposal has been accepted, and a preparation branch doe
 not change the published specification. The issue tracker and pull-request
 history will remain the public decision record.
 
-Concrete schema, fixture and documentation bugs may still be filed. New design
-proposals are welcome but are not automatically part of the v1 consultation
-scope. Pull requests remain welcome for specific fixes; for larger changes, open
-an issue first (see [CONTRIBUTING.md](./CONTRIBUTING.md)). Feedback on
-accreditation or the conformance mark belongs on the
-[profile repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
+Concrete schema, fixture and documentation bugs may still be filed using the
+*Schema or example bug* template, and questions or unclear requirements using
+*Spec feedback / open question*. For a new capability or change in behaviour,
+submit a short human-written note to [`proposals/`](./proposals/) and wait for
+explicit maintainer alignment before beginning implementation (see
+[CONTRIBUTING.md](./CONTRIBUTING.md)); new design proposals are not
+automatically part of the v1 consultation scope. Pull requests remain welcome
+for specific fixes. Feedback on accreditation or the conformance mark belongs
+on the [profile
+repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
 
 Required fields, event types and schema structure may still change before 1.0
 (section 12). Version 0.1 remains the current published preview until a later
