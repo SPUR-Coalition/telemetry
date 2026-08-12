@@ -8,6 +8,7 @@ Tests for the Content Telemetry Specification v1.
 - `invalid/` - JSON files that MUST fail validation (either JSON Schema or application-layer conformance)
 - `validate.py` - Conformance test runner (requires `jsonschema`)
 - `check_examples.py` - Validates the worked examples in SPECIFICATION.md and README.md against the schemas
+- `mutation_smoke.py` - Replays known suite-weakening mutations against a scratch copy and confirms the suite fails under each one
 
 ## Running
 
