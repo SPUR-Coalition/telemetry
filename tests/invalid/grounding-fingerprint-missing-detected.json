@@ -1,0 +1,21 @@
+{
+  "_test_description": "Grounding event carries content_fingerprint without required detected. Must fail JSON Schema.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440182",
+  "started_at": "2026-08-12T10:20:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-12T10:20:01Z",
+      "content_id": "publisher:article:99",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "provenance": "agent_fetched",
+        "content_fingerprint": {
+          "scheme": "https://example.org/fingerprint/v1"
+        }
+      }
+    }
+  ]
+}

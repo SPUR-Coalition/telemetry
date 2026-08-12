@@ -560,6 +560,8 @@ The JSON Schema (`telemetry-session.json`) validates structure and types but can
 - An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above (section 7.1).
 - Conversation-turn fields MUST NOT exceed the turn's declared `privacy_level` (section 5.5).
 - The conformance-level requirements (sections 5.7.1 to 5.7.3) are cumulative.
+- When `content_grounded.data.provenance` is `agent_fetched`, `data.cached` MUST be `false`; when it is `agent_cached`, `data.cached` MUST be `true` (section 6.4).
+- `content_grounded.data.content_fingerprint` MUST NOT contain `preserved_in_output`; output-side reuse is reported with `content_reproduced` (sections 6.4 and 12.1).
 
 The `tests/` directory provides an informative reference suite for these rules. A consumer that receives a privacy-violating turn (e.g., `query_text` present at `minimal` level) SHOULD strip the offending fields rather than reject the document carrying them.
 
@@ -624,18 +626,48 @@ Emitting a `training`-category `content_retrieved` event is permitted but non-at
 |-------|------|-------------|
 | `scope` | string | Influence scope: `session` or `turn` (see below) |
 | `cached` | boolean | Content served from agent-side cache rather than a live fetch |
+| `provenance` | string | How content reached the context: `agent_fetched`, `agent_cached`, or `third_party_sourced` (see below) |
 | `chars_ingested` | integer | Character count of content placed in the generation context (see below) |
 | `tokens_ingested` | integer | Token count of the same content, supplementary (see below) |
 | `content_version` | string | Content version identifier (ETag, revision ID, CMS version) |
 | `content_last_modified` | datetime | When the content was last modified at source |
 | `content_hash` | string | SHA-256 of the content as ingested (`sha256:{hex}`) |
 | `media_type` | string | Content medium: `text`, `image`, `video`, `audio` (open vocabulary, see 6.1) |
+| `content_fingerprint` | object | Agent-reported detection of a fingerprint or provenance signal in the grounded content (see below) |
 
 Both fields measure the content actually placed in the generation model's context. For chunked retrieval, count only the portion used, not the full source document.
 
 `chars_ingested` counts Unicode code points in the exact text placed in context. Count the string as ingested: an emitter MUST NOT apply Unicode normalisation solely to calculate this field. It is the portable measure: two emitters that ingest the same code-point sequence agree, so a content owner can compare volumes across agents and over time without knowing which model produced the number. Different normalised representations remain different ingested sequences and may therefore produce different counts.
 
 `tokens_ingested` counts the same content in the generation model's tokeniser (the model identified in `model_id` on the corresponding `turn_completed` event), not the retrieval or embedding model's tokeniser. It is supplementary. Token counts are model-specific, change when a vendor revises a tokeniser, and are not comparable between agents, so a consumer cannot aggregate them across emitters or treat a difference as a difference in volume. Emitters SHOULD send `chars_ingested` where they send `tokens_ingested`, and consumers that receive only token counts SHOULD record which model produced them.
+
+#### Provenance and content fingerprints
+
+`provenance` describes the delivery path by which the grounded representation reached the agent:
+
+| Value | Description |
+|-------|-------------|
+| `agent_fetched` | The agent obtained the representation directly from the publisher or from publisher-authorised origin or edge infrastructure for this session |
+| `agent_cached` | The agent reused a representation it had obtained before this session |
+| `third_party_sourced` | The representation reached the agent through an intermediary rather than through a direct publisher-authorised retrieval by the agent in this session |
+
+The field describes delivery path, not evidence quality. An emitter declaring Grounding or Citation conformance SHOULD include it when the path is known. It remains optional because an agent may not be able to distinguish its own earlier fetch from intermediary delivery. Consumers MUST NOT infer a value when it is absent.
+
+Emitters MUST keep `provenance` and `cached` consistent: `agent_fetched` requires `cached: false`, and `agent_cached` requires `cached: true`. `third_party_sourced` leaves `cached` unconstrained because an intermediary-sourced representation may be used immediately or cached by the agent before grounding.
+
+`content_fingerprint` contains:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `scheme` | string | Yes | Open identifier for the fingerprint or provenance scheme checked |
+| `detected` | boolean | Yes | Emitter claim that the scheme's signal was found in the exact grounded representation |
+| `value` | string | No | Scheme-defined fingerprint or identifier value, when the scheme produces one |
+
+`detected` reports a grounding-time observation by the emitter. It does not establish that the signal is authentic, identify who applied it, prove that the content was used later in the output, or raise the evidentiary status of the grounding event. Those questions require profile-defined evidence and consumer trust policy outside the core schema.
+
+Output-side reuse is reported with `content_reproduced`, not a fingerprint-preservation field on `content_grounded`. A consumer MAY compare a grounding fingerprint with evidence about a reproduced output, but the two remain separate assertions about separate lifecycle stages.
+
+`scheme` is an open identifier. Emitters SHOULD use a globally collision-resistant value. Core does not register schemes, interpret `value`, or assign capabilities or evidence status from a scheme identifier. A profile MAY define scheme-specific processing rules.
 
 #### Grounding scope
 
@@ -1247,6 +1279,15 @@ the material and cannot record an uncredited copy. When migrating historical
 v0.1 data, consumers MAY treat a `direct_quote` citation as an implied
 reproduction of its excerpt. V1 emitters record reproduction explicitly and
 SHOULD NOT rely on that inference.
+
+V1 grounding fingerprints report detection only. A preview implementation that
+used `data.content_fingerprint.preserved_in_output` removes that field during
+migration. When its value was `true` and the historical record contains enough
+information to populate every required `content_reproduced` field, the
+implementation MAY also create the corresponding reproduction event. It MUST
+NOT synthesize a reproduction event from `false` or incomplete historical data.
+A grounding event MAY retain `content_fingerprint.scheme`, `detected`, and a
+scheme-defined `value`.
 
 Preview versions (0.x) use two-component version numbers. From 1.0.0 onward, versions follow [semantic versioning](https://semver.org/):
 

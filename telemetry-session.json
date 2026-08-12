@@ -149,12 +149,14 @@
                 "properties": {
                   "scope": { "$ref": "#/$defs/GroundingScope" },
                   "cached": { "type": "boolean" },
+                  "provenance": { "$ref": "#/$defs/SourceProvenance" },
                   "chars_ingested": { "type": "integer", "minimum": 0, "description": "Unicode code points in the exact text placed in the generation context, without normalising solely for counting. Portable across emitters; preferred over tokens_ingested (section 6.4)." },
                   "tokens_ingested": { "type": "integer", "minimum": 0, "description": "Token count of the same content in the emitter's own tokeniser. Supplementary: not comparable between emitters (section 6.4)." },
                   "content_version": { "type": "string" },
                   "content_last_modified": { "type": "string", "format": "date-time" },
                   "content_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
-                  "media_type": { "$ref": "#/$defs/MediaType" }
+                  "media_type": { "$ref": "#/$defs/MediaType" },
+                  "content_fingerprint": { "$ref": "#/$defs/ContentFingerprint" }
                 }
               }
             }
@@ -399,6 +401,33 @@
       "type": "string",
       "description": "Whether content informed all subsequent responses in the session or a specific turn only",
       "enum": ["session", "turn"]
+    },
+    "SourceProvenance": {
+      "type": "string",
+      "description": "How the grounded representation reached the agent. Describes delivery path, not evidence quality.",
+      "enum": ["agent_fetched", "agent_cached", "third_party_sourced"]
+    },
+    "ContentFingerprint": {
+      "type": "object",
+      "description": "Emitter-reported detection of a fingerprint or provenance signal in the exact grounded representation. Core does not interpret schemes or assign evidence status from detection.",
+      "required": ["scheme", "detected"],
+      "properties": {
+        "scheme": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Open identifier for the fingerprint or provenance scheme checked. Globally collision-resistant values are recommended."
+        },
+        "detected": {
+          "type": "boolean",
+          "description": "Emitter claim that the scheme's signal was found in the grounded representation"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional scheme-defined fingerprint or identifier value"
+        }
+      },
+      "additionalProperties": true
     },
     "PresentationKind": {
       "type": "string",

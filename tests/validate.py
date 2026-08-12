@@ -55,6 +55,11 @@ except ImportError:
 #    manifest's own host or a subdomain of it (section 8.6). JSON Schema
 #    cannot compare values across array items or against the manifest's id.
 #
+# 5. Grounding provenance and fingerprint migration (sections 5.7.5, 6.4, 12.1):
+#    agent_fetched requires cached false; agent_cached requires cached true.
+#    content_fingerprint MUST NOT carry preserved_in_output because output-side
+#    reuse is represented by content_reproduced.
+#
 # Not checked here: agent_id at Grounding/Citation conformance (section
 # 5.7) depends on the emitter's declared conformance level, which fixtures do
 # not carry, so it is out of scope for the fixture suite.
@@ -100,6 +105,14 @@ APPLICATION_LAYER_VIOLATIONS = {
         "Retrieval event carries ip_hash in data. "
         "Violates section 9.1: the field was withdrawn in v1 and emitters "
         "MUST NOT populate it."
+    ),
+    "grounding-fingerprint-preserved-in-output.json": (
+        "Grounding fingerprint carries preserved_in_output. "
+        "Violates section 6.4: output-side reuse is reported as content_reproduced."
+    ),
+    "grounding-provenance-cached-conflict.json": (
+        "Grounding event declares agent_fetched with cached true. "
+        "Violates section 6.4: agent_fetched requires cached false."
     ),
 }
 
@@ -343,6 +356,29 @@ def check_v1_migration_prohibitions(data):
     return violations
 
 
+def check_grounding_provenance(data):
+    """Check the provenance/cached pairings required by section 6.4."""
+    violations = []
+    for event in _iter_events(data):
+        if event.get("type") != "content_grounded":
+            continue
+        event_data = event.get("data")
+        if not isinstance(event_data, dict):
+            continue
+        provenance = event_data.get("provenance")
+        cached = event_data.get("cached")
+        if provenance == "agent_fetched" and cached is not False:
+            violations.append("content_grounded with agent_fetched does not carry cached false")
+        if provenance == "agent_cached" and cached is not True:
+            violations.append("content_grounded with agent_cached does not carry cached true")
+        fingerprint = event_data.get("content_fingerprint")
+        if isinstance(fingerprint, dict) and "preserved_in_output" in fingerprint:
+            violations.append(
+                "content_fingerprint carries preserved_in_output; use content_reproduced"
+            )
+    return violations
+
+
 def check_application_layer(data):
     """Run every application-layer conformance rule and return all violations."""
     return (
@@ -350,6 +386,7 @@ def check_application_layer(data):
         + check_content_identifier(data)
         + check_session_or_ctx_token(data)
         + check_v1_migration_prohibitions(data)
+        + check_grounding_provenance(data)
     )
 
 
