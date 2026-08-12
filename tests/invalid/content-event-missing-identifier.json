@@ -1,5 +1,6 @@
 {
   "_test_description": "content_grounded event carrying neither content_url nor content_id. Passes JSON Schema (both are individually optional) but violates section 5.7.5: at least one of content_url or content_id MUST be present on every content event.",
+  "_expected_error": "'content_grounded' carries neither content_url nor content_id",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440099",
   "agent_id": "research-assistant-v1",

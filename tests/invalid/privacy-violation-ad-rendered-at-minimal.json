@@ -1,5 +1,6 @@
 {
   "_test_description": "APPLICATION-LAYER VIOLATION: Turn at minimal privacy with ad_rendered present. Passes JSON Schema validation but violates section 5.5: platform metadata (including ad_rendered) is not available at minimal level.",
+  "_expected_error": "'ad_rendered' present on turn with privacy_level 'minimal'",
   "schema_version": "1.0",
   "session_id": "770e8400-e29b-41d4-a716-446655440012",
   "started_at": "2026-03-28T10:00:00Z",

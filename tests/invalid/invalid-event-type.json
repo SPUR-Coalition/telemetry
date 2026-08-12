@@ -1,5 +1,6 @@
 {
   "_test_description": "Event with type 'content_summarised' which is not in the EventType enum. Fails JSON Schema validation.",
+  "_expected_error": "'content_summarised' is not one of",
   "schema_version": "1.0",
   "session_id": "770e8400-e29b-41d4-a716-446655440008",
   "started_at": "2026-03-28T10:00:00Z",

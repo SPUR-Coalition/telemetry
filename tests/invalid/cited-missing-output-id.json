@@ -1,5 +1,6 @@
 {
   "_test_description": "content_cited event with id and a resolvable source reference but no output_id. output_id is required on citation events so output construction can be correlated with later presentation.",
+  "_expected_error": "'output_id' is a required property",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440160",
   "started_at": "2026-08-01T14:00:00Z",

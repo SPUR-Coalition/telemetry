@@ -1,5 +1,6 @@
 {
   "_test_description": "Standalone event envelope carrying neither session_id nor ctx_token. Passes JSON Schema (both are individually optional on the envelope) but violates section 5.7.5: an event MUST carry either session_id or ctx_token at Grounding conformance and above (section 7.1).",
+  "_expected_error": "neither session_id nor ctx_token",
   "document_type": "event",
   "schema_version": "1.0",
   "event": {

@@ -1,5 +1,6 @@
 {
   "_test_description": "content_presented must distinguish source content from a source reference.",
+  "_expected_error": "'presentation_kind' is a required property",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440090",
   "started_at": "2026-07-18T13:00:00Z",

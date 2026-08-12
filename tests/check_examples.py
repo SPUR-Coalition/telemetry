@@ -11,13 +11,15 @@ against the matching schema:
     event batch       -> telemetry-event-batch.json
     manifest          -> manifest.json
 
-Fragments (a bare event object, a single turn, a one-field snippet) are not
-top-level documents and cannot be validated against a top-level schema. They are
-counted and listed rather than validated.
+A complete bare event object (carrying the required `type` and `timestamp`) is
+validated against the TelemetryEvent definition in telemetry-session.json.
+Genuine fragments (a single turn, a one-field snippet, an event elided below
+its required fields) are not validatable and are counted and listed rather
+than validated.
 
 Usage:
-    uv run --with jsonschema python tests/check_examples.py
-    # or: pip install jsonschema && python tests/check_examples.py
+    uv run --with "jsonschema[format-nongpl]" python tests/check_examples.py
+    # or: pip install "jsonschema[format-nongpl]" && python tests/check_examples.py
 """
 
 import json
@@ -29,8 +31,26 @@ try:
     from jsonschema import Draft202012Validator
     from referencing import Registry, Resource
 except ImportError:
-    print("ERROR: jsonschema package required. Install with: pip install jsonschema")
+    print('ERROR: jsonschema package required. Install with: pip install "jsonschema[format-nongpl]"')
     sys.exit(1)
+
+# Format assertions (uuid, date-time, uri) are annotation-only unless a
+# FormatChecker is attached to the validator. Guard at startup so a missing
+# optional dependency (rfc3339-validator) hard-errors instead of silently
+# downgrading every format assertion to a no-op.
+FORMAT_CHECKER = Draft202012Validator.FORMAT_CHECKER
+_missing_formats = {"uuid", "date-time"} - set(FORMAT_CHECKER.checkers)
+if _missing_formats:
+    print(
+        "ERROR: format checker cannot enforce "
+        + ", ".join(sorted(_missing_formats))
+        + '. Install with: pip install "jsonschema[format-nongpl]"'
+    )
+    sys.exit(1)
+
+# Pseudo-schema name for complete bare event objects in the prose, validated
+# against the TelemetryEvent definition rather than a top-level document schema.
+EVENT_DEF = "telemetry-session.json#/$defs/TelemetryEvent"
 
 REPO = Path(__file__).resolve().parent.parent
 SOURCES = [REPO / "SPECIFICATION.md", REPO / "README.md"]
@@ -52,10 +72,21 @@ def load_validators():
         registry = registry.with_resource(
             schema.get("$id", name), Resource.from_contents(schema)
         )
-    return {
-        name: Draft202012Validator(schema, registry=registry)
+    validators = {
+        name: Draft202012Validator(
+            schema, registry=registry, format_checker=FORMAT_CHECKER
+        )
         for name, schema in schemas.items()
     }
+    # Bare event objects validate against the TelemetryEvent definition,
+    # referenced through the session schema's $id so $refs resolve.
+    session_id = schemas["telemetry-session.json"].get("$id", "")
+    validators[EVENT_DEF] = Draft202012Validator(
+        {"$ref": f"{session_id}#/$defs/TelemetryEvent"},
+        registry=registry,
+        format_checker=FORMAT_CHECKER,
+    )
+    return validators
 
 
 def strip_comments(block):
@@ -67,7 +98,7 @@ def strip_comments(block):
 
 
 def classify(doc):
-    """Return the schema a complete document validates against, or None for a fragment."""
+    """Return the schema a complete example validates against, or None for a fragment."""
     if not isinstance(doc, dict):
         return None
     if doc.get("document_type") == "session":
@@ -80,6 +111,10 @@ def classify(doc):
         return "manifest.json"
     if "session_id" in doc and "started_at" in doc and "events" in doc:
         return "telemetry-session.json"
+    if {"type", "timestamp"} <= doc.keys():
+        # A bare event object carrying the definition's required fields is a
+        # complete event, validatable against the TelemetryEvent definition.
+        return EVENT_DEF
     return None
 
 

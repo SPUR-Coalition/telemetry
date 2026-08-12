@@ -11,7 +11,7 @@ discriminator (section 7.1): "event" validates as a standalone event envelope,
 document.
 
 Usage:
-    pip install jsonschema
+    pip install "jsonschema[format-nongpl]"
     python validate.py
 """
 
@@ -25,7 +25,22 @@ try:
     from jsonschema import Draft202012Validator, ValidationError
     from referencing import Registry, Resource
 except ImportError:
-    print("ERROR: jsonschema package required. Install with: pip install jsonschema")
+    print('ERROR: jsonschema package required. Install with: pip install "jsonschema[format-nongpl]"')
+    sys.exit(1)
+
+# Format assertions (uuid, date-time, uri) are annotation-only unless a
+# FormatChecker is attached to the validator. Every validator constructed in
+# this suite MUST pass format_checker=FORMAT_CHECKER; guard at startup so a
+# missing optional dependency (rfc3339-validator) hard-errors instead of
+# silently downgrading every format assertion to a no-op.
+FORMAT_CHECKER = Draft202012Validator.FORMAT_CHECKER
+_missing_formats = {"uuid", "date-time"} - set(FORMAT_CHECKER.checkers)
+if _missing_formats:
+    print(
+        "ERROR: format checker cannot enforce "
+        + ", ".join(sorted(_missing_formats))
+        + '. Install with: pip install "jsonschema[format-nongpl]"'
+    )
     sys.exit(1)
 
 
@@ -59,6 +74,13 @@ except ImportError:
 #    agent_fetched requires cached false; agent_cached requires cached true.
 #    content_fingerprint MUST NOT carry preserved_in_output because output-side
 #    reuse is represented by content_reproduced.
+#
+# 6. Referential integrity within a session document (sections 6.6-6.8):
+#    content_engaged.presentation_id references the exact content_presented
+#    event id, and citation_id on content_presented/content_reproduced
+#    references a content_cited event id. JSON Schema cannot compare values
+#    across events. Session documents only: standalone envelopes and batch
+#    members may reference events delivered elsewhere.
 #
 # Not checked here: agent_id at Grounding/Citation conformance (section
 # 5.7) depends on the emitter's declared conformance level, which fixtures do
@@ -188,11 +210,11 @@ def load_schema(schema_path):
         manifest_schema_id = manifest_schema.get("$id", "")
         manifest_resource = Resource.from_contents(manifest_schema)
         registry = registry.with_resource(manifest_schema_id, manifest_resource)
-        manifest_validator = Draft202012Validator(manifest_schema, registry=registry)
+        manifest_validator = Draft202012Validator(manifest_schema, registry=registry, format_checker=FORMAT_CHECKER)
     else:
         manifest_validator = None
 
-    validator = Draft202012Validator(schema, registry=registry)
+    validator = Draft202012Validator(schema, registry=registry, format_checker=FORMAT_CHECKER)
     return schema, event_schema, batch_schema, validator, manifest_validator, registry
 
 
@@ -230,12 +252,12 @@ def validate_standalone_event(data, session_schema, event_schema, registry):
     just the event body against the TelemetryEvent definition.
     """
     if event_schema is not None:
-        validator = Draft202012Validator(event_schema, registry=registry)
+        validator = Draft202012Validator(event_schema, registry=registry, format_checker=FORMAT_CHECKER)
         errors = list(validator.iter_errors(data))
     else:
         schema_id = session_schema.get("$id", "")
         wrapper = {"$ref": f"{schema_id}#/$defs/TelemetryEvent"}
-        validator = Draft202012Validator(wrapper, registry=registry)
+        validator = Draft202012Validator(wrapper, registry=registry, format_checker=FORMAT_CHECKER)
         errors = list(validator.iter_errors(data["event"]))
     return errors
 
@@ -248,11 +270,11 @@ def validate_event_batch(data, session_schema, batch_schema, registry):
     event body against the TelemetryEvent definition.
     """
     if batch_schema is not None:
-        validator = Draft202012Validator(batch_schema, registry=registry)
+        validator = Draft202012Validator(batch_schema, registry=registry, format_checker=FORMAT_CHECKER)
         return list(validator.iter_errors(data))
     schema_id = session_schema.get("$id", "")
     wrapper = {"$ref": f"{schema_id}#/$defs/TelemetryEvent"}
-    validator = Draft202012Validator(wrapper, registry=registry)
+    validator = Draft202012Validator(wrapper, registry=registry, format_checker=FORMAT_CHECKER)
     errors = []
     for event in data.get("events", []):
         errors.extend(validator.iter_errors(event))
@@ -263,12 +285,15 @@ def check_privacy_conformance(data):
     """
     Check application-layer privacy conformance rules.
 
+    The privacy field gating of section 5.5 is a property of privacy_level
+    itself: it applies wherever conversation turns are emitted - session
+    documents, event batches, and standalone event envelopes alike.
+
     Returns a list of violation descriptions, empty if conforming.
     """
     violations = []
-    events = data.get("events", [])
 
-    for event in events:
+    for event in _iter_events(data):
         turn = event.get("turn")
         if turn is None:
             continue
@@ -288,8 +313,9 @@ def check_privacy_conformance(data):
 
 
 def _iter_events(data):
-    """Yield the content/turn events in a document, whether it is a session
-    (events list) or a standalone envelope (single event under 'event')."""
+    """Yield the content/turn events in a document, whatever its shape: a
+    session or event batch (events list) or a standalone envelope (single
+    event under 'event')."""
     if is_standalone_event(data):
         event = data.get("event")
         if isinstance(event, dict):
@@ -336,6 +362,52 @@ def check_session_or_ctx_token(data):
     if not data.get("session_id") and not data.get("ctx_token"):
         return [f"{kind} envelope carries neither session_id nor ctx_token"]
     return []
+
+
+def check_referential_integrity(data):
+    """
+    Check the intra-document event references of a session document:
+
+    - Every content_engaged.presentation_id MUST reference the exact
+      content_presented.id on which the action occurred (section 6.8).
+    - Every citation_id on a content_presented or content_reproduced event
+      references that content_cited event's id (sections 6.6, 6.7).
+
+    Applies only to session documents, where the referenced events live in
+    the same document. Standalone envelopes and batch members legitimately
+    reference events delivered elsewhere (e.g. a click-out engagement carrying
+    a ctx_token), so they are exempt here; the corroborating click-out flow
+    is out of scope for this suite. Returns a list of violations.
+    """
+    if is_standalone_event(data) or is_event_batch(data):
+        return []
+    events = data.get("events", [])
+    presented_ids = {
+        e.get("id") for e in events
+        if e.get("type") == "content_presented" and e.get("id")
+    }
+    cited_ids = {
+        e.get("id") for e in events
+        if e.get("type") == "content_cited" and e.get("id")
+    }
+    violations = []
+    for event in events:
+        etype = event.get("type")
+        if etype == "content_engaged":
+            pid = event.get("presentation_id")
+            if pid and pid not in presented_ids:
+                violations.append(
+                    f"content_engaged presentation_id '{pid}' does not match "
+                    "any content_presented event id in the session"
+                )
+        if etype in ("content_presented", "content_reproduced"):
+            cid = event.get("citation_id")
+            if cid and cid not in cited_ids:
+                violations.append(
+                    f"{etype} citation_id '{cid}' does not match any "
+                    "content_cited event id in the session"
+                )
+    return violations
 
 
 def check_v1_migration_prohibitions(data):
@@ -385,6 +457,7 @@ def check_application_layer(data):
         check_privacy_conformance(data)
         + check_content_identifier(data)
         + check_session_or_ctx_token(data)
+        + check_referential_integrity(data)
         + check_v1_migration_prohibitions(data)
         + check_grounding_provenance(data)
     )
@@ -417,6 +490,30 @@ def check_manifest_application_layer(data):
                 )
 
     return violations
+
+
+def schema_error_haystack(errors):
+    """
+    Render the first schema error (deterministically chosen) as searchable
+    text: its JSON pointer plus its message, recursing into sub-errors of
+    combinators like anyOf. Invalid fixtures pin their intended violation by
+    requiring an _expected_error substring to appear in this text.
+    """
+    first = sorted(
+        errors,
+        key=lambda e: ([str(p) for p in e.absolute_path], e.message),
+    )[0]
+    parts = []
+
+    def walk(error):
+        pointer = "/" + "/".join(str(p) for p in error.absolute_path)
+        parts.append(pointer)
+        parts.append(error.message)
+        for sub in error.context or []:
+            walk(sub)
+
+    walk(first)
+    return " ".join(parts)
 
 
 def run_tests():
@@ -495,8 +592,20 @@ def run_tests():
         data = load_test_file(path)
         name = path.name
         desc = data.get("_test_description", "")
+        expected_error = data.get("_expected_error")
 
         is_app_layer = name in APPLICATION_LAYER_VIOLATIONS
+
+        # Every invalid fixture must pin its intended violation: a substring
+        # that must appear in the actual error. Without it, a fixture that
+        # fails for the wrong reason (e.g. after an unrelated edit) would
+        # still count as a pass.
+        if not isinstance(expected_error, str) or not expected_error:
+            print(f"  FAIL  {name}")
+            print("        Fixture missing required _expected_error field")
+            failed += 1
+            results.append((name, False, "missing _expected_error"))
+            continue
 
         if is_manifest_fixture(path):
             if manifest_validator is None:
@@ -514,12 +623,19 @@ def run_tests():
             schema_errors = list(session_validator.iter_errors(data))
 
         if schema_errors:
-            # Failed JSON Schema - good
-            msg = schema_errors[0].message
-            print(f"  PASS  {name}")
-            print(f"        Schema error: {msg}")
-            passed += 1
-            results.append((name, True, None))
+            # Failed JSON Schema - but only for the pinned reason
+            haystack = schema_error_haystack(schema_errors)
+            if expected_error in haystack:
+                print(f"  PASS  {name}")
+                print(f"        Schema error: {schema_errors[0].message}")
+                passed += 1
+                results.append((name, True, None))
+            else:
+                print(f"  FAIL  {name}")
+                print(f"        Schema error does not match _expected_error {expected_error!r}")
+                print(f"        Actual: {haystack[:200]}")
+                failed += 1
+                results.append((name, False, "wrong schema error"))
 
         elif is_app_layer:
             # Passes JSON Schema but should fail conformance
@@ -528,16 +644,23 @@ def run_tests():
                 if is_manifest_fixture(path)
                 else check_application_layer(data)
             )
-            if conformance_violations:
-                print(f"  PASS  {name}  [application-layer]")
-                print(f"        {APPLICATION_LAYER_VIOLATIONS[name]}")
-                passed += 1
-                results.append((name, True, None))
-            else:
+            haystack = "; ".join(conformance_violations)
+            if not conformance_violations:
                 print(f"  FAIL  {name}")
                 print(f"        Expected application-layer violation but none found")
                 failed += 1
                 results.append((name, False, "Expected conformance violation"))
+            elif expected_error not in haystack:
+                print(f"  FAIL  {name}")
+                print(f"        Violation does not match _expected_error {expected_error!r}")
+                print(f"        Actual: {haystack[:200]}")
+                failed += 1
+                results.append((name, False, "wrong conformance violation"))
+            else:
+                print(f"  PASS  {name}  [application-layer]")
+                print(f"        {APPLICATION_LAYER_VIOLATIONS[name]}")
+                passed += 1
+                results.append((name, True, None))
 
         else:
             # Should have failed schema but didn't
@@ -545,6 +668,16 @@ def run_tests():
             print(f"        Expected schema validation error but file validated OK")
             failed += 1
             results.append((name, False, "Expected schema error"))
+
+    # --- Reconcile APPLICATION_LAYER_VIOLATIONS against invalid/ ---
+    # A dict key with no matching fixture file means an expectation silently
+    # dropped out of the suite (e.g. a renamed fixture). Fail the run.
+    invalid_names = {p.name for p in invalid_dir.glob("*.json")}
+    for name in sorted(set(APPLICATION_LAYER_VIOLATIONS) - invalid_names):
+        print(f"  FAIL  {name}")
+        print("        APPLICATION_LAYER_VIOLATIONS entry has no matching file in invalid/")
+        failed += 1
+        results.append((name, False, "orphaned APPLICATION_LAYER_VIOLATIONS entry"))
 
     # --- Summary ---
     total = passed + failed

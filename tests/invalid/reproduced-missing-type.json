@@ -1,5 +1,6 @@
 {
   "_test_description": "content_reproduced must classify the fidelity of the reproduction: data.reproduction_type is required.",
+  "_expected_error": "'reproduction_type' is a required property",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440120",
   "started_at": "2026-08-01T10:00:00Z",

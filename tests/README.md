@@ -14,11 +14,11 @@ Tests for the Content Telemetry Specification v1.
 From a clean checkout, with no setup beyond [uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv run --with jsonschema python tests/validate.py
-uv run --with jsonschema python tests/check_examples.py
+uv run --with "jsonschema[format-nongpl]" python tests/validate.py
+uv run --with "jsonschema[format-nongpl]" python tests/check_examples.py
 ```
 
-Run from the repository root. Without uv: `pip install jsonschema`, then `python3 tests/validate.py`. Both commands run in CI on every pull request.
+Run from the repository root. Without uv: `pip install "jsonschema[format-nongpl]"`, then `python3 tests/validate.py`. The `format-nongpl` extra pulls in the format validators (`rfc3339-validator` and friends) that make `format: uuid` / `date-time` / `uri` assertions enforce rather than annotate; both scripts hard-error at startup if they are missing. Both commands run in CI on every pull request.
 
 `check_examples.py` extracts every fenced `json` block from the spec and README, validates the complete top-level documents (sessions, standalone events, manifests) against the matching schema, and reports the number of fragments it skipped. A worked example that no longer matches its schema fails the build.
 

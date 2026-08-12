@@ -1,5 +1,6 @@
 {
   "_test_description": "schema_version set to '2.0' which does not match the const '1.0'. Fails JSON Schema validation.",
+  "_expected_error": "'1.0' was expected",
   "schema_version": "2.0",
   "session_id": "770e8400-e29b-41d4-a716-446655440010",
   "started_at": "2026-03-28T10:00:00Z",

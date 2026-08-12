@@ -1,5 +1,6 @@
 {
   "_test_description": "Event batch envelope carrying a content_cited event with neither session_id nor ctx_token on the envelope. Passes JSON Schema (both fields are optional) but violates section 7.1: an event MUST carry one at Grounding conformance and above.",
+  "_expected_error": "neither session_id nor ctx_token",
   "document_type": "event_batch",
   "schema_version": "1.0",
   "events": [
