@@ -4,12 +4,14 @@
 
 This is a preview specification. Field names, event types, and schema structure may change before 1.0.
 
-> **Consultation status — 29 July 2026:** The public comment period closed on
-> **24 July 2026**. SPUR is reviewing the submissions and preparing a disposition
-> for every consultation issue. Focused v1 changes are being prepared on the
-> `v1-draft` integration line, but no proposed change is adopted until it has
-> completed review and been merged. Version 0.1 remains the current published
-> preview. See [Consultation status](#consultation-status) below.
+> **Consultation status — 12 August 2026:** The public comment period closed on
+> **24 July 2026**. The SPUR Steering Board has approved the v1 direction, and a
+> final disposition is now recorded on every consultation thread: each carries
+> an outcome label, and accepted core changes sit on the
+> [v1 release candidate milestone](https://github.com/SPUR-Coalition/telemetry/milestone/1)
+> with a schema freeze targeted for **21 August 2026**. Accepted changes are
+> merging on the `v1-draft` integration line. Version 0.1 remains the current
+> published preview. See [Consultation status](#consultation-status) below.
 
 ## Contents
 
@@ -159,7 +161,7 @@ threads and five pull requests. The maintainers are now:
 
 - [x] reviewing the full consultation record;
 - [x] preparing a proposed disposition for every thread;
-- [ ] recording the approved dispositions on the issue tracker;
+- [x] recording the approved dispositions on the issue tracker;
 - [ ] completing focused v1 changes and migration fixtures on `v1-draft`;
 - [ ] publishing a v1 release candidate for implementer testing; and
 - [ ] publishing final v1 only after publisher, intermediary and agent/platform
