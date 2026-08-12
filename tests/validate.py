@@ -53,7 +53,7 @@ if _missing_formats:
 # 1. Privacy level field gating (section 5.5):
 #    - At "minimal" level: query_text, response_text, query_intent, topics,
 #      model_id, ad_rendered, response_mode, and response_type MUST NOT be
-#      present. Only response_tokens and content_urls are allowed.
+#      present. Only query_tokens, response_tokens and content_urls are allowed.
 #    - At "intent" level: query_text and response_text MUST NOT be present.
 #
 # 2. content_url or content_id requirement (section 5.7.5):
