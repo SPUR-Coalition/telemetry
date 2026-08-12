@@ -9,7 +9,10 @@
       "timestamp": "2026-03-28T10:05:00Z",
       "output_id": "response:1",
       "source_role": "agent",
-      "content_url": "https://example.com/article/test"
+      "content_url": "https://example.com/article/test",
+      "data": {
+        "citation_type": "reference"
+      }
     }
   ]
 }

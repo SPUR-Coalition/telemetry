@@ -218,13 +218,14 @@
             "required": ["type"]
           },
           "then": {
-            "required": ["id", "output_id"],
+            "required": ["id", "output_id", "data"],
             "anyOf": [
               { "required": ["content_url"], "properties": { "content_url": { "type": "string" } } },
               { "required": ["content_id"], "properties": { "content_id": { "type": "string" } } }
             ],
             "properties": {
               "data": {
+                "required": ["citation_type"],
                 "properties": {
                   "citation_type": { "$ref": "#/$defs/CitationType" },
                   "media_type": { "$ref": "#/$defs/MediaType" },

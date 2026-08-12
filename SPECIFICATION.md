@@ -967,7 +967,10 @@ An event batch carries the same envelope fields with `"document_type": "event_ba
       "timestamp": "2026-01-15T10:30:04Z",
       "output_id": "response:1",
       "source_role": "agent",
-      "content_url": "https://www.ft.com/content/abc123"
+      "content_url": "https://www.ft.com/content/abc123",
+      "data": {
+        "citation_type": "reference"
+      }
     }
   ]
 }
