@@ -57,9 +57,18 @@
     "events": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/TelemetryEvent"
+        "allOf": [
+          { "$ref": "#/$defs/TelemetryEvent" },
+          {
+            "if": {
+              "properties": { "type": { "const": "content_engaged" } },
+              "required": ["type"]
+            },
+            "then": { "required": ["presentation_id"] }
+          }
+        ]
       },
-      "description": "Ordered list of events in the session (chronological by timestamp)"
+      "description": "Ordered list of events in the session (chronological by timestamp). Session documents are agent-reported, so content_engaged events here always carry presentation_id; the ctx_token relaxation applies only to standalone/batch envelopes (section 7.4)."
     }
   },
   "$defs": {
@@ -103,7 +112,12 @@
         "presentation_id": {
           "type": "string",
           "format": "uuid",
-          "description": "The id of the exact content_presented event on which the engagement occurred. REQUIRED on content_engaged events."
+          "description": "The id of the exact content_presented event on which the engagement occurred. REQUIRED on agent-reported content_engaged events. Destination-reported events carrying ctx_token omit it; the consumer restores the binding at resolution (section 7.4)."
+        },
+        "ctx_token": {
+          "type": "string",
+          "pattern": "^ct_[A-Za-z0-9_-]{8,240}$",
+          "description": "The click token the agent minted for this engagement's presentation, recorded so the consumer can join destination-reported events to it. Valid only on content_engaged events. See section 7.4."
         },
         "source_role": {
           "$ref": "#/$defs/SourceRole",
@@ -240,7 +254,6 @@
             "required": ["type"]
           },
           "then": {
-            "required": ["presentation_id"],
             "properties": {
               "data": {
                 "properties": {

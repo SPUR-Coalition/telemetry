@@ -1,0 +1,54 @@
+{
+  "_test_description": "The same URL presented twice in one session: two content_presented events with distinct ids and distinct minted click tokens, and a content_engaged bound by presentation_id to the second occurrence. Matching on URL alone could not tell the two presentations apart (sections 6.8, 7.4).",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440210",
+  "agent_id": "assistant-v2",
+  "started_at": "2026-08-10T09:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-10T09:00:01Z",
+      "turn_id": "1",
+      "content_url": "https://news.example.com/markets/rate-decision",
+      "content_id": "newsex:article:8841",
+      "data": { "scope": "session", "chars_ingested": 9400 }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440211",
+      "type": "content_cited",
+      "timestamp": "2026-08-10T09:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://news.example.com/markets/rate-decision",
+      "data": { "citation_type": "paraphrase", "position": "primary" }
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440212",
+      "type": "content_presented",
+      "timestamp": "2026-08-10T09:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "citation_id": "770e8400-e29b-41d4-a716-446655440211",
+      "content_url": "https://news.example.com/markets/rate-decision",
+      "data": { "presentation_kind": "source_reference", "presentation_type": "link" }
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440213",
+      "type": "content_presented",
+      "timestamp": "2026-08-10T09:02:10Z",
+      "turn_id": "2",
+      "output_id": "response:2",
+      "content_url": "https://news.example.com/markets/rate-decision",
+      "data": { "presentation_kind": "source_reference", "presentation_type": "link" }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-10T09:02:31Z",
+      "turn_id": "2",
+      "presentation_id": "880e8400-e29b-41d4-a716-446655440213",
+      "ctx_token": "ct_r2d1a9c44be07f31",
+      "content_url": "https://news.example.com/markets/rate-decision",
+      "data": { "engagement_type": "link_click" }
+    }
+  ]
+}
