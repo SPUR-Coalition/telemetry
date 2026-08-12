@@ -1,6 +1,6 @@
 {
   "_test_description": "content_cited event with content_url explicitly null and no content_id. Presence of a null reference does not satisfy the citation reference requirement: the schema demands a non-null content_url or content_id on content_cited (section 6.5).",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440141",
   "agent_id": "research-assistant-v1",
   "started_at": "2026-08-01T12:30:00Z",

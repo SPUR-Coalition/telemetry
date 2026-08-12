@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://contenttelemetry.org/schema/v0.1/telemetry-session.json",
+  "$id": "https://contenttelemetry.org/schema/v1/telemetry-session.json",
   "title": "Content Telemetry Session",
   "description": "Schema for Content Telemetry sessions - tracking content usage in AI agent interactions",
   "type": "object",
@@ -14,7 +14,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "0.1",
+      "const": "1.0",
       "description": "Content Telemetry schema version"
     },
     "conformance_level": {

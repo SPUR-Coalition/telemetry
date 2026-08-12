@@ -1,7 +1,7 @@
 {
   "_test_description": "Standalone event envelope from a CDN carrying ip_hash in data. The field was withdrawn in v1 (section 9.1): hashing does not anonymise a value drawn from a space small enough to enumerate. Passes JSON Schema because event data accepts additional properties, so the rule is enforced at the application layer.",
   "document_type": "event",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "event": {
     "type": "content_retrieved",
     "timestamp": "2026-03-28T08:15:00Z",

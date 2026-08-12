@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://contenttelemetry.org/schema/v0.1/manifest.json",
+  "$id": "https://contenttelemetry.org/schema/v1/manifest.json",
   "title": "Content Telemetry Manifest",
   "description": "Schema for the .well-known/content-telemetry.json manifest defined in section 8 of the Content Telemetry specification. A manifest declares a participant's identity, roles, telemetry endpoint, signing keys, and claimed domains.",
   "type": "object",
@@ -8,8 +8,8 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "0.1",
-      "description": "Manifest schema version. v0.1 emitters MUST use '0.1'. (Section 8.2)"
+      "const": "1.0",
+      "description": "Manifest schema version. v1 emitters MUST use '1.0'. (Section 8.2)"
     },
     "id": {
       "type": "string",

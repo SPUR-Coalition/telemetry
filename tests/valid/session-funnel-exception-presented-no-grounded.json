@@ -1,6 +1,6 @@
 {
   "_test_description": "Funnel exception: content_presented without content_grounded. An agentic browser renders a publisher's page on a recipient-facing surface (presentation_type: embed) without the content entering a generation context, and the recipient directs the agent to open a second page (engagement_type: agent_navigate). Valid per section 4.3. Also exercises media_type on presentation data and the open presentation_type/engagement_type vocabularies.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440020",
   "agent_id": "browser-agent-v1",
   "started_at": "2026-03-29T11:00:00Z",

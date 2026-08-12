@@ -1,7 +1,7 @@
 {
   "_test_description": "Event batch envelope from a CDN at Retrieval conformance level. No session_id (content owner has no session context); the edge platform buffers detections across requests and flushes them as one batch. Validated against telemetry-event-batch.json envelope schema.",
   "document_type": "event_batch",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "events": [
     {
       "type": "content_retrieved",

@@ -1,6 +1,6 @@
 # Conformance test suite
 
-Tests for the Content Telemetry Specification v0.1.
+Tests for the Content Telemetry Specification v1.
 
 ## Structure
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Conformance test runner for Content Telemetry Specification v0.1.
+Conformance test runner for Content Telemetry Specification v1.
 
 Validates JSON test fixtures against telemetry-session.json, telemetry-event.json,
 telemetry-event-batch.json, manifest.json, and application-layer conformance rules

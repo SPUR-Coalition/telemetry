@@ -1,6 +1,6 @@
 {
   "_test_description": "Retrieval conformance level: content owner CDN emitting content_retrieved with source_role and content_url. No session context beyond the minimum.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440001",
   "started_at": "2026-03-28T11:00:00Z",
   "events": [

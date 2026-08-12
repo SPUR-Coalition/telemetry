@@ -1,7 +1,7 @@
 {
   "_test_description": "A delegated child session links to its immediate parent. The source enters the child agent's generation context and is grounded there; no citation or presentation is emitted merely because the child returns an internal response to its orchestrator.",
   "document_type": "session",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440021",
   "parent_session_id": "660e8400-e29b-41d4-a716-446655440020",
   "agent_id": "research-subagent-v1",

@@ -1,6 +1,6 @@
 {
   "_test_description": "Uncredited reproduction in unpresented output: an API-delivered response contains a verbatim excerpt of grounded content with no citation and no presentation. The content_reproduced event is the only record that source material appears in the output. Valid per section 4.3 (reproduced without cited).",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440101",
   "agent_id": "answers-api-v3",
   "started_at": "2026-08-01T09:00:00Z",

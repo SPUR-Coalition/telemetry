@@ -1,8 +1,8 @@
 # Content Telemetry Specification
 
-**Version:** 0.1
-**Status:** Preview
-**Last updated:** 2026-08-04
+**Version:** 1.0 (release candidate draft)
+**Status:** Release candidate in preparation (feature freeze 21 August 2026)
+**Last updated:** 2026-08-12
 
 ## Contents
 
@@ -330,7 +330,7 @@ Additional content metadata - version, last-modified timestamp, content hash, me
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `schema_version` | string | Yes | Schema version (e.g., "0.1") |
+| `schema_version` | string | Yes | Schema version (v1 documents declare "1.0") |
 | `session_id` | UUID | Yes | Unique session identifier |
 | `parent_session_id` | UUID | No | Immediate parent session that delegated work to this session |
 | `agent_id` | string | No | Responding agent identifier |
@@ -609,7 +609,7 @@ A Citation emitter SHOULD:
 
 A conforming **telemetry consumer** MUST:
 
-- Accept sessions with any `schema_version` that shares the same major version. During the preview period (0.x), consumers MUST accept sessions with the exact same minor version (e.g., a 0.1 consumer accepts 0.1 only). The major-version compatibility rule takes effect from 1.0.0 onward.
+- Accept sessions with any `schema_version` that shares the same major version. V1 documents declare `schema_version` `"1.0"`. A v1 consumer MUST reject documents declaring `"0.1"`: v0.1 is a different wire version, not a compatible minor. Conversely, a v0.1 consumer following the preview rule (a 0.x consumer accepts only the exact same minor version, so a 0.1 consumer accepts 0.1 only) rejects documents declaring `"1.0"`. The major-version compatibility rule takes effect from 1.0.0 onward.
 - Tolerate unknown fields without error
 - Tolerate events from any conformance level
 - Accept the session-document, standalone-event, and event-batch delivery formats, reconstructing sessions from standalone events and event batches where needed (see section 7.1)
@@ -930,7 +930,7 @@ A standalone event carries `document_type`, `schema_version`, and optionally `se
 ```json
 {
   "document_type": "event",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "550e8400-e29b-41d4-a716-446655440000",
   "event": {
     "type": "content_retrieved",
@@ -952,7 +952,7 @@ An event batch carries the same envelope fields with `"document_type": "event_ba
 ```json
 {
   "document_type": "event_batch",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "550e8400-e29b-41d4-a716-446655440000",
   "events": [
     {
@@ -1143,7 +1143,7 @@ Machine-readable schema: [`./manifest.json`](./manifest.json) (JSON Schema draft
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `schema_version` | string | Yes | Manifest schema version. v0.1 emitters MUST use `"0.1"`. |
+| `schema_version` | string | Yes | Manifest schema version. v1 emitters MUST use `"1.0"`. |
 | `id` | string | Yes | The manifest's canonical URL (e.g. `https://example.com/.well-known/content-telemetry.json`). |
 | `roles` | string[] | Yes | One or more of `content_owner`, `agent`, `platform`. |
 | `operator` | object | Yes | Operating organisation (see 8.3). |
@@ -1213,7 +1213,7 @@ Consumers SHOULD cache resolved manifests respecting the response's `Cache-Contr
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "https://example.com/.well-known/content-telemetry.json",
   "roles": ["content_owner"],
   "operator": { "name": "Example Media" },
@@ -1228,7 +1228,7 @@ Consumers SHOULD cache resolved manifests respecting the response's `Cache-Contr
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "https://searchco.com/agents/web-search/.well-known/content-telemetry.json",
   "roles": ["agent"],
   "operator": { "name": "SearchCo" },
@@ -1247,7 +1247,7 @@ Consumers SHOULD cache resolved manifests respecting the response's `Cache-Contr
 ```json
 // https://publisher.com/.well-known/content-telemetry.json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "https://publisher.com/.well-known/content-telemetry.json",
   "roles": ["content_owner"],
   "operator": { "name": "Publisher Co" },
@@ -1261,7 +1261,7 @@ Consumers SHOULD cache resolved manifests respecting the response's `Cache-Contr
 ```json
 // https://publisher.com/agents/assistant/.well-known/content-telemetry.json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "https://publisher.com/agents/assistant/.well-known/content-telemetry.json",
   "roles": ["agent"],
   "operator": { "name": "Publisher Co" },
@@ -1426,6 +1426,14 @@ Telemetry consumers MUST tolerate unknown `response_mode` values.
 
 ### 12.1 Migration from the v0.1 preview
 
+V1 documents declare `schema_version` `"1.0"`, and the schemas' `$id` URLs move
+from `/schema/v0.1/` to `/schema/v1/`. The two versions are distinguishable on
+the wire and do not interoperate: a v0.1 consumer, applying the preview rule of
+section 5.7.4, rejects a document declaring `"1.0"`, and a v1 consumer rejects a
+document declaring `"0.1"`. An emitter moves to v1 by declaring `"1.0"` on
+documents that satisfy this section; it MUST NOT declare `"0.1"` on a document
+using v1 event types or fields.
+
 V1 replaces `content_displayed` with `content_presented`; emitters MUST NOT send
 the old event name on the v1 integration line. Rename `data.display_type` to
 `data.presentation_type` and add `data.presentation_kind` with either `content`
@@ -1491,7 +1499,7 @@ A user asks a shopping assistant to compare noise-cancelling headphones. The age
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "550e8400-e29b-41d4-a716-446655440000",
   "agent_id": "shopping-assistant-v2",
   "content_scope": "electronics-reviews",
@@ -1644,7 +1652,7 @@ An AI agent previously fetched an FT article and cached it. In a new session, th
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440000",
   "agent_id": "copilot-v3",
   "started_at": "2026-03-28T09:00:00Z",

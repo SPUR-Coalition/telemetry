@@ -1,6 +1,6 @@
 {
   "_test_description": "Session-scoped grounding, 3 turns, citations in turns 1 and 3, zero-click outcome. Turn 2 has no citation - the grounded content was in context but not explicitly referenced.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440006",
   "agent_id": "copilot-v3",
   "started_at": "2026-03-28T16:00:00Z",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://contenttelemetry.org/schema/v0.1/telemetry-event.json",
+  "$id": "https://contenttelemetry.org/schema/v1/telemetry-event.json",
   "title": "Content Telemetry Standalone Event",
   "description": "Schema for standalone Content Telemetry events delivered outside a session document",
   "type": "object",
@@ -13,7 +13,7 @@
     },
     "schema_version": {
       "type": "string",
-      "const": "0.1",
+      "const": "1.0",
       "description": "Content Telemetry schema version"
     },
     "session_id": {

@@ -1,6 +1,6 @@
 {
   "_test_description": "Manifest with telemetry.conformance_level 'attribution' which is not one of retrieval, grounding, citation. Fails JSON Schema validation.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "https://searchco.com/agents/web-search/.well-known/content-telemetry.json",
   "roles": ["agent"],
   "operator": { "name": "SearchCo" },

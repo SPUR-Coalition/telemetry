@@ -85,7 +85,7 @@ A user asks an AI agent about UK interest rates. The agent grounds its response 
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440000",
   "agent_id": "copilot-v3",
   "started_at": "2026-03-28T09:00:00Z",

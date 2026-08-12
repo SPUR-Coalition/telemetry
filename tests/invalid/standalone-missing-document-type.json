@@ -1,6 +1,6 @@
 {
   "_test_description": "Envelope-shaped document with an event key but no document_type. Per section 7.1 a document without document_type is treated as a session, and it fails the session schema.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "event": {
     "type": "content_retrieved",
     "timestamp": "2026-03-28T10:00:00Z",

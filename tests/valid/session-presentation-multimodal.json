@@ -1,6 +1,6 @@
 {
   "_test_description": "Modality-neutral citation and presentation: an image excerpt is presented as content, an audio output speaks a source credit, a video is embedded without citation, a constructed citation is suppressed, and a repeated link presentation receives the engagement.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440070",
   "agent_id": "multimodal-assistant-v1",
   "started_at": "2026-07-18T12:00:00Z",

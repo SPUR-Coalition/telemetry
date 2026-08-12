@@ -1,6 +1,6 @@
 {
   "_test_description": "content_reproduced event carrying neither content_url nor content_id. A reproduction claim is only meaningful for an identified source; the JSON Schema requires a non-null content_url or content_id on content_reproduced (section 6.6).",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440150",
   "started_at": "2026-08-01T13:00:00Z",
   "events": [

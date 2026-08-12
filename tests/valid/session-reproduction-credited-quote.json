@@ -1,6 +1,6 @@
 {
   "_test_description": "Credited quotation: the same span produces a content_reproduced event (the material) and a content_cited direct_quote event (the credit), sharing output_element_id, with reproduced_hash equal to the citation's excerpt_hash. The quote is then presented inline. Demonstrates that reproduction and citation are sibling output-construction claims joined to one presentation.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440111",
   "agent_id": "research-assistant-v5",
   "started_at": "2026-08-01T15:00:00Z",

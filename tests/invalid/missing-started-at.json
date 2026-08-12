@@ -1,6 +1,6 @@
 {
   "_test_description": "Session without started_at. Fails JSON Schema validation: started_at is a required field.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "770e8400-e29b-41d4-a716-446655440003",
   "events": [
     {
