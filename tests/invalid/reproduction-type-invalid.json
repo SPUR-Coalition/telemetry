@@ -1,0 +1,21 @@
+{
+  "_test_description": "content_reproduced with reproduction_type 'paraphrase'. Paraphrase is not reproduction (section 6.6): a credited paraphrase is a content_cited event with citation_type 'paraphrase', and an uncredited one is silent grounding. reproduction_type accepts only verbatim, near_verbatim, unclassified.",
+  "_expected_error": "'paraphrase' is not one of",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440206",
+  "started_at": "2026-08-05T09:40:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440207",
+      "type": "content_reproduced",
+      "timestamp": "2026-08-05T09:40:01Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_id": "publisher:article:7",
+      "data": {
+        "reproduction_type": "paraphrase",
+        "reproduced_chars": 280
+      }
+    }
+  ]
+}

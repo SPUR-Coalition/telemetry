@@ -102,9 +102,55 @@ APPLICATION_LAYER_VIOLATIONS = {
         "Turn at intent privacy includes query_text. "
         "Violates section 5.5: query_text MUST NOT be present at intent level."
     ),
+    "privacy-violation-response-text-at-minimal.json": (
+        "Turn at minimal privacy includes response_text. "
+        "Violates section 5.5: response text MUST NOT be present at minimal level."
+    ),
+    "privacy-violation-query-intent-at-minimal.json": (
+        "Turn at minimal privacy includes query_intent. "
+        "Violates section 5.5: intent classification MUST NOT be present at minimal level."
+    ),
+    "privacy-violation-topics-at-minimal.json": (
+        "Turn at minimal privacy includes topics. "
+        "Violates section 5.5: topics MUST NOT be present at minimal level."
+    ),
+    "privacy-violation-response-type-at-minimal.json": (
+        "Turn at minimal privacy includes response_type. "
+        "Violates section 5.5: response classification MUST NOT be present at minimal level."
+    ),
+    "privacy-violation-response-mode-at-minimal.json": (
+        "Turn at minimal privacy includes response_mode. "
+        "Violates section 5.5: platform metadata MUST NOT be present at minimal level."
+    ),
+    "privacy-violation-model-id-at-minimal.json": (
+        "Turn at minimal privacy includes model_id. "
+        "Violates section 5.5: platform metadata MUST NOT be present at minimal level."
+    ),
     "content-event-missing-identifier.json": (
         "content_grounded event has neither content_url nor content_id. "
         "Violates section 5.7.5: every content event MUST carry at least one."
+    ),
+    "presented-missing-identifier.json": (
+        "content_presented event has neither content_url nor content_id. "
+        "Violates section 5.7.5: every content event MUST carry at least one."
+    ),
+    "retrieved-missing-identifier.json": (
+        "content_retrieved event has neither content_url nor content_id. "
+        "Violates section 5.7.5: every content event MUST carry at least one."
+    ),
+    "engaged-missing-identifier.json": (
+        "content_engaged event has neither content_url nor content_id. "
+        "Violates section 5.7.5: every content event MUST carry at least one."
+    ),
+    "engaged-presentation-id-unmatched.json": (
+        "content_engaged.presentation_id matches no content_presented event id "
+        "in the session. Violates section 6.8: every engagement references the "
+        "exact content_presented.id on which the action occurred."
+    ),
+    "presented-citation-id-unmatched.json": (
+        "content_presented.citation_id matches no content_cited event id in "
+        "the session. Violates section 6.7: citation_id references the "
+        "presented content_cited event's id."
     ),
     "standalone-missing-session-and-ctx-token.json": (
         "Standalone event envelope has neither session_id nor ctx_token. "

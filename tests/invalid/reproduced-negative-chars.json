@@ -1,0 +1,21 @@
+{
+  "_test_description": "content_reproduced with a negative reproduced_chars. The reproduced span length is a Unicode code point count and cannot be negative (section 6.6); the schema requires a minimum of 0.",
+  "_expected_error": "reproduced_chars -412 is less than the minimum",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440211",
+  "started_at": "2026-08-05T10:10:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440212",
+      "type": "content_reproduced",
+      "timestamp": "2026-08-05T10:10:01Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_id": "publisher:article:9",
+      "data": {
+        "reproduction_type": "verbatim",
+        "reproduced_chars": -412
+      }
+    }
+  ]
+}

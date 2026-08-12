@@ -1,0 +1,50 @@
+{
+  "_test_description": "Funnel exception: content_reproduced with no content_grounded event. The response quotes a passage the model memorised during training - the content never entered this session's generation context, so there is no retrieval and no grounding to report. Valid per section 4.3 (reproduced without grounded); telemetry consumers SHOULD treat it, like an uncorroborated citation, as a lower-confidence signal.",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440241",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-05T15:00:00Z",
+  "ended_at": "2026-08-05T15:00:03Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-08-05T15:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "question",
+        "topics": [
+          "english literature",
+          "opening lines"
+        ]
+      }
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440242",
+      "type": "content_reproduced",
+      "timestamp": "2026-08-05T15:00:02Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:quote:1",
+      "content_url": "https://www.gutenberg.org/ebooks/1342",
+      "content_id": "isbn:9780141439518",
+      "data": {
+        "reproduction_type": "verbatim",
+        "media_type": "text",
+        "reproduced_chars": 122,
+        "reproduced_hash": "sha256:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-08-05T15:00:03Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "response_type": "explanation",
+        "response_mode": "standard",
+        "response_tokens": 160
+      }
+    }
+  ]
+}

@@ -28,11 +28,14 @@ Run from the repository root. Without uv: `pip install "jsonschema[format-nongpl
 - Event required fields (`type`, `timestamp`)
 - Turn required fields (`privacy_level`)
 - Enum validation (event types, privacy levels, source roles, schema version)
-- Citation source-reference requirement (content_cited rejected when content_url/content_id are missing or null)
+- Citation source-reference requirement (content_cited rejected when content_url/content_id are missing or null) and required citation_type
+- Required event and output identifiers on cited, reproduced, and presented events
+- Closed enums (reproduction_type, presentation_kind) and non-negative counts (chars_ingested, reproduced_chars)
+- Format assertions (a malformed parent_session_id fails)
 - All three conformance levels (Retrieval, Grounding, Citation)
 - Standalone event envelopes (CDN edge, agent with session FK)
-- Privacy level field gating (application-layer conformance)
-- Funnel exceptions (presented-no-cited, cited-no-grounded, presented-no-grounded)
+- Privacy level field gating (application-layer conformance), one fixture per forbidden field at minimal
+- Funnel exceptions (presented-no-cited, cited-no-grounded, presented-no-grounded, reproduced-no-grounded)
 - Reproduction cases: credited quotation (reproduction + direct_quote citation sharing an output element) and uncredited reproduction in unpresented API output
 - Text, image, audio, video, suppressed-citation, and repeated-presentation cases
 - Exact presentation-to-engagement correlation across session and standalone envelopes
@@ -40,15 +43,16 @@ Run from the repository root. Without uv: `pip install "jsonschema[format-nongpl
 - Grounding provenance paths and generic fingerprint detection across session, standalone-event, and event-batch envelopes
 - Custom response_mode values
 
-Each test file has a `_test_description` field explaining what it demonstrates.
+Each test file has a `_test_description` field explaining what it demonstrates. Every `invalid/` fixture also has an `_expected_error` field: a substring that must appear in the actual error (the first schema error's message and JSON pointer, or the application-layer violation text). The runner fails a fixture that fails for a different reason than the one it pins, and fails any invalid fixture missing the field.
 
 ## Application-layer conformance
 
 Some rules cannot be expressed in JSON Schema alone. These are tested as application-layer conformance checks in `validate.py`:
 
-- Privacy level field gating (e.g. `query_text` MUST NOT be present at `minimal` level)
+- Privacy level field gating (e.g. `query_text` MUST NOT be present at `minimal` level), applied to turns wherever they appear: session documents, batches, and standalone envelopes
 - `content_url` or `content_id` requirement on every content event (section 5.7.5)
 - `session_id` or `ctx_token` on a standalone event or event batch envelope at Grounding conformance and above (sections 5.7.5, 7.1)
+- Referential integrity within a session document: `content_engaged.presentation_id` matches a `content_presented` event id, and `citation_id` on `content_presented`/`content_reproduced` matches a `content_cited` event id (sections 6.6-6.8). Standalone envelopes and batch members are exempt - they may reference events delivered elsewhere.
 - Manifest rejection rules: duplicate `keys[].id`, and `domains` entries that are not the manifest's own host or a subdomain of it (sections 8.6, 8.7)
 - Withdrawn `ip_hash` prohibition on `content_retrieved` data (section 9.1 migration rule)
 - Grounding provenance/cache consistency and the prohibition on `preserved_in_output` in `content_fingerprint` (sections 5.7.5, 6.4, 12.1)

@@ -1,0 +1,20 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: content_presented event carrying neither content_url nor content_id. Passes JSON Schema (both are individually optional) but violates section 5.7.5: at least one MUST be present on every content event.",
+  "_expected_error": "'content_presented' carries neither content_url nor content_id",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440230",
+  "started_at": "2026-08-05T12:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440231",
+      "type": "content_presented",
+      "timestamp": "2026-08-05T12:00:01Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    }
+  ]
+}

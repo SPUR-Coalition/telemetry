@@ -1,0 +1,20 @@
+{
+  "_test_description": "content_cited event with output_id and a resolvable source reference but no event id. id is required on citation events so a presentation or reproduction can reference the exact citation via citation_id (section 6.5).",
+  "_expected_error": "'id' is a required property",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440203",
+  "started_at": "2026-08-05T09:20:00Z",
+  "events": [
+    {
+      "type": "content_cited",
+      "timestamp": "2026-08-05T09:20:01Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "citation_type": "reference",
+        "position": "primary"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "_test_description": "content_grounded with a negative chars_ingested. Ingestion counts are Unicode code point counts and cannot be negative (section 6.4); the schema requires a minimum of 0.",
+  "_expected_error": "chars_ingested -7200 is less than the minimum",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440210",
+  "started_at": "2026-08-05T10:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-05T10:00:01Z",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "scope": "session",
+        "cached": false,
+        "chars_ingested": -7200
+      }
+    }
+  ]
+}

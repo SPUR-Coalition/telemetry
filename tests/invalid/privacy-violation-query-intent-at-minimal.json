@@ -1,0 +1,19 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: Turn at minimal privacy with query_intent present. Passes JSON Schema validation but violates the privacy field gating rule (section 5.5): query_intent MUST NOT be present when privacy_level is minimal.",
+  "_expected_error": "'query_intent' present on turn with privacy_level 'minimal'",
+  "schema_version": "1.0",
+  "session_id": "770e8400-e29b-41d4-a716-446655440221",
+  "started_at": "2026-08-05T11:00:00Z",
+  "events": [
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-08-05T11:00:05Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "minimal",
+        "query_intent": "purchase_intent",
+        "response_tokens": 150
+      }
+    }
+  ]
+}
