@@ -401,7 +401,7 @@
         },
         "ad_rendered": {
           "type": ["boolean", "null"],
-          "description": "Whether advertising was displayed alongside the response"
+          "description": "Whether advertising was rendered alongside the response"
         }
       }
     },

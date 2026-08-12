@@ -561,7 +561,7 @@ Each level is named for the event it adds: a level proves the emitter produces t
 | **Grounding** | Above + `content_grounded`, turn events | Content entered the agent's context | Agent with basic instrumentation |
 | **Citation** | Above + `content_cited` | Content was explicitly referenced in the agent's response | Agent with citation instrumentation |
 
-Presentation and engagement events are optional lifecycle signals. A Citation emitter SHOULD emit them when applicable (section 5.7.3), but the Citation level proves citation support, not full retrieval-to-engagement coverage.
+Reproduction, presentation, and engagement events are optional lifecycle signals outside the Retrieval/Grounding/Citation ladder. A Citation emitter SHOULD emit them when applicable (section 5.7.3), but the Citation level proves citation support, not full retrieval-to-engagement coverage.
 
 #### 5.7.1 Retrieval conformance
 
@@ -648,7 +648,7 @@ Whether an emitter's reporting in fact met its declared coverage is the complete
 
 ## 6. Data profiles
 
-The `data` field on events carries type-specific metadata. These profiles document the recommended fields by event type and source role, in lifecycle order. None are required except where a section states otherwise (`reproduction_type` in 6.6; `presentation_kind` and `presentation_type` in 6.7), but emitting them enables richer attribution.
+The `data` field on events carries type-specific metadata. These profiles document the recommended fields by event type and source role. None are required except where a section states otherwise (`reproduction_type` in 6.6; `presentation_kind` and `presentation_type` in 6.7), but emitting them enables richer attribution.
 
 ### 6.1 Retrieved content metadata (`content_retrieved`)
 
@@ -816,7 +816,7 @@ A citation MUST carry a resolvable source reference: a non-null `content_url` or
 
 `media_type` identifies the content medium. Defaults to `text` when absent.
 
-`excerpt_tokens` is the agent-native measurement. `excerpt_chars` provides the same information in a unit familiar to content owners and licensors. Emitters SHOULD include both when available.
+`excerpt_chars` counts Unicode code points in the cited excerpt under the same counting rule as `chars_ingested` (section 6.4): no normalisation applied solely for counting. It is the portable primary measurement, comparable across emitters and stated in a unit familiar to content owners and licensors. `excerpt_tokens` counts the same excerpt in the generation model's tokeniser; it is the agent-native supplementary measurement, carrying the same portability limits as `tokens_ingested`. Emitters SHOULD send `excerpt_chars` where they send `excerpt_tokens`.
 
 `excerpt_hash` is the SHA-256 of the excerpt text as it appears in the agent's response - the exact string the agent produced, not the source text it was derived from. For `direct_quote` citations, a matching hash against the source content confirms verbatim fidelity. For `paraphrase` citations, a non-matching hash is expected; verification tooling can use the hash to confirm which specific excerpt was cited and compare it against known source passages. Emitters SHOULD include `excerpt_hash` when `excerpt_tokens` or `excerpt_chars` is present. The hash uses the same `sha256:{hex}` format as `content_hash`.
 
@@ -1162,7 +1162,7 @@ A manifest MAY declare multiple roles (e.g. `["content_owner", "agent"]`). A mor
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `name` | string | Yes | Presentation name of the operating organisation. |
+| `name` | string | Yes | Display name of the operating organisation. |
 | `domain` | string | No | Primary domain. Defaults to the manifest URL's host. |
 
 ### 8.4 Keys
