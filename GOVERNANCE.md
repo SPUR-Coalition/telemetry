@@ -29,7 +29,9 @@ The specification is at v0.1 (preview). It moves to 1.0 once the open questions 
 ## How to participate
 
 - File questions and bugs on the [issue tracker](https://github.com/SPUR-Coalition/telemetry/issues) (see the templates).
-- Comment during the [public comment window](./README.md#request-for-comment).
+- Follow the [post-consultation status](./README.md#consultation-status). The
+  formal v1 comment window is closed, but concrete bugs and implementation
+  evidence remain welcome on the issue tracker.
 - Propose new capabilities or changes in behaviour as a short human-written note
   in [`proposals/`](./proposals/), following
   [CONTRIBUTING.md](./CONTRIBUTING.md).

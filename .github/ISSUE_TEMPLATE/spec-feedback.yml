@@ -6,13 +6,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reviewing the Content Telemetry standard. This template is for
-        questions, unclear or contradictory requirements, and gaps in the
-        specification as written.
+        The formal v1 public comment period closed on 24 July 2026. This template
+        remains available for questions, unclear or contradictory requirements,
+        implementation evidence, and gaps in the specification as written.
 
         For a new capability or change in behaviour, submit a short human-written
         note to [proposals/](../tree/main/proposals) instead. Please wait for
-        explicit maintainer alignment before beginning implementation.
+        explicit maintainer alignment before beginning implementation. New
+        proposals are not automatically part of the v1 scope.
 
         For a concrete bug in a schema file or a worked example, use the
         **Schema or example bug** template instead.
