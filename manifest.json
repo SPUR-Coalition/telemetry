@@ -82,6 +82,12 @@
           "type": "string",
           "enum": ["retrieval", "grounding", "citation"],
           "description": "Conformance level advertised by this participant's own emitter(s). Informational. (Sections 8.5, 5.7)"
+        },
+        "ctx_resolution": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "description": "HTTPS URL of the click-token resolution endpoint operated by or for this participant. Valid on agent and platform manifests. Destinations resolve ctx_iss to this manifest and present the token here. (Section 7.4)"
         }
       },
       "description": "Telemetry endpoint declaration. (Section 8.5)"

@@ -12,7 +12,7 @@
 4. [Concepts](#4-concepts) - roles, sessions, event lifecycle, source roles, content identification
 5. [Schema](#5-schema) - session, event, event types, conversation turn, privacy, intent, conformance levels
 6. [Data profiles](#6-data-profiles) - retrieval, edge enrichment, origin enrichment, grounding, citation, reproduction, presentation, engagement
-7. [Transport](#7-transport) - delivery formats, Content-Telemetry-ID header
+7. [Transport](#7-transport) - delivery formats, Content-Telemetry-ID header, routing, click context
 8. [Manifest](#8-manifest) - discovery, schema, operator, keys, telemetry, domains
 9. [Privacy](#9-privacy) - data minimisation, recommended levels, retention
 10. [Attribution](#10-attribution) - counting semantics, grounding without citation
@@ -213,7 +213,7 @@ Content moves through six stages during an agent interaction:
 
    Grounding and presentation record different boundary crossings: grounding records entry into a generation context, while presentation records a recipient-facing delivery occurrence. As agent experiences evolve beyond the chat window the two diverge - content can shape an answer whose source is never presented, and an agent can present content that never entered a generation context (see *Departures from the funnel model* below).
 
-6. **Engaged** - The recipient or agent performed an observable action on a presentation: clicked a link, expanded a preview, copied text, shared the response, or directed the agent to act on the content. It does not imply attention beyond the reported action. `presentation_id` links the action to the exact presentation occurrence; a click-out can also carry a `ctx_token` that a destination resolves to the session's click manifest (section 7.1).
+6. **Engaged** - The recipient or agent performed an observable action on a presentation: clicked a link, expanded a preview, copied text, shared the response, or directed the agent to act on the content. It does not imply attention beyond the reported action. `presentation_id` links the action to the exact presentation occurrence; a click-out can also carry a `ctx_token` that a destination resolves to the click context (section 7.4).
 
 ```
 Retrieved (HTTP layer, cacheable)
@@ -368,7 +368,8 @@ Format: the URL of a manifest served at `/.well-known/content-telemetry.json` un
 | `output_id` | string | For reproduced/cited/presented | Opaque output-artifact identifier joining construction to later delivery |
 | `output_element_id` | string | No | Opaque element within `output_id`, such as a passage, media track, caption, link, or card |
 | `citation_id` | UUID | No | On `content_presented` or `content_reproduced`, the `id` of the associated citation event; absent for uncited presentations and uncredited reproductions |
-| `presentation_id` | UUID | For engaged | On `content_engaged`, the `id` of the exact presentation occurrence acted upon |
+| `presentation_id` | UUID | For engaged | On agent-reported `content_engaged`, the `id` of the exact presentation occurrence acted upon. Destination-reported events carrying an envelope `ctx_token` omit it (section 7.4) |
+| `ctx_token` | string | No | On agent-reported `content_engaged`, the click token minted for this engagement's presentation, recorded so destination reports join to it (section 7.4) |
 | `source_role` | SourceRole | No | Who is reporting: `origin`, `edge`, `index`, `agent` (see 4.4) |
 | `content_telemetry_id` | UUID | No | Correlation ID for cross-observer deduplication (see 7.2) |
 | `content_url` | string | No | Content URL as fetched or canonical URL |
@@ -773,7 +774,7 @@ When a session includes `content_presented` events but no subsequent `content_en
 |-------|------|-------------|
 | `engagement_type` | string | Type of interaction (see below) |
 
-The content URL is identified by the event-level `content_url` field (section 5.2), not duplicated in `data`. Every engagement MUST carry `presentation_id`, referencing the exact `content_presented.id` on which the action occurred. Matching on URL alone is insufficient because the same source reference can be presented more than once.
+The content URL is identified by the event-level `content_url` field (section 5.2), not duplicated in `data`. Every agent-reported engagement MUST carry `presentation_id`, referencing the exact `content_presented.id` on which the action occurred. Matching on URL alone is insufficient because the same source reference can be presented more than once. A destination-reported engagement carries `ctx_token` on its envelope instead: the destination cannot know the presentation UUID, and the telemetry consumer restores the binding from the token at resolution (section 7.4).
 
 #### Engagement types
 
@@ -791,7 +792,7 @@ These are the core values. Extensions MAY define additional engagement actions -
 
 `link_click` is the primary signal for clickthrough rate calculation. Telemetry consumers can derive per-content-owner and aggregate clickthrough rates from `link_click` engagements and link presentations, joining each engagement through `presentation_id` rather than URL alone.
 
-A `link_click` or `agent_navigate` engagement reported from the landing page after a click-out crosses a trust boundary. Such events carry a `ctx_token` in place of `session_id`, which the telemetry consumer resolves to the originating session's click manifest (see section 7.1).
+A `link_click` or `agent_navigate` engagement reported from the landing page after a click-out crosses a trust boundary. Such events carry a `ctx_token` in place of `session_id`, which the telemetry consumer resolves to the click context (see section 7.4).
 
 ## 7. Transport
 
@@ -859,9 +860,7 @@ Session documents use `"document_type": "session"`. When `document_type` is abse
 
 For origin-side emitters at Retrieval conformance level, `session_id` MAY be omitted when the content owner has no session context. Telemetry consumers correlate these events with agent-reported sessions using the `content_telemetry_id` field.
 
-For `content_engaged` events emitted from a landing page after a click-out (typically by a content marketplace, affiliate network, or destination site), `session_id` MAY be replaced by a `ctx_token` field that carries an opaque click-token issued by the originating agent. Telemetry consumers resolve the token to the owning session. This lets a downstream observer report a corroborating engagement event without sharing the session UUID across trust boundaries. An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above.
-
-**ctx_token resolution.** A telemetry consumer that supports `ctx_token` resolution exposes, for a resolved token, the **click manifest**: the set of `content_grounded`, `content_cited`, and `content_presented` events belonging to the resolved session, identifying every source that informed the response that produced the click. The manifest is gated by the resolved session's `privacy_level` and by consent. A consumer MUST return the manifest only when the issuing agent has opted in to sharing sessions via click tokens; when the agent opt-in is absent, the consumer MUST NOT disclose the manifest. Within a returned manifest, a source MUST appear only when its content owner has opted in to being visible in click-token lookups; the consumer MUST withhold the events of any content owner whose opt-in is absent while returning the remainder of the manifest. A resolution response MUST NOT include the resolved session's raw `session_id`: the token exists so that the session UUID never crosses the trust boundary, and a resolution response that returned it would undo that. The mechanism by which an agent and a content owner record these opt-ins is operator-defined; the consent gate is normative.
+For `content_engaged` events emitted from a landing page after a click-out (typically by a content marketplace, affiliate network, or destination site), `session_id` MAY be replaced by a `ctx_token` field that carries an opaque click token issued by the originating agent. This lets a downstream observer report a corroborating engagement event without sharing the session UUID across trust boundaries. An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above. Token issuance, carriage, binding, resolver discovery, and the resolution response are defined in section 7.4.
 
 The primary schema (`telemetry-session.json`) validates session documents. A standalone event envelope schema (`telemetry-event.json`) validates the event delivery format, and a batch envelope schema (`telemetry-event-batch.json`) validates the event batch format. All three schemas share the `TelemetryEvent` definition.
 
@@ -919,6 +918,66 @@ Any party may operate a consumer: an agent operator, a licensing intermediary, o
 **Content owner resolution.** Telemetry consumers resolve content owner identity from `content_url` domains. Content owners register and verify their domains with the telemetry consumer; the consumer maps incoming event URLs to the owning organisation. This is the primary resolution path and requires `content_url` to be present on events. Events identified only by `content_id` (e.g., cached groundings where the URL was not preserved, or marketplace API content with no canonical URL) cannot be resolved by domain alone. Telemetry consumers SHOULD support `content_id` prefix-based resolution as a secondary path when content owners register their identifier schemes, but this is not yet a normative requirement.
 
 **Cross-consumer correlation.** Origin-side emitters and agent-side emitters MAY use different telemetry consumers. A content owner's CDN sends retrieval events to one telemetry consumer; an agent sends sessions to another. The `content_telemetry_id` field (section 7.2) correlates the same retrieval across consumers - both sides share the same UUID from the HTTP request. This correlation operates at the retrieval level only. Grounding, reproduction, citation, presentation, and engagement events have no independent origin-side counterpart to correlate against.
+
+### 7.4 Click context (`ctx_token`)
+
+A click-out is the moment content usage becomes traffic the destination can observe. The click token lets the destination corroborate that moment and learn what produced it, without receiving the session UUID or any other publisher's activity.
+
+#### 7.4.1 Token issuance
+
+A `ctx_token` is an opaque token minted by the originating agent. Its value MUST match `^ct_[A-Za-z0-9_-]{8,240}$` and MUST NOT encode content, session, or user identifiers recoverable without the issuer's state.
+
+A token MUST be bound to exactly one `content_presented` occurrence at mint time. The same URL presented twice receives two tokens; a token observed on two presentations is malformed issuance and consumers MUST NOT resolve it. Surfaces that route outbound navigation through the agent SHOULD mint per click, additionally binding the token to the resulting `content_engaged` event. Direct-link surfaces mint per presentation; repeated clicks on one presentation then share a token, and are distinguished at resolution by the destination's event timestamps.
+
+The token-to-presentation binding is issuer state. It never travels in the URL: destinations do not receive `presentation_id`, and the consumer restores the binding at resolution. The agent SHOULD record the minted token on its own `content_engaged` event (the event-level `ctx_token` field) so the consumer can join destination reports to it.
+
+#### 7.4.2 Carriage and redirects
+
+Agents that decorate outbound link URLs MUST use the reserved query parameters `ctx_token` (the token) and `ctx_iss` (the issuer locator, section 7.4.3), and MUST NOT place other telemetry data in the URL.
+
+Parties operating redirects SHOULD propagate both parameters through same-domain redirect hops, mirroring the `Content-Telemetry-ID` redirect guidance in section 7.2. Destinations relying on redirect-based routing SHOULD capture the parameters at the earliest point in the chain. This is a transport and correlation convention: it does not claim that every intermediary preserved the value, and it does not enforce downstream behaviour.
+
+#### 7.4.3 Resolver discovery
+
+`ctx_iss` carries the issuer manifest locator: a host, optionally with a path prefix, identifying a well-known manifest location (section 8.1). `ctx_iss=example.com/agents/search` resolves to `https://example.com/agents/search/.well-known/content-telemetry.json`. That manifest declares the resolution endpoint in `telemetry.ctx_resolution` (section 8.5).
+
+The token stays opaque and carries no routing; the locator travels alongside it. No central registry is required or defined.
+
+#### 7.4.4 Resolution response - the click context
+
+A telemetry consumer that supports resolution exposes, for a presented token, the **click context**:
+
+1. **The engagement.** The `content_engaged` occurrence(s) bound to the token, including the presentation record the token restores: `presentation_id`, `output_id`, `output_element_id` where present, and timestamps.
+2. **The lineage of the clicked content, selected by content identity.** The resolved session's `content_retrieved`, `content_grounded`, `content_reproduced`, `content_cited`, and `content_presented` events whose `content_url` or `content_id` identify the same content as the clicked reference - across all turns. The cut is by content identity, not by turn or click timestamp: a click in turn 5 on content grounded in turn 2 resolves that content's full lineage.
+3. **An optional privacy-bounded session summary.** Event counts by type and a distinct-source count. Counts, not events, and no content identifiers of other owners.
+
+A resolution response MUST NOT include the resolved session's raw `session_id`: the token exists so the session UUID never crosses the trust boundary. A resolution response MUST NOT include events for content other than the clicked content; cross-content session detail is a reporting concern, delivered through publisher-filtered views (section 7.3), not through per-click resolution. A consumer MUST resolve a token only when the issuing agent has opted in to click-token resolution, and the response is gated by the resolved session's `privacy_level`. The mechanism by which the opt-in is recorded is operator-defined; the gate is normative.
+
+A worked resolution response (informative):
+
+```
+{
+  "engagement": {
+    "engagement_type": "link_click",
+    "timestamp": "2026-08-10T09:02:31Z",
+    "presentation_id": "880e8400-e29b-41d4-a716-446655440213",
+    "output_id": "response:2"
+  },
+  "lineage": [
+    { "type": "content_grounded", "timestamp": "2026-08-10T09:00:01Z", "turn_id": "1", "data": { "chars_ingested": 9400 } },
+    { "type": "content_cited", "timestamp": "2026-08-10T09:00:04Z", "turn_id": "1", "data": { "citation_type": "paraphrase", "position": "primary" } },
+    { "type": "content_presented", "timestamp": "2026-08-10T09:00:04Z", "turn_id": "1", "data": { "presentation_kind": "source_reference", "presentation_type": "link" } },
+    { "type": "content_presented", "timestamp": "2026-08-10T09:02:10Z", "turn_id": "2", "data": { "presentation_kind": "source_reference", "presentation_type": "link" } }
+  ],
+  "session_summary": { "turns": 2, "distinct_sources": 3, "events_by_type": { "content_grounded": 4, "content_cited": 3, "content_presented": 5 } }
+}
+```
+
+The response shape above is informative in v1; the constraints in this section are normative. A response schema can follow implementation evidence during the release-candidate window.
+
+#### 7.4.5 Recorded limit: consumer custody
+
+Resolution depends on the telemetry consumer the agent chose, because that consumer holds the session. Grounding and citation events precede the click and cannot carry its later token, and distributing tokens to every contributing content owner after the fact would weaken the privacy boundary this section maintains. Publisher-derived tokens would require a federation and key-management design; that belongs in a later attribution or evidence profile. Core v1 mitigates the dependency with resolver discoverability (7.4.3) and exact click binding (7.4.1).
 
 ## 8. Manifest
 
@@ -985,6 +1044,7 @@ Public keys used to sign telemetry events emitted by this participant. Per-event
 |-------|------|----------|-------------|
 | `endpoint` | string | Yes | HTTPS URL. For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the content owner's content. |
 | `conformance_level` | string | No | Conformance level advertised by this participant's own emitter(s). One of `retrieval`, `grounding`, `citation` (see 5.7). |
+| `ctx_resolution` | string | No | HTTPS URL of the click-token resolution endpoint operated by or for this participant (see 7.4). Valid on `agent` and `platform` manifests. |
 
 `conformance_level` is informational. It advertises the level of telemetry the manifest's participant emits. It does **not** constrain what an inbound `endpoint` accepts - an endpoint accepts whatever events it is configured to accept, regardless of any level declared here - and it places **no requirement** on other emitters. On a `content_owner` manifest it describes only the events the owner's own infrastructure emits (typically a CDN edge worker at `retrieval`); it says nothing about what agents or platforms report about the owner's content, which those parties advertise in their own manifests. A `content_owner` manifest SHOULD omit `conformance_level` unless the owner operates its own emitter. There is no field for a content owner to *request* a minimum level from agents; consumers tolerate events from any level (see 5.7), and the protocol does not give a manifest a way to demand more.
 
@@ -1247,6 +1307,16 @@ the material and cannot record an uncredited copy. When migrating historical
 v0.1 data, consumers MAY treat a `direct_quote` citation as an implied
 reproduction of its excerpt. V1 emitters record reproduction explicitly and
 SHOULD NOT rely on that inference.
+
+V1 narrows `ctx_token` resolution. The v0.1 click manifest returned every
+source that informed the resolved session, gated by per-owner opt-in; the v1
+click context (section 7.4) returns the engagement, the clicked content's
+lineage by content identity, and at most a count-based session summary.
+Consumers implementing v0.1 resolution narrow their response shape and MUST
+NOT return other owners' events through per-click resolution. Token values
+gain the `ct_` pattern; presentation binding moves from the URL-carried
+`presentation_id` a destination could never legitimately know to issuer state
+restored at resolution.
 
 Preview versions (0.x) use two-component version numbers. From 1.0.0 onward, versions follow [semantic versioning](https://semver.org/):
 
