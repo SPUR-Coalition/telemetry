@@ -190,3 +190,58 @@ if __name__ == "__main__":
         print(f"  ok  {fn.__name__}")
     print(f"\n{len(fns)} checks passed.")
     sys.exit(0)
+
+def test_unauthenticated_status_list_is_a_real_signature_by_the_wrong_party():
+    """E2 (profile 8.2). The unauthenticated list must be a GENUINE signature by the
+    publisher while declaring the licensor as issuer — not corrupt bytes. That is what
+    makes it discriminating: a verifier that decodes the bitstring without
+    authenticating the list first will read it as authoritative and pass."""
+    import base64, json as _json
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+
+    def _verify(jwt_str, jwk):
+        h, pl, sig = jwt_str.split(".")
+        pub = Ed25519PublicKey.from_public_bytes(
+            base64.urlsafe_b64decode(jwk["x"] + "=" * (-len(jwk["x"]) % 4)))
+        try:
+            pub.verify(base64.urlsafe_b64decode(sig + "=" * (-len(sig) % 4)),
+                       f"{h}.{pl}".encode())
+            return True
+        except Exception:
+            return False
+
+    bad = (EX / "statuslist-unauthenticated.jwt").read_text().strip()
+    licensor_jwk = _json.loads((EX / "did-licensor.example.json").read_text()
+                               )["verificationMethod"][0]["publicKeyJwk"]
+    publisher_jwk = _json.loads((EX / "did-publisher.example.json").read_text()
+                                )["verificationMethod"][0]["publicKeyJwk"]
+
+    payload = _json.loads(base64.urlsafe_b64decode(
+        bad.split(".")[1] + "=" * (-len(bad.split(".")[1]) % 4)))
+    assert payload["issuer"] == "did:web:licensor.example", "must claim the licensor"
+    assert not _verify(bad, licensor_jwk), "must NOT verify under the declared issuer's key"
+    assert _verify(bad, publisher_jwk), "must be a genuine signature by the other party"
+
+
+def test_status_index_out_of_range_is_actually_out_of_range():
+    """E3 (profile 8.3). The index must genuinely exceed the decoded bitstring, so the
+    vector fails for the stated reason rather than incidentally."""
+    import base64, gzip, json as _json
+    cred = (EX / "credential-index-out-of-range.jwt").read_text().strip()
+    payload = _json.loads(base64.urlsafe_b64decode(
+        cred.split(".")[1] + "=" * (-len(cred.split(".")[1]) % 4)))
+    idx = int(payload["credentialStatus"]["statusListIndex"])
+
+    sl = (EX / "statuslist-licensor.jwt").read_text().strip()
+    sl_payload = _json.loads(base64.urlsafe_b64decode(
+        sl.split(".")[1] + "=" * (-len(sl.split(".")[1]) % 4)))
+    encoded = sl_payload["credentialSubject"]["encodedList"]
+    raw = gzip.decompress(base64.urlsafe_b64decode(
+        encoded[1:] + "=" * (-len(encoded[1:]) % 4)))
+    assert idx >= len(raw) * 8, f"index {idx} must exceed the {len(raw) * 8}-bit list"
+
+    ok = (EX / "credential-valid.jwt").read_text().strip()
+    ok_idx = int(_json.loads(base64.urlsafe_b64decode(
+        ok.split(".")[1] + "=" * (-len(ok.split(".")[1]) % 4))
+    )["credentialStatus"]["statusListIndex"])
+    assert ok_idx < len(raw) * 8, "the positive counterpart must be in range"

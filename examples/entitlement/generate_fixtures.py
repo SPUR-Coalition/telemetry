@@ -12,7 +12,9 @@ the seeds is safe here.
     society / licensing agent) and ``did:web:publisher.example`` (a publisher
     issuing directly) — no shared infrastructure, proving issuer neutrality;
   * credentials: valid / revoked / expired / tampered / other-issuer /
-    grantee-mismatch / revoked-late / unknown-kid;
+    grantee-mismatch / revoked-late / unknown-kid, plus the negative vectors
+    for the module conformance requirements — unauthenticated status list
+    (E2) and out-of-range status index (E3);
   * a DID document and a Bitstring Status List (revoked bit set) per issuer;
   * core-shaped telemetry events whose ``license_ref`` resolves to the
     credentials, with ``data.content_fingerprint`` digest binding;
@@ -202,6 +204,24 @@ def main() -> None:
     revoked_late_jwt, _ = credential(a_issuer, a_kid, a_priv,
                                      jti="grant-revokedlate-006", index=5, sl_url=a_sl_url)
 
+    # E2 negative fixture: a status list whose issuer field claims the licensor but
+    # whose signature is the PUBLISHER's. A genuine signature by the wrong party, not
+    # garbage — so a verifier that decodes the bitstring without authenticating the
+    # list first will read it as authoritative and pass. Profile 8.2 / 5.4(b).
+    a_sl_bad_url = "https://licensor.example/status/2026-unauthenticated"
+    unauth_sl = status_list(a_issuer, a_sl_bad_url, b_priv, [],
+                            valid_from="2026-07-24T00:00:00Z")
+    unauth_sl_jwt, _ = credential(a_issuer, a_kid, a_priv,
+                                  jti="grant-unauthsl-007", index=6, sl_url=a_sl_bad_url)
+
+    # E3 negative fixture: statusListIndex beyond the decoded bitstring (16384 bytes =
+    # 131072 bits). Credential and list disagree about the list's shape; a verifier
+    # MUST error rather than read the absent bit as "not revoked". Profile 8.3 / 5.4(d).
+    oor_index = 999_999
+    out_of_range_jwt, _ = credential(a_issuer, a_kid, a_priv,
+                                     jti="grant-outofrange-008", index=oor_index,
+                                     sl_url=a_sl_url)
+
     files = {
         "credential-valid.jwt": valid_jwt,
         "credential-revoked.jwt": revoked_jwt,
@@ -211,6 +231,9 @@ def main() -> None:
         "credential-unknown-kid.jwt": unknown_kid_jwt,
         "credential-grantee-mismatch.jwt": grantee_mismatch_jwt,
         "credential-revoked-late.jwt": revoked_late_jwt,
+        "credential-unauthenticated-statuslist.jwt": unauth_sl_jwt,
+        "credential-index-out-of-range.jwt": out_of_range_jwt,
+        "statuslist-unauthenticated.jwt": unauth_sl,
         "did-licensor.example.json": json.dumps(did_document(a_issuer, a_kid, a_priv), indent=2),
         "did-publisher.example.json": json.dumps(did_document(b_issuer, b_kid, b_priv), indent=2),
         "statuslist-licensor.jwt": status_list(
@@ -233,6 +256,12 @@ def main() -> None:
         "event-revoked-late.json": json.dumps(event(
             "grant-revokedlate-006", "2026-07-01T10:00:00Z",
             "9a3c7c10-0000-4000-8000-000000000105"), indent=2),
+        "event-unauthenticated-statuslist.json": json.dumps(event(
+            "grant-unauthsl-007", "2026-07-01T10:00:00Z",
+            "9a3c7c10-0000-4000-8000-000000000106"), indent=2),
+        "event-index-out-of-range.json": json.dumps(event(
+            "grant-outofrange-008", "2026-07-01T10:00:00Z",
+            "9a3c7c10-0000-4000-8000-000000000107"), indent=2),
     }
     for name, content in files.items():
         (OUT / name).write_text(content, encoding="utf-8")
@@ -266,6 +295,20 @@ def main() -> None:
              "did_document": "did-licensor.example.json", "status_list": "statuslist-licensor.jwt",
              "expect": "fails 5.5: credential grantee agent.other.example does not match "
                        "reporting agent_id"},
+            {"license_ref": "grant-unauthsl-007",
+             "credential": "credential-unauthenticated-statuslist.jwt",
+             "did_document": "did-licensor.example.json",
+             "status_list": "statuslist-unauthenticated.jwt",
+             "expect": "fails 8.2/5.4(b): status list is signed by did:web:publisher.example "
+                       "but declares did:web:licensor.example as issuer — the list MUST be "
+                       "authenticated before its bitstring is consulted, and an unauthenticated "
+                       "list is unresolvable status, never 'not revoked'"},
+            {"license_ref": "grant-outofrange-008",
+             "credential": "credential-index-out-of-range.jwt",
+             "did_document": "did-licensor.example.json", "status_list": "statuslist-licensor.jwt",
+             "expect": "fails 8.3/5.4(d): statusListIndex 999999 is outside the decoded bitstring "
+                       "(131072 bits) — credential and list disagree, which is an error and MUST "
+                       "NOT be read as 'not revoked'"},
             {"license_ref": "grant-revokedlate-006", "credential": "credential-revoked-late.jwt",
              "did_document": "did-licensor.example.json", "status_list": "statuslist-licensor.jwt",
              "snapshot_status_list": "statuslist-licensor-snapshot.jwt",

@@ -107,6 +107,8 @@ Given an event `E` carrying `license_ref` `R`, occurrence time `t = E.timestamp`
 
 All six steps → `independently_verifiable`.
 
+The fail-closed behaviour relied on at steps 3, 4(b) and 4(d) is restated as testable module conformance requirements in §8.
+
 **Reporting the outcome.** The result of this recipe is reported as **"grant evidence verified"** at the established class (or the specific failing step). It is deliberately narrower than "entitled" or "licensed": the recipe establishes that signed grant evidence of a stated class exists for the reported use — it does not adjudicate entitlement, which may turn on governing-terms content, competing claims, or facts outside telemetry. Consumers MUST NOT present the outcome as an adjudication.
 
 **Binding of the outcome.** Where the consuming context adopts the canonical assertion binding of #21, the verification result is itself an assertion over `E` and MUST be bound to `E` via its RFC 8785 canonical digest, so an outcome cannot be re-attached to a different event.
@@ -127,8 +129,51 @@ This version binds **whole-asset digests and URL/identifier scopes only**. Event
 
 ### 7.3 Reference implementations (informative)
 
-The recipe is implemented independently in Python and TypeScript with an executable cross-runtime parity check (identical `(valid, checks)` on every fixture), from published standards only — W3C VC 2.0, VC-JOSE-COSE, `did:web`, Bitstring Status List v1.0. The Python implementation enforces the fail-closed rules normative here: strict `kid` (no fallback), status-list signature authentication before the bitstring is consulted, and out-of-range `statusListIndex` as an error. The fixtures in `examples/entitlement/` are implementation-neutral: two unrelated issuers, no shared infrastructure, regenerable via the included script, and structurally validated by `tests/test_entitlement_examples.py` with the repository's existing jsonschema tooling.
+The recipe is implemented independently in Python and TypeScript with an executable cross-runtime parity check (identical `(valid, checks)` on every fixture), from published standards only — W3C VC 2.0, VC-JOSE-COSE, `did:web`, Bitstring Status List v1.0. **The conformance requirements are §8; nothing in this section is normative.** The Python implementation meets E1–E3 today. **The TypeScript verifier does not yet enforce all three and is being brought to parity on exactly those rules; until it does, the parity statement above holds for the recipe and not for §8 conformance.** The fixtures in `examples/entitlement/` are implementation-neutral: two unrelated issuers, no shared infrastructure, regenerable via the included script, and structurally validated by `tests/test_entitlement_examples.py` with the repository's existing jsonschema tooling.
 
 ### 7.4 Fixture inventory
 
-The five events in `examples/entitlement/` are valid v1 standalone event documents (`document_type: event`, `schema_version: 0.1`, session context, §6 grounding-profile `data` including `content_hash`); the test suite validates them against the repository's own `telemetry-event.json`, so core conformance is enforced rather than asserted. Credentials cover: valid, expired (§5.4(a)), revoked (§5.4(c), retroactive default), tampered (§5.3), second-issuer (issuer neutrality), unknown-`kid` (§4.1, no fallback), grantee-mismatch (§5.5), and revoked-after-use with an issuer-signed snapshot (§5.4(c): bit set in the current list, clear in a snapshot whose signed `validFrom` is at or after the event time — the suite asserts both bits, the signed-time ordering, and issuer identity). Status lists are signed by the same issuer as their credentials (§5.4(b)). The manifest states the expected outcome per fixture — phrased as "grant evidence verified" at the stated class, never as an adjudication of entitlement.
+The seven events in `examples/entitlement/` are valid v1 standalone event documents (`document_type: event`, `schema_version: 0.1`, session context, §6 grounding-profile `data` including `content_hash`); the test suite validates them against the repository's own `telemetry-event.json`, so core conformance is enforced rather than asserted. Credentials cover: valid, expired (§5.4(a)), revoked (§5.4(c), retroactive default), tampered (§5.3), second-issuer (issuer neutrality), unknown-`kid` (§4.1, no fallback), grantee-mismatch (§5.5), revoked-after-use with an issuer-signed snapshot (§5.4(c): bit set in the current list, clear in a snapshot whose signed `validFrom` is at or after the event time — the suite asserts both bits, the signed-time ordering, and issuer identity), unauthenticated status list (§8.2: a list bearing a genuine signature by the other issuer while declaring the licensor), and out-of-range status index (§8.3: index 999999 against a 131072-bit list). Status lists are signed by the same issuer as their credentials (§5.4(b)). The manifest states the expected outcome per fixture — phrased as "grant evidence verified" at the stated class, never as an adjudication of entitlement.
+
+## 8. Module conformance requirements
+
+The three rules below were previously stated inside the verification recipe and described in §7.3 as behaviour of the reference implementation. They are module conformance requirements: an implementation that does not meet them is not a conforming entitlement verifier, whatever class it reports. The form follows core's conformance levels (specification §5.7) — a named subject, testable MUSTs, and fixtures that exercise each.
+
+These are **verification requirements**, not classifications. This profile continues to consume the evidence classifications of #11/#21 rather than defining parallel ones (§3), and the adoption clause there governs renaming. In the framing of the #18 consolidation, grant validity is an **enumerated verification basis**, not a competing tier ladder; §8.4 records how a failure maps onto the classes this profile consumes.
+
+### 8.1 E1 — Strict key identification
+
+A conforming entitlement verifier MUST:
+
+- reject a credential whose JWS header `alg` is any value other than `EdDSA`;
+- fail verification when the header `kid` names a key absent from the issuer's published key set;
+- **NOT** fall back to another published key of that issuer, including where the issuer publishes exactly one key.
+
+*Why it fails closed:* a verifier that falls back accepts a credential the issuer did not sign with the named key, which is indistinguishable on the wire from key substitution. Exercised by `credential-unknown-kid.jwt` (MUST fail) against `credential-valid.jwt` (MUST pass).
+
+### 8.2 E2 — Status-list authentication before consultation
+
+A conforming entitlement verifier MUST:
+
+- verify the status-list credential's own signature against its issuer's published key **before** decoding its bitstring;
+- require the status-list issuer to equal the entitlement credential's issuer, or a status issuer that issuer explicitly declares;
+- treat an unauthenticated, unresolvable or signature-invalid status list as **unresolvable status** — never as "not revoked";
+- confirm `statusPurpose` is `revocation` on **both** the `credentialStatus` entry and the status-list credential, and NOT apply the §5.4(c) snapshot exception to any other purpose.
+
+*Why it fails closed:* an unauthenticated list is an assertion by whoever served it. Reading a fetch failure or a bad signature as absence-of-revocation converts a transport fault or an attack into a pass. The `statusPurpose` constraint is what makes the snapshot inference sound — see §5.4(c) on monotonicity. Exercised by `credential-unauthenticated-statuslist.jwt` with `statuslist-unauthenticated.jwt` (MUST fail) against `credential-valid.jwt` with `statuslist-licensor.jwt` (MUST pass) — the unauthenticated list carries a **genuine signature by the other issuer** while declaring the licensor, so a verifier that decodes before authenticating reads it as authoritative and passes. `statusPurpose` monotonicity is exercised by the snapshot pair `credential-revoked-late.jwt` / `statuslist-licensor-snapshot.jwt`.
+
+### 8.3 E3 — Out-of-range status index fails closed
+
+A conforming entitlement verifier MUST treat a `statusListIndex` falling outside the decoded bitstring as an **error** — the credential and the list disagree about the list's shape — and MUST NOT interpret it as "not revoked".
+
+*Why it fails closed:* an index past the end of the bitstring means the two artifacts disagree. Reading that as unrevoked lets a truncated or stale list silently clear every credential whose index it no longer covers. Exercised by `credential-index-out-of-range.jwt` (index 999999 against a 131072-bit list, MUST error) against `credential-valid.jwt` (in range, MUST pass).
+
+### 8.4 Effect on the consumed classifications
+
+A verifier that fails **any** of E1–E3 MUST NOT report a class above `claim` for the event concerned, and MUST report the specific failing requirement rather than a bare class.
+
+This is an effect on the classes, not a redefinition of them: §3 remains the statement of what each class means for `license_ref`, and those classes come from #11/#21.
+
+### 8.5 Testability
+
+Each requirement has at least one negative fixture that MUST fail and a positive counterpart that MUST pass. `tests/test_entitlement_examples.py` asserts each pair is genuinely discriminating rather than merely present. A conformance claim against this module is therefore checkable against `examples/entitlement/` by a third party, without access to any implementation of it.

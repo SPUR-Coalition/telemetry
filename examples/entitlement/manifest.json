@@ -44,6 +44,20 @@
       "expect": "fails 5.5: credential grantee agent.other.example does not match reporting agent_id"
     },
     {
+      "license_ref": "grant-unauthsl-007",
+      "credential": "credential-unauthenticated-statuslist.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-unauthenticated.jwt",
+      "expect": "fails 8.2/5.4(b): status list is signed by did:web:publisher.example but declares did:web:licensor.example as issuer \u2014 the list MUST be authenticated before its bitstring is consulted, and an unauthenticated list is unresolvable status, never 'not revoked'"
+    },
+    {
+      "license_ref": "grant-outofrange-008",
+      "credential": "credential-index-out-of-range.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "fails 8.3/5.4(d): statusListIndex 999999 is outside the decoded bitstring (131072 bits) \u2014 credential and list disagree, which is an error and MUST NOT be read as 'not revoked'"
+    },
+    {
       "license_ref": "grant-revokedlate-006",
       "credential": "credential-revoked-late.jwt",
       "did_document": "did-licensor.example.json",
