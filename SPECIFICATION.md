@@ -792,7 +792,7 @@ These are the core values. Extensions MAY define additional engagement actions -
 
 `link_click` is the primary signal for clickthrough rate calculation. Telemetry consumers can derive per-content-owner and aggregate clickthrough rates from `link_click` engagements and link presentations, joining each engagement through `presentation_id` rather than URL alone.
 
-A `link_click` or `agent_navigate` engagement reported from the landing page after a click-out crosses a trust boundary. Such events carry a `ctx_token` in place of `session_id`, which the telemetry consumer resolves to the click context (see section 7.4).
+A `link_click` or `agent_navigate` engagement reported from the landing page after a click-out crosses a trust boundary. Such events carry a `ctx_token` in place of `session_id`, which the telemetry consumer resolves to the click context (see section 7.4). The agent-authored engagement itself reaches the engaged content's owner through owner-scoped routing whether or not the token survived the redirect chain (section 7.4.5).
 
 ## 7. Transport
 
@@ -949,9 +949,10 @@ A telemetry consumer that supports resolution exposes, for a presented token, th
 
 1. **The engagement.** The `content_engaged` occurrence(s) bound to the token, including the presentation record the token restores: `presentation_id`, `output_id`, `output_element_id` where present, and timestamps.
 2. **The lineage of the clicked content, selected by content identity.** The resolved session's `content_retrieved`, `content_grounded`, `content_reproduced`, `content_cited`, and `content_presented` events whose `content_url` or `content_id` identify the same content as the clicked reference - across all turns. The cut is by content identity, not by turn or click timestamp: a click in turn 5 on content grounded in turn 2 resolves that content's full lineage.
-3. **An optional privacy-bounded session summary.** Event counts by type and a distinct-source count. Counts, not events, and no content identifiers of other owners.
+3. **The contributing sources, gated per owner.** The sources that informed the response the click came from: `content_grounded` events in scope for the engaged presentation's turn (including session-scoped groundings) and that turn's `content_cited` and `content_presented` events, for content other than the clicked content. A contributing owner's events appear only when that owner has opted in to contributing-source disclosure with the resolving consumer; owners without a recorded opt-in are visible only through the counts in the session summary. This is the component that supports multi-citation attribution when the clicked content is not the contributing content - a click through to a commerce destination whose recommendation a publisher's review produced - and it restores the consent-gated role of the v0.1 click manifest (section 12.1), scoped to the click's provenance rather than the whole session.
+4. **An optional privacy-bounded session summary.** Event counts by type and a distinct-source count. Counts, not events, and no content identifiers of owners not disclosed above.
 
-A resolution response MUST NOT include the resolved session's raw `session_id`: the token exists so the session UUID never crosses the trust boundary. A resolution response MUST NOT include events for content other than the clicked content; cross-content session detail is a reporting concern, delivered through publisher-filtered views (section 7.3), not through per-click resolution. A consumer MUST resolve a token only when the issuing agent has opted in to click-token resolution, and the response is gated by the resolved session's `privacy_level`. The mechanism by which the opt-in is recorded is operator-defined; the gate is normative.
+A resolution response MUST NOT include the resolved session's raw `session_id`: the token exists so the session UUID never crosses the trust boundary. Outside the contributing-source component, a resolution response MUST NOT include events for content other than the clicked content; within it, a response MUST NOT include events for an owner without a recorded contributing-source opt-in. Whole-session cross-content detail remains a reporting concern, delivered through publisher-filtered views (section 7.3), not through per-click resolution. A consumer MUST resolve a token only when the issuing agent has opted in to click-token resolution, and the response is gated by the resolved session's `privacy_level`. The mechanisms by which the issuer and contributing-owner opt-ins are recorded are operator-defined; both gates are normative.
 
 A worked resolution response (informative):
 
@@ -969,13 +970,28 @@ A worked resolution response (informative):
     { "type": "content_presented", "timestamp": "2026-08-10T09:00:04Z", "turn_id": "1", "data": { "presentation_kind": "source_reference", "presentation_type": "link" } },
     { "type": "content_presented", "timestamp": "2026-08-10T09:02:10Z", "turn_id": "2", "data": { "presentation_kind": "source_reference", "presentation_type": "link" } }
   ],
+  "contributing_sources": [
+    {
+      "content_url": "https://publisher-a.example/heaters/space-heater-review",
+      "events": [
+        { "type": "content_grounded", "timestamp": "2026-08-10T09:02:08Z", "turn_id": "2", "data": { "chars_ingested": 7200 } },
+        { "type": "content_cited", "timestamp": "2026-08-10T09:02:10Z", "turn_id": "2", "data": { "citation_type": "paraphrase", "position": "primary" } }
+      ]
+    }
+  ],
   "session_summary": { "turns": 2, "distinct_sources": 3, "events_by_type": { "content_grounded": 4, "content_cited": 3, "content_presented": 5 } }
 }
 ```
 
 The response shape above is informative in v1; the constraints in this section are normative. A response schema can follow implementation evidence during the release-candidate window.
 
-#### 7.4.5 Recorded limit: consumer custody
+#### 7.4.5 Owner-scoped delivery of the engagement
+
+The agent-authored click `content_engaged` is a session event like any other: it reaches content owners through routing and aggregation (section 7.3), independent of whether the token in the URL survived the redirect chain. A telemetry consumer that provides owner-filtered views MUST include the agent-authored `content_engaged` event in the filtered view of the engaged content's owner, on the same terms as `content_grounded` and `content_cited` events - including the session identifier that owner-scoped delivery carries. The `session_id` prohibition in section 7.4.4 binds token resolution, where the requesting party is authenticated by nothing more than possession of a URL-carried value; it does not bind section 7.3 delivery to an owner whose domain registration the consumer has verified.
+
+This delivery is deliberately redundant with the token path. It notifies the destination owner of the click even when `ctx_token` was stripped in transit; it lets that owner join the click to their own grounded and cited events on `session_id` without calling a resolver; and it lets a party processing owner-scoped streams for both a contributing publisher and a click destination match its clients' events on `session_id` for attribution. The owner's filtered view SHOULD carry the event-level `ctx_token`, so a destination that captured the query parameters at landing can join the URL-channel observation to the server-side event directly. This is not token distribution to contributing owners (the limit recorded in section 7.4.6): only the owner of the clicked content receives the event, and that owner already saw the token in the URL.
+
+#### 7.4.6 Recorded limit: consumer custody
 
 Resolution depends on the telemetry consumer the agent chose, because that consumer holds the session. Grounding and citation events precede the click and cannot carry its later token, and distributing tokens to every contributing content owner after the fact would weaken the privacy boundary this section maintains. Publisher-derived tokens would require a federation and key-management design; that belongs in a later attribution or evidence profile. Core v1 mitigates the dependency with resolver discoverability (7.4.3) and exact click binding (7.4.1).
 
@@ -1311,9 +1327,11 @@ SHOULD NOT rely on that inference.
 V1 narrows `ctx_token` resolution. The v0.1 click manifest returned every
 source that informed the resolved session, gated by per-owner opt-in; the v1
 click context (section 7.4) returns the engagement, the clicked content's
-lineage by content identity, and at most a count-based session summary.
-Consumers implementing v0.1 resolution narrow their response shape and MUST
-NOT return other owners' events through per-click resolution. Token values
+lineage by content identity, a contributing-source set under the same
+per-owner opt-in gate - scoped to the turn the click came from rather than
+the whole session - and at most a count-based session summary. Consumers
+implementing v0.1 resolution narrow the contributing-source scope accordingly
+and MUST NOT return events for owners without a recorded opt-in. Token values
 gain the `ct_` pattern; presentation binding moves from the URL-carried
 `presentation_id` a destination could never legitimately know to issuer state
 restored at resolution.
