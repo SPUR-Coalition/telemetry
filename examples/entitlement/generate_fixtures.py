@@ -2,12 +2,17 @@
 """Regenerate the entitlement-evidence example fixtures (optional dev tool).
 
 Requires ``cryptography`` (not needed by the CI test suite, which validates the
-committed fixtures with jsonschema only). Mints fresh Ed25519 keys per run:
+committed fixtures with jsonschema only). Output is byte-identical on every run:
+issuer keys derive from the committed seeds below and the status-list gzip header
+is pinned, so the vector set is a derivation a reviewer can check rather than an
+artifact they must trust. See the SECURITY note in ``main()`` for why publishing
+the seeds is safe here.
 
   * two independent issuers — ``did:web:licensor.example`` (a collecting
     society / licensing agent) and ``did:web:publisher.example`` (a publisher
     issuing directly) — no shared infrastructure, proving issuer neutrality;
-  * credentials: valid / revoked / expired / tampered / other-issuer;
+  * credentials: valid / revoked / expired / tampered / other-issuer /
+    grantee-mismatch / revoked-late / unknown-kid;
   * a DID document and a Bitstring Status List (revoked bit set) per issuer;
   * core-shaped telemetry events whose ``license_ref`` resolves to the
     credentials, with ``data.content_fingerprint`` digest binding;
@@ -25,6 +30,11 @@ from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 OUT = Path(__file__).parent
+# Public seeds — see the SECURITY note in main(). Fixed so that regenerating this
+# file reproduces every fixture byte-for-byte.
+SEED_LICENSOR = bytes.fromhex("00" * 31 + "01")
+SEED_PUBLISHER = bytes.fromhex("00" * 31 + "02")
+
 SAMPLE_TEXT = b"The quick brown fox jumps over the lazy dog."
 ASSET_SHA = hashlib.sha256(SAMPLE_TEXT).hexdigest()
 
@@ -68,7 +78,7 @@ def status_list(issuer: str, url: str, priv: Ed25519PrivateKey,
         "validFrom": valid_from,
         "credentialSubject": {"id": url, "type": "BitstringStatusList",
                               "statusPurpose": "revocation",
-                              "encodedList": "u" + b64url(gzip.compress(bytes(bits)))},
+                              "encodedList": "u" + b64url(gzip.compress(bytes(bits), mtime=0))},
     }
     return sign_jwt(priv, {"alg": "EdDSA", "typ": "vc+jwt", "cty": "vc"}, payload)
 
@@ -145,7 +155,15 @@ def event(ref: str, ts: str, event_id: str) -> dict:
 def main() -> None:
     a_issuer, b_issuer = "did:web:licensor.example", "did:web:publisher.example"
     a_kid, b_kid = f"{a_issuer}#key-1", f"{b_issuer}#key-1"
-    a_priv, b_priv = Ed25519PrivateKey.generate(), Ed25519PrivateKey.generate()
+    # Deterministic keys from public, committed seeds. Regenerating this file must
+    # produce byte-identical fixtures, so a reviewer can derive the vector set rather
+    # than trust it. SECURITY: these private keys are therefore public knowledge and
+    # anyone can mint credentials for these issuers. That is intended for a conformance
+    # kit — reviewers can mint their own vectors — and safe because both issuers are
+    # sandbox-only `.example` domains that resolve to nothing; a production verifier
+    # rejects them by construction, since it resolves issuer keys via did:web.
+    a_priv = Ed25519PrivateKey.from_private_bytes(SEED_LICENSOR)
+    b_priv = Ed25519PrivateKey.from_private_bytes(SEED_PUBLISHER)
     a_sl_url = "https://licensor.example/status/2026"
     b_sl_url = "https://publisher.example/status/2026"
 
