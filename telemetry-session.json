@@ -54,6 +54,38 @@
       "format": "date-time",
       "description": "Session end timestamp (UTC)"
     },
+    "data": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "description": "Session-level extension container mirroring the event-level data field (section 5.1.3). Custom fields SHOULD be namespaced; consumers MUST tolerate unknown fields.",
+      "properties": {
+        "access_context": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Context from which the session's access rights derive - an institution, never an individual. Populated only where the governing terms of the relationship require it. See section 5.1.3.",
+          "properties": {
+            "identifiers": {
+              "type": "array",
+              "description": "Typed institutional identifiers. An array because access rights can derive through consortia, federated identity and proxies at once.",
+              "items": {
+                "type": "object",
+                "required": ["scheme", "value"],
+                "properties": {
+                  "scheme": {
+                    "type": "string",
+                    "description": "Identifier scheme. Core values: ror, saml_entity_id, isni. Consumers MUST tolerate unknown schemes."
+                  },
+                  "value": {
+                    "type": "string",
+                    "description": "Identifier value in the scheme's own format"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "events": {
       "type": "array",
       "items": {
@@ -140,6 +172,10 @@
         "license_ref": {
           "type": ["string", "null"],
           "description": "Reference to a licence or grant the emitter associates with this event (JWT jti, CoMP package ID, or opaque identifier). Core does not resolve or interpret it. See section 5.2.3."
+        },
+        "terms_ref": {
+          "type": ["string", "null"],
+          "description": "Reference to the governing terms the emitter associates with this event (public URL or opaque identifier both parties can resolve). Distinct from license_ref: the terms are the basis, the licence is the proof. Core does not resolve or interpret it, and it does not redefine core event semantics. See section 5.2.4."
         },
         "turn": {
           "oneOf": [{ "$ref": "#/$defs/ConversationTurn" }, { "type": "null" }],

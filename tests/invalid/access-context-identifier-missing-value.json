@@ -1,0 +1,15 @@
+{
+  "_test_description": "Session data.access_context identifier missing its value. The schema requires both scheme and value on every identifier (5.1.3): a scheme with no value identifies nothing and MUST fail validation.",
+  "document_type": "session",
+  "schema_version": "0.1",
+  "session_id": "880e8400-e29b-41d4-a716-446655440090",
+  "started_at": "2026-08-13T14:02:10Z",
+  "data": {
+    "access_context": {
+      "identifiers": [
+        { "scheme": "ror" }
+      ]
+    }
+  },
+  "events": []
+}

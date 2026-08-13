@@ -111,6 +111,9 @@ For the purposes of this specification, the following terms apply.
 | **privacy level** | data sharing tier controlling which conversation fields are populated: `full`, `summary`, `intent`, or `minimal` (section 5.5) |
 | **conformance level** | emitter capability tier: Retrieval, Grounding, or Citation (section 5.7) |
 | **content scope** | opaque identifier grouping sessions by their content access context (section 5.1.1) |
+| **governing terms** | licence, contract or other terms selecting which events a relationship requires and the coverage, cadence, delivery, privacy and reports owed over the shared semantics (sections 5.2.4, 5.7.6) |
+| **qualifying occurrence** | occurrence satisfying an event type's core definition and occurrence boundary within the relationship scope reported under (section 5.7.6) |
+| **coverage** | declared relationship between qualifying occurrences and emitted events: `complete`, `sampled`, `aggregated` or `selected` (section 5.7.6) |
 
 ## 4. Concepts
 
@@ -195,13 +198,19 @@ Content moves through six stages during an agent interaction:
 
 1. **Retrieved** - Content fetched over HTTP from an origin server, CDN, marketplace, or index. This is an infrastructure event observable by the content owner's infrastructure (origin server, edge network) and the agent. A retrieval may be cached by the agent for use across multiple sessions.
 
+   One retrieval occurrence is one completed fetch of a content representation as observed by the reporting party: a redirect chain resolving to one representation is one occurrence, and a revalidation returning no new representation (an HTTP 304) is not a new occurrence. Serving content from the agent's own cache is not a new retrieval; the reuse surfaces as grounding (stage 2), not as a repeated `content_retrieved` event.
+
 2. **Grounded** - Content used in the agent's generation context for this session or turn. The boundary is "this content entered the generation model's context" - the point where content can directly influence the model's output.
 
    Content used only for retrieval selection (embedding similarity search, re-ranking scores, routing decisions) without entering the generation context is not grounded.
 
    Grounding is architecture-neutral: same event whether the agent uses RAG, chain-of-thought reasoning, embeddings, or multi-step delegation (see section 6.4 for architecture-specific guidance). Grounding is decoupled from retrieval: content may be grounded from a live fetch, from agent-side cache, or from a pre-loaded index. Only the agent can report grounding events.
 
+   One grounding occurrence is one distinct content item entering a generation context at the declared `data.scope`: at `session` scope, a content item grounds once per session; at `turn` scope, once per turn it enters. A distinct content item is a distinct `content_id`, or its canonical `content_url` where no stable identifier exists (section 4.5). Continued presence within the declared scope is not a further occurrence; re-entry in a later turn is, when the scope is `turn`, and a change of `content_version` opens a new occurrence at either scope. An emitter that ingests a content item in chunks MAY emit one grounding event per chunk, preserving the chunk-level hashes of section 6.4; events sharing content identity within one scope describe one occurrence, and consumers count occurrences by deduplicating on content identity and scope, not by counting events.
+
 3. **Reproduced** - The output artifact contains identified source content: a quotation, an excerpt, or a full copy, verbatim or near-verbatim. Reproduction is an output-construction claim by the system that built the output. It is independent of credit and of delivery: reproduced content may or may not also be cited, and the artifact may or may not later be presented. An uncredited excerpt in a response delivered through an API produces a `content_reproduced` event and nothing else - without this event, that use would be unreportable.
+
+   One reproduction occurrence is one identified source content item appearing in one output element (or in the output artifact, where no element identity exists), so a credited quotation and its companion citation share an `output_element_id` (section 6.6). Three quoted passages from one source in three elements are three occurrences; repeated appearance within one element is not a further occurrence.
 
 4. **Cited** - An output artifact explicitly associates identified source content with a response, claim, passage, quotation, or other output element. Citation is an output-construction relationship, not evidence that the output was delivered. A subset of grounded content is commonly cited, but a citation can also be emitted without a matching grounding event when an agent produces an uncorroborated or hallucinated source association.
 
@@ -209,11 +218,17 @@ Content moves through six stages during an agent interaction:
 
    Reproduction and citation are sibling claims about the same artifact: reproduction records the material, citation records the credit. Neither implies the other. A credited quotation produces both events; an uncredited excerpt produces only a reproduction; a reference citation with no quoted material produces only a citation.
 
+   One citation occurrence is one distinct association between a source and an output element (or the output artifact, where no element identity exists). Associating the same source with three separate output elements produces three citation events; repeating the same association is not a further occurrence.
+
 5. **Presented** - Content or a source reference was rendered, played, spoken, embedded, or otherwise made perceivable on a recipient-facing surface. Presentation does not assert that a person noticed or attended to it. `presentation_kind` distinguishes source content (including a reproduced excerpt or media) from a source reference (such as a link, credit, or card). Not all citations are presented: an output can be stored, suppressed, or passed to another system before delivery.
 
    Grounding and presentation record different boundary crossings: grounding records entry into a generation context, while presentation records a recipient-facing delivery occurrence. As agent experiences evolve beyond the chat window the two diverge - content can shape an answer whose source is never presented, and an agent can present content that never entered a generation context (see *Departures from the funnel model* below).
 
+   One presentation occurrence is one rendering of content or a source reference on a recipient-facing surface; the event's `id` names that occurrence. Presenting the same artifact again - on a new surface, or in a new delivery - is a new occurrence.
+
 6. **Engaged** - The recipient or agent performed an observable action on a presentation: clicked a link, expanded a preview, copied text, shared the response, or directed the agent to act on the content. It does not imply attention beyond the reported action. `presentation_id` links the action to the exact presentation occurrence; a click-out can also carry a `ctx_token` that a destination resolves to the click context (section 7.4).
+
+   One engagement occurrence is one observed action on one presentation occurrence.
 
 ```
 Retrieved (HTTP layer, cacheable)
@@ -231,6 +246,8 @@ Each stage after retrieval is typically a progressively narrower subset, except 
 - **Reproduction-to-citation** measures reproduced material without an explicit source association - the uncredited-reproduction rate
 - **Citation-to-presentation** measures source associations constructed in output but not made perceivable
 - **Presentation-to-engagement** measures observable actions on exact presentation occurrences
+
+These ratios are computed over reported events. They are comparable across emitters, and meaningful as measures of behaviour rather than of reporting, only at known coverage (section 5.7.6).
 
 #### Departures from the funnel model
 
@@ -323,6 +340,7 @@ Additional content metadata - version, last-modified timestamp, content hash, me
 | `ended_at` | datetime | No | Session end (UTC) |
 | `conformance_level` | string | No | Informational conformance level advertised by the emitter (see section 5.7). Values: `retrieval`, `grounding`, `citation` |
 | `document_type` | string | No | `"session"` for session documents (see section 7.1 for the standalone event and event batch formats) |
+| `data` | object | No | Session-level extension container, including access context (see 5.1.3) |
 | `events` | Event[] | No | Ordered list of events |
 
 `parent_session_id` links a delegated session to its immediate parent without
@@ -357,6 +375,36 @@ The `manifest_ref` field optionally references a manifest (section 8), identifyi
 
 Format: the URL of a manifest served at `/.well-known/content-telemetry.json` under a path the participant controls.
 
+#### 5.1.3 Session data and access context
+
+Sessions carry an optional `data` object mirroring the event-level `data` field (section 11.1): an extension container for session-scoped metadata. Extensions SHOULD namespace custom fields or use containers documented in this specification, and consumers MUST tolerate unknown fields within it. The session root itself is not an extension point: custom top-level siblings of `events` are not defined by this specification, and consumers are not required to preserve or interpret them.
+
+One container is defined in core. `access_context` records the context from which the session's access rights derive - the institution, not the individual:
+
+```json
+{
+  "schema_version": "0.1",
+  "session_id": "770e8400-e29b-41d4-a716-446655440000",
+  "content_scope": "consortium-agreement-4471",
+  "started_at": "2026-08-13T14:02:10Z",
+  "data": {
+    "access_context": {
+      "identifiers": [
+        { "scheme": "ror", "value": "https://ror.org/013meh722" },
+        { "scheme": "saml_entity_id", "value": "https://idp.example.ac.uk/shibboleth" }
+      ]
+    }
+  },
+  "events": []
+}
+```
+
+`identifiers` is an array of typed identifiers, each a `scheme` and a `value`. `ror`, `saml_entity_id` and `isni` are the core scheme values; emitters MAY use other schemes and telemetry consumers MUST tolerate unknown ones, as with `media_type` (section 6.1). It is an array because access rights arrive through consortia, federated identity and proxies at once: a session may legitimately carry a SAML entity ID and the ROR ID it maps to.
+
+`access_context` identifies an institution, never an individual. Like everything else in a session it is a claim by the emitter. Where the content owner authenticated the session itself (`source_role` of `origin` or `edge`), the owner already knows the institution and does not need the field; it earns its place where a third-party agent holds the entitlement and asserts the affiliation to the content owner, which is also where the claim is least verifiable. What corroborates an asserted affiliation is verification-layer work, outside core.
+
+Emitters MUST NOT populate `access_context` unless the governing terms of the relationship require it, and SHOULD pair it with `intent` or `minimal` conversation-turn data (section 5.5): an identified institution combined with query text can come close to identifying an individual at a small subscriber.
+
 ### 5.2 Event
 
 | Field | Type | Required | Description |
@@ -375,6 +423,7 @@ Format: the URL of a manifest served at `/.well-known/content-telemetry.json` un
 | `content_url` | string | No | Content URL as fetched or canonical URL |
 | `content_id` | string | No | Content owner's stable content identifier (see 4.5) |
 | `license_ref` | string | No | Reference to a licence or grant the emitter associates with this event (see 5.2.3) |
+| `terms_ref` | string | No | Reference to the governing terms the emitter associates with this event (see 5.2.4) |
 | `turn` | ConversationTurn | No | Conversation data (for turn events) |
 | `data` | object | No | Type-specific metadata (see section 6) |
 
@@ -397,6 +446,14 @@ The `license_ref` field associates a telemetry event with a licence or grant the
 Core does not resolve, validate or interpret the reference. `license_ref` is part of the emitter's claim about the event: it records which grant the emitter says applied. It does not establish that the grant existed, that it covered this content, that it was valid at the time of use, or that the use was permitted. A consumer that needs any of those has to check the issuer's own records, or use evidence defined outside this specification.
 
 `license_ref` also does not identify the party whose entitlement was used. Where a publisher issues one grant per subscriber the value may work as a proxy for that subscriber, but only within the issuing publisher's namespace: nothing here requires the value to be typed, stable across sessions, or comparable between emitters.
+
+#### 5.2.4 Terms reference
+
+The `terms_ref` field associates a telemetry event with the governing terms under which it is reported: a licence agreement, a standard-form contract, a tariff, a profile's terms, or any other terms document. Like `license_ref`, the value MAY be a public URL or an opaque identifier that both parties can resolve. Nothing requires the terms to be published: per-relationship terms are often confidential, and an opaque identifier resolved privately is a conforming reference.
+
+The terms are the basis; the licence is the proof. `license_ref` records which grant the emitter says applied (5.2.3). `terms_ref` records which terms govern the event's commercial consequences and the emitter's reporting obligations. Either may appear without the other: an access outside any grant carries no `license_ref`, and can still carry the `terms_ref` of the terms that attach consequences to that access.
+
+Core does not resolve, validate or interpret the reference, and `terms_ref` does not redefine core event semantics. Governing terms select which events a relationship requires and at what coverage (section 5.7.6), together with the cadence, delivery, privacy and reports owed (SCOPE.md); the meaning and occurrence boundary of each event remain those defined in sections 4.3 and 6, whatever `terms_ref` points to.
 
 ### 5.3 Event types
 
@@ -466,6 +523,8 @@ These are the recommended values. Platforms with additional product surfaces (co
 
 An emitter that populates a conversation turn MUST NOT include a field above that turn's declared `privacy_level` - for example, `query_text` MUST NOT be present when `privacy_level` is `intent` or `minimal`. This restriction is a property of `privacy_level` itself: it applies wherever conversation turns are emitted, independent of the emitter's conformance level.
 
+The session-level `access_context` container (section 5.1.3) sits outside this table but inside the privacy model. It is populated only where governing terms require it, and pairing it with `full` or `summary` turn data is discouraged (section 5.1.3): the ladder governs how much of the query and response is visible, `access_context` governs whose access rights the session used, and the two disclosures compound.
+
 **Token counts** includes `query_tokens` and `response_tokens`. These are available at all levels because they are needed for token-based counting models and do not reveal user intent or platform strategy. They carry the same portability limit as `tokens_ingested` (section 6.4): both are measured in the emitter's own tokeniser and are not comparable between agents. Version 1 does not define corresponding turn-level character counts; `chars_ingested` measures source content placed in a generation context, not query or response length.
 
 **Response classification** includes `response_type` (e.g., `"recommendation"`, `"explanation"`). Available at `intent` level and above, as it can reveal the nature of the user's query.
@@ -492,7 +551,7 @@ These are the core values. Extensions MAY define additional intent category valu
 
 Emitters that advertise a standard capability tier use one of three conformance levels. The authoritative declaration lives in the emitter's manifest (section 8). Emitters MAY also include an optional `conformance_level` field on individual session documents; when present it is informational and consumers MUST NOT treat it as a substitute for verifying the manifest's declaration.
 
-Each level is named for the event it adds: a level proves the emitter produces that event and everything below it. These levels describe what an emitter reports, not what a consumer computes from it; attribution - the apportioning of credit across content - is performed by a telemetry consumer at whatever funnel level the parties agree (section 10), and can be computed from grounding alone, without citation. An emitter does not need to reach the Citation level for its telemetry to support attribution.
+Each level is named for the event it adds: a level proves the emitter produces that event and everything below it. A level is a capability claim, not a coverage claim: it does not assert that every qualifying occurrence was reported (section 5.7.6). These levels describe what an emitter reports, not what a consumer computes from it; attribution - the apportioning of credit across content - is performed by a telemetry consumer at whatever funnel level the parties agree (section 10), and can be computed from grounding alone, without citation. An emitter does not need to reach the Citation level for its telemetry to support attribution.
 
 | Level | Events | What it proves | Typical emitter |
 |-------|--------|----------------|-----------------|
@@ -566,6 +625,25 @@ The JSON Schema (`telemetry-session.json`) validates structure and types but can
 
 The `tests/` directory provides an informative reference suite for these rules. A consumer that receives a privacy-violating turn (e.g., `query_text` present at `minimal` level) SHOULD strip the offending fields rather than reject the document carrying them.
 
+#### 5.7.6 Occurrence, qualifying events and coverage
+
+Each core event type has the meaning and occurrence boundary defined in sections 4.3 and 6. Profiles, deployment configurations and governing terms MUST NOT redefine them. A relationship that needs a different assertion defines a namespaced extension event (sections 5.3 and 11.1); it does not reuse a core type with altered semantics.
+
+An occurrence is **qualifying** for an emitter when it satisfies the core definition and occurrence boundary of its event type and falls within the relationship scope the emitter reports under - the content, domains or relationships selected by the applicable governing terms or deployment configuration. This is the sense in which the fourth conformance question in SCOPE.md asks whether all qualifying events were reported.
+
+A conformance level (sections 5.7.1 to 5.7.3) is a capability and record-validity claim, not a coverage claim; it does not assert that every qualifying occurrence was reported. Reporting coverage is a separate, explicit declaration, stated as one of four modes:
+
+- **complete** - every qualifying occurrence is emitted
+- **sampled** - qualifying occurrences are emitted under a stated sampling rule
+- **aggregated** - qualifying occurrences are reported only through a stated aggregation rule
+- **selected** - only qualifying occurrences satisfying a further stated condition are emitted
+
+A coverage declaration states its mode together with the relationship scope it applies over. The rule or condition for `sampled`, `aggregated` and `selected` MUST be objectively decidable from information available at emission time and disclosed to the receiving party; a condition the emitter can satisfy or vary at its own discretion is not a stated condition, and a declaration over an undisclosed scope is not a declaration. An emitter reporting under governing terms that state a coverage mode MUST report at that mode, and an emitter MUST NOT declare or describe its reporting as `complete` for an event type unless every qualifying occurrence is emitted. A consumer MUST NOT treat the absence of an event as evidence that no occurrence happened except where complete coverage applies.
+
+An emitter MAY declare its coverage modes machine-readably in its manifest (`telemetry.coverage`, section 8.5); a manifest declaration is subject to the same rules, and where governing terms and a manifest declaration conflict, the governing terms control the relationship they govern.
+
+Whether an emitter's reporting in fact met its declared coverage is the completeness question of SCOPE.md's conformance list: it is answered by verification and audit mechanisms outside core, not by the declaration itself.
+
 ## 6. Data profiles
 
 The `data` field on events carries type-specific metadata. These profiles document the recommended fields by event type and source role, in lifecycle order. None are required except where a section states otherwise (`reproduction_type` in 6.6; `presentation_kind` and `presentation_type` in 6.7), but emitting them enables richer attribution.
@@ -577,10 +655,15 @@ When the reporter is the agent (`source_role: agent`), the following fields are 
 | Field | Type | Description |
 |-------|------|-------------|
 | `media_type` | string | Content medium: `text`, `image`, `video`, `audio` (see below) |
+| `content_depth` | string | Depth of the content record reached: `metadata`, `abstract`, `full` (see below) |
 
 `media_type` on retrieval events allows content owners to see what types of content are being fetched, independent of whether those retrievals result in grounding or citation. Defaults to `text` when absent.
 
 `text`, `image`, `video`, and `audio` are the core values. Emitters MAY use custom string values for media outside the core set (for example `3d` or `dataset`). Telemetry consumers MUST tolerate unknown `media_type` values. This rule applies to `media_type` on every event type that carries it (sections 6.4, 6.5, 6.6, 6.7).
+
+`content_depth` records how much of the content record the retrieval reached: `metadata` for a bibliographic or descriptive record only, `abstract` for an abstract or summary record, `full` for the full content record. These are the core values; emitters MAY use custom values and telemetry consumers MUST tolerate unknown ones. The distinction is load-bearing where entitlement gates depth: a retrieval that reached only an abstract and a retrieval of full text from which a single span was later grounded are otherwise indistinguishable at the retrieval layer. Depth records what was reachable at retrieval, independent of what portion of it later entered a generation context.
+
+Although listed in the agent profile, `content_depth` applies to `content_retrieved` events from any `source_role`. The origin that served the response knows the depth authoritatively, and origin and edge reporters SHOULD include it alongside their fields in sections 6.2 and 6.3 where entitlement gates depth.
 
 ### 6.2 Edge enrichment (`content_retrieved` + `source_role: edge`)
 
@@ -862,7 +945,7 @@ A standalone event carries `document_type`, `schema_version`, and optionally `se
 }
 ```
 
-An event batch carries the same envelope fields with `"document_type": "event_batch"` and an `events` array. Envelope-level fields (`session_id`, `parent_session_id`, `ctx_token`, `agent_id`, `started_at`) apply to every event in the batch; events belonging to different sessions MUST be delivered in separate batches or as session documents.
+An event batch carries the same envelope fields with `"document_type": "event_batch"` and an `events` array. Envelope-level fields (`session_id`, `parent_session_id`, `ctx_token`, `agent_id`, `started_at`, `manifest_ref`) apply to every event in the batch; events belonging to different sessions MUST be delivered in separate batches or as session documents.
 
 ```json
 {
@@ -899,6 +982,8 @@ The primary schema (`telemetry-session.json`) validates session documents. A sta
 **Conformance constraints.** Standalone event and event batch delivery are sufficient for Retrieval conformance, where the emitter reports `content_retrieved` events with no session context. Grounding and Citation conformance require session-level fields (`session_id` or `ctx_token`, `agent_id`, `started_at`) that these envelopes do not carry by default.
 
 An agent emitter that uses standalone events or event batches for streaming delivery and wants to achieve Grounding or Citation conformance MUST include the optional `agent_id` and `started_at` fields on the envelope. Each envelope MUST also carry `session_id`, except for click-out engagement events where `ctx_token` is used instead. Consumers reconstruct the session from the stream of envelopes sharing the same `session_id`, or resolve the owning session from `ctx_token`.
+
+The optional `manifest_ref` field is available on standalone event and event batch envelopes, mirroring the session-level field (section 5.1.2). It identifies the emitter's manifest where no session document carries one. An event delivered standalone in support of settlement, audit or other obligations under governing terms (section 5.2.4) SHOULD carry `manifest_ref`, since it is the only envelope field that names the manifest - and so the domain - under which the emitter claims to report; verifying that claim uses the manifest mechanisms of section 8.
 
 Origin-side emitters (source role `origin` or `edge`) are not expected to achieve Grounding conformance and do not need these fields.
 
@@ -1093,6 +1178,9 @@ Public keys used to sign telemetry events emitted by this participant. Per-event
 | `endpoint` | string | Yes | HTTPS URL. For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the content owner's content. |
 | `conformance_level` | string | No | Conformance level advertised by this participant's own emitter(s). One of `retrieval`, `grounding`, `citation` (see 5.7). |
 | `ctx_resolution` | string | No | HTTPS URL of the click-token resolution endpoint operated by or for this participant (see 7.4). Valid on `agent` and `platform` manifests. |
+| `coverage` | object | No | Per-event-type coverage declaration: a map from event type to `{ "mode": …, "terms_ref": … }`, where `mode` is one of `complete`, `sampled`, `aggregated`, `selected` (see 5.7.6) and `terms_ref` optionally names the terms stating the rule or condition. |
+
+`coverage` makes the emitter's declared coverage machine-visible. It is a claim like the rest of the manifest, subject to the rules of section 5.7.6: a `complete` entry asserts that every qualifying occurrence of that event type within the declared relationship scope is emitted, and the other modes are meaningful only with their rule or condition reachable through `terms_ref` or otherwise disclosed to the receiving party.
 
 `conformance_level` is informational. It advertises the level of telemetry the manifest's participant emits. It does **not** constrain what an inbound `endpoint` accepts - an endpoint accepts whatever events it is configured to accept, regardless of any level declared here - and it places **no requirement** on other emitters. On a `content_owner` manifest it describes only the events the owner's own infrastructure emits (typically a CDN edge worker at `retrieval`); it says nothing about what agents or platforms report about the owner's content, which those parties advertise in their own manifests. A `content_owner` manifest SHOULD omit `conformance_level` unless the owner operates its own emitter. There is no field for a content owner to *request* a minimum level from agents; consumers tolerate events from any level (see 5.7), and the protocol does not give a manifest a way to demand more.
 
@@ -1292,6 +1380,8 @@ Implementations MAY extend core event types with custom fields in the `data` obj
 
 New event types (e.g., a commerce extension's `checkout_completed`) require a schema extension. The core schema validates only the event types listed in section 5.3.
 
+Sessions carry a parallel extension container: the session-level `data` object (section 5.1.3). Session-scoped extension metadata belongs there, not in custom top-level fields on the session document.
+
 ### 11.2 Custom intent categories
 
 `query_intent` accepts custom string values beyond the core set. Extensions SHOULD namespace their values to avoid collisions (e.g., `price_check` for a commerce extension). For ad-hoc categories that don't warrant a formal extension, use `other` with details in `topics`.
@@ -1376,6 +1466,8 @@ and MUST NOT return events for owners without a recorded opt-in. Token values
 gain the `ct_` pattern; presentation binding moves from the URL-carried
 `presentation_id` a destination could never legitimately know to issuer state
 restored at resolution.
+
+V1 tightens occurrence boundaries (section 4.3). Each core event now has a stated occurrence and cardinality: retrieval per completed fetch (a cache serve is not a retrieval), grounding per distinct content item per declared scope (chunk-level events deduplicate to one occurrence by content identity), reproduction per source item per output element, presentation per rendering occurrence, engagement per observed action. Preview emitters that emitted per chunk, per passage, or re-emitted `content_retrieved` on cache serves remain schema-valid but SHOULD re-map to the stated boundaries; consumers comparing preview and v1 volumes should expect counts to shift where emitters previously chose finer or coarser units. Coverage becomes an explicit declaration (section 5.7.6) rather than an implication of conformance level, and the session root is no longer an accidental extension point: session-scoped extension metadata belongs in the session-level `data` container (section 5.1.3), and custom top-level siblings of `events`, which the preview schema tolerated silently, are undefined.
 
 Preview versions (0.x) use two-component version numbers. From 1.0.0 onward, versions follow [semantic versioning](https://semver.org/):
 

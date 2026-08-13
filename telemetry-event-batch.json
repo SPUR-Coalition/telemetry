@@ -40,6 +40,10 @@
       "format": "date-time",
       "description": "Session start timestamp (UTC). Mirrors the session-level started_at field. REQUIRED for emitters at Grounding conformance or above when using event batch delivery."
     },
+    "manifest_ref": {
+      "type": ["string", "null"],
+      "description": "Manifest reference - the URL of a manifest at /.well-known/content-telemetry.json identifying the emitter. Applies to every event in the batch and mirrors the session-level manifest_ref field. See sections 7.1 and 8."
+    },
     "events": {
       "type": "array",
       "minItems": 1,
