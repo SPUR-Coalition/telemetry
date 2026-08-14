@@ -1,0 +1,23 @@
+{
+  "_test_description": "Grounding fingerprint uses withdrawn preserved_in_output instead of a content_reproduced event. Passes the extensible schema but violates the v1 migration rule.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440183",
+  "started_at": "2026-08-12T10:30:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-12T10:30:01Z",
+      "content_id": "publisher:article:100",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "provenance": "agent_fetched",
+        "content_fingerprint": {
+          "scheme": "https://example.org/fingerprint/v1",
+          "detected": true,
+          "preserved_in_output": true
+        }
+      }
+    }
+  ]
+}

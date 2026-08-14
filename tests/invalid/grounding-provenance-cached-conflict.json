@@ -1,0 +1,18 @@
+{
+  "_test_description": "Grounding event declares agent_fetched with cached true. Passes JSON Schema but violates section 6.4 provenance consistency.",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440184",
+  "started_at": "2026-08-12T10:40:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-12T10:40:01Z",
+      "content_id": "publisher:article:101",
+      "data": {
+        "scope": "turn",
+        "cached": true,
+        "provenance": "agent_fetched"
+      }
+    }
+  ]
+}

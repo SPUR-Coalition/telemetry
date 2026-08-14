@@ -36,7 +36,8 @@ Run from the repository root. Without uv: `pip install jsonschema`, then `python
 - Reproduction cases: credited quotation (reproduction + direct_quote citation sharing an output element) and uncredited reproduction in unpresented API output
 - Text, image, audio, video, suppressed-citation, and repeated-presentation cases
 - Exact presentation-to-engagement correlation across session and standalone envelopes
-- Multi-turn sessions, cached grounding
+- Multi-turn sessions and cached grounding
+- Grounding provenance paths and generic fingerprint detection across session, standalone-event, and event-batch envelopes
 - Custom response_mode values
 
 Each test file has a `_test_description` field explaining what it demonstrates.
@@ -50,5 +51,6 @@ Some rules cannot be expressed in JSON Schema alone. These are tested as applica
 - `session_id` or `ctx_token` on a standalone event or event batch envelope at Grounding conformance and above (sections 5.7.5, 7.1)
 - Manifest rejection rules: duplicate `keys[].id`, and `domains` entries that are not the manifest's own host or a subdomain of it (sections 8.6, 8.7)
 - Withdrawn `ip_hash` prohibition on `content_retrieved` data (section 9.1 migration rule)
+- Grounding provenance/cache consistency and the prohibition on `preserved_in_output` in `content_fingerprint` (sections 5.7.5, 6.4, 12.1)
 
 Valid fixtures must pass both JSON Schema and these checks; `invalid/` fixtures that pass JSON Schema but fail a check are documented in `validate.py`. The `agent_id`-at-Grounding requirement is not fixture-tested: it depends on the emitter's declared conformance level, which the fixtures do not carry.

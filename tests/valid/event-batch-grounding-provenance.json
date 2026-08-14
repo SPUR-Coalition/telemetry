@@ -1,0 +1,36 @@
+{
+  "_test_description": "Batch envelope carrying grounding events from cached and third-party-sourced representations, exercising the shared provenance schema across batch delivery.",
+  "document_type": "event_batch",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440181",
+  "agent_id": "enterprise-rag-v1",
+  "started_at": "2026-08-12T10:10:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-12T10:10:01Z",
+      "content_id": "publisher:cached:7",
+      "data": {
+        "scope": "session",
+        "cached": true,
+        "provenance": "agent_cached",
+        "chars_ingested": 900
+      }
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-12T10:10:02Z",
+      "content_id": "repository:item:9",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "provenance": "third_party_sourced",
+        "chars_ingested": 500,
+        "content_fingerprint": {
+          "scheme": "https://example.org/fingerprint/v1",
+          "detected": false
+        }
+      }
+    }
+  ]
+}
