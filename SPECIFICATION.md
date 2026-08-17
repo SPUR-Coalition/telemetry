@@ -455,6 +455,8 @@ The terms are the basis; the licence is the proof. `license_ref` records which g
 
 Core does not resolve, validate or interpret the reference, and `terms_ref` does not redefine core event semantics. Governing terms select which events a relationship requires and at what coverage (section 5.7.6), together with the cadence, delivery, privacy and reports owed (SCOPE.md); the meaning and occurrence boundary of each event remain those defined in sections 4.3 and 6, whatever `terms_ref` points to.
 
+The reference is carried, not managed. A processor that stores, forwards or transforms a document MUST carry `terms_ref` byte for byte and MUST NOT remove or rewrite it. A `terms_ref` value denotes the same terms for all time: terms that change are referenced by a new value, so the reader of a historical event can still find the terms that governed it. The absence of `terms_ref` carries no meaning; as with coverage (section 5.7.6), silence is not a declaration, and a consumer MUST NOT infer from a missing reference that no terms governed the event.
+
 ### 5.3 Event types
 
 #### Content events
