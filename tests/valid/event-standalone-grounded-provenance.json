@@ -17,8 +17,7 @@
       "tokens_ingested": 512,
       "content_fingerprint": {
         "scheme": "iscc",
-        "detected": true,
-        "preserved_in_output": false
+        "detected": true
       }
     }
   }
