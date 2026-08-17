@@ -28,7 +28,8 @@
     },
     "ctx_token": {
       "type": "string",
-      "description": "Opaque click-token issued by the originating agent, carried on content_engaged events emitted from a landing page after a click-out in place of session_id. Resolved by the telemetry consumer to the owning session (the click manifest). See section 7.1. An event MUST carry either session_id or ctx_token at Grounding conformance and above."
+      "pattern": "^ct_[A-Za-z0-9_-]{8,240}$",
+      "description": "Opaque click token issued by the originating agent, carried on content_engaged events emitted from a landing page after a click-out in place of session_id. Resolved by the telemetry consumer to the click context (section 7.4). An event MUST carry either session_id or ctx_token at Grounding conformance and above."
     },
     "agent_id": {
       "type": "string",
@@ -43,5 +44,24 @@
       "$ref": "telemetry-session.json#/$defs/TelemetryEvent",
       "description": "The telemetry event"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["event"],
+        "properties": {
+          "event": {
+            "properties": { "type": { "const": "content_engaged" } },
+            "required": ["type"]
+          }
+        },
+        "not": { "required": ["ctx_token"] }
+      },
+      "then": {
+        "properties": {
+          "event": { "required": ["presentation_id"] }
+        }
+      }
+    }
+  ]
 }
