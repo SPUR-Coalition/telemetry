@@ -175,7 +175,7 @@
         },
         "terms_ref": {
           "type": ["string", "null"],
-          "description": "Reference to the governing terms the emitter associates with this event (public URL or opaque identifier both parties can resolve). Distinct from license_ref: the terms are the basis, the licence is the proof. Core does not resolve or interpret it, and it does not redefine core event semantics. See section 5.2.4."
+          "description": "Reference to the governing terms the emitter associates with this event (public URL or opaque identifier both parties can resolve). Distinct from license_ref, which records the grant that applied. Core does not resolve or interpret it, and it does not redefine core event semantics. See section 5.2.4."
         },
         "turn": {
           "oneOf": [{ "$ref": "#/$defs/ConversationTurn" }, { "type": "null" }],
