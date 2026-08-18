@@ -247,7 +247,7 @@ Each stage after retrieval is typically a progressively narrower subset, except 
 - **Citation-to-presentation** measures source associations constructed in output but not made perceivable
 - **Presentation-to-engagement** measures observable actions on exact presentation occurrences
 
-These ratios are computed over reported events. They are comparable across emitters, and meaningful as measures of behaviour rather than of reporting, only at known coverage (section 5.7.6).
+These ratios are computed over reported events and are comparable across emitters only at known coverage (section 5.7.6).
 
 #### Departures from the funnel model
 
@@ -399,9 +399,9 @@ One container is defined in core. `access_context` records the context from whic
 }
 ```
 
-`identifiers` is an array of typed identifiers, each a `scheme` and a `value`. `ror`, `saml_entity_id` and `isni` are the core scheme values; emitters MAY use other schemes and telemetry consumers MUST tolerate unknown ones, as with `media_type` (section 6.1). It is an array because access rights arrive through consortia, federated identity and proxies at once: a session may legitimately carry a SAML entity ID and the ROR ID it maps to.
+`identifiers` is an array of typed identifiers, each a `scheme` and a `value`. `ror`, `saml_entity_id` and `isni` are the core scheme values; emitters MAY use other schemes and telemetry consumers MUST tolerate unknown ones, as with `media_type` (section 6.1). Access rights can derive through consortia, federated identity and proxies at once, so a session may carry both a SAML entity ID and the ROR ID it maps to.
 
-`access_context` identifies an institution, never an individual. Like everything else in a session it is a claim by the emitter. Where the content owner authenticated the session itself (`source_role` of `origin` or `edge`), the owner already knows the institution and does not need the field; it earns its place where a third-party agent holds the entitlement and asserts the affiliation to the content owner, which is also where the claim is least verifiable. What corroborates an asserted affiliation is verification-layer work, outside core.
+`access_context` identifies an institution, never an individual, and like every session field it is a claim by the emitter. The field serves the third-party agent that holds the entitlement and asserts the affiliation to the content owner; where the owner authenticated the session itself (`source_role` of `origin` or `edge`), it already knows the institution. Corroborating an asserted affiliation is verification-layer work, outside core.
 
 Emitters MUST NOT populate `access_context` unless the governing terms of the relationship require it, and SHOULD pair it with `intent` or `minimal` conversation-turn data (section 5.5): an identified institution combined with query text can come close to identifying an individual at a small subscriber.
 
@@ -455,7 +455,7 @@ The terms are the basis; the licence is the proof. `license_ref` records which g
 
 Core does not resolve, validate or interpret the reference, and `terms_ref` does not redefine core event semantics. Governing terms select which events a relationship requires and at what coverage (section 5.7.6), together with the cadence, delivery, privacy and reports owed (SCOPE.md); the meaning and occurrence boundary of each event remain those defined in sections 4.3 and 6, whatever `terms_ref` points to.
 
-The reference is carried, not managed. A processor that stores, forwards or transforms a document MUST carry `terms_ref` byte for byte and MUST NOT remove or rewrite it. A `terms_ref` value denotes the same terms for all time: terms that change are referenced by a new value, so the reader of a historical event can still find the terms that governed it. The absence of `terms_ref` carries no meaning; as with coverage (section 5.7.6), silence is not a declaration, and a consumer MUST NOT infer from a missing reference that no terms governed the event.
+A processor that stores, forwards or transforms a document MUST carry `terms_ref` byte for byte and MUST NOT remove or rewrite it. A `terms_ref` value denotes the same terms for all time: terms that change are referenced by a new value, so the reader of a historical event can still find the terms that governed it. The absence of `terms_ref` carries no meaning: a consumer MUST NOT infer from a missing reference that no terms governed the event (the same rule as event absence under coverage, section 5.7.6).
 
 ### 5.3 Event types
 
@@ -631,7 +631,7 @@ The `tests/` directory provides an informative reference suite for these rules. 
 
 Each core event type has the meaning and occurrence boundary defined in sections 4.3 and 6. Profiles, deployment configurations and governing terms MUST NOT redefine them. A relationship that needs a different assertion defines a namespaced extension event (sections 5.3 and 11.1); it does not reuse a core type with altered semantics.
 
-An occurrence is **qualifying** for an emitter when it satisfies the core definition and occurrence boundary of its event type and falls within the relationship scope the emitter reports under - the content, domains or relationships selected by the applicable governing terms or deployment configuration. This is the sense in which the fourth conformance question in SCOPE.md asks whether all qualifying events were reported.
+An occurrence is **qualifying** for an emitter when it satisfies the core definition and occurrence boundary of its event type and falls within the relationship scope the emitter reports under - the content, domains or relationships selected by the applicable governing terms or deployment configuration.
 
 A conformance level (sections 5.7.1 to 5.7.3) is a capability and record-validity claim, not a coverage claim; it does not assert that every qualifying occurrence was reported. Reporting coverage is a separate, explicit declaration, stated as one of four modes:
 
@@ -663,7 +663,7 @@ When the reporter is the agent (`source_role: agent`), the following fields are 
 
 `text`, `image`, `video`, and `audio` are the core values. Emitters MAY use custom string values for media outside the core set (for example `3d` or `dataset`). Telemetry consumers MUST tolerate unknown `media_type` values. This rule applies to `media_type` on every event type that carries it (sections 6.4, 6.5, 6.6, 6.7).
 
-`content_depth` records how much of the content record the retrieval reached: `metadata` for a bibliographic or descriptive record only, `abstract` for an abstract or summary record, `full` for the full content record. These are the core values; emitters MAY use custom values and telemetry consumers MUST tolerate unknown ones. The distinction is load-bearing where entitlement gates depth: a retrieval that reached only an abstract and a retrieval of full text from which a single span was later grounded are otherwise indistinguishable at the retrieval layer. Depth records what was reachable at retrieval, independent of what portion of it later entered a generation context.
+`content_depth` records how much of the content record the retrieval reached: `metadata` for a bibliographic or descriptive record only, `abstract` for an abstract or summary record, `full` for the full content record. These are the core values; emitters MAY use custom values and telemetry consumers MUST tolerate unknown ones. Where entitlement gates depth, a retrieval that reached only an abstract and a retrieval of full text are otherwise indistinguishable at the retrieval layer. Depth records what was reachable at retrieval, independent of what portion later entered a generation context.
 
 Although listed in the agent profile, `content_depth` applies to `content_retrieved` events from any `source_role`. The origin that served the response knows the depth authoritatively, and origin and edge reporters SHOULD include it alongside their fields in sections 6.2 and 6.3 where entitlement gates depth.
 
@@ -1469,7 +1469,7 @@ gain the `ct_` pattern; presentation binding moves from the URL-carried
 `presentation_id` a destination could never legitimately know to issuer state
 restored at resolution.
 
-V1 tightens occurrence boundaries (section 4.3). Each core event now has a stated occurrence and cardinality: retrieval per completed fetch (a cache serve is not a retrieval), grounding per distinct content item per declared scope (chunk-level events deduplicate to one occurrence by content identity), reproduction per source item per output element, presentation per rendering occurrence, engagement per observed action. Preview emitters that emitted per chunk, per passage, or re-emitted `content_retrieved` on cache serves remain schema-valid but SHOULD re-map to the stated boundaries; consumers comparing preview and v1 volumes should expect counts to shift where emitters previously chose finer or coarser units. Coverage becomes an explicit declaration (section 5.7.6) rather than an implication of conformance level, and the session root is no longer an accidental extension point: session-scoped extension metadata belongs in the session-level `data` container (section 5.1.3), and custom top-level siblings of `events`, which the preview schema tolerated silently, are undefined.
+V1 tightens occurrence boundaries (section 4.3). Each core event now has a stated occurrence and cardinality: retrieval per completed fetch (a cache serve is not a retrieval), grounding per distinct content item per declared scope (chunk-level events deduplicate to one occurrence by content identity), reproduction per source item per output element, presentation per rendering occurrence, engagement per observed action. Preview emitters that emitted per chunk, per passage, or re-emitted `content_retrieved` on cache serves remain schema-valid but SHOULD re-map to the stated boundaries; consumers comparing preview and v1 volumes should expect counts to shift where emitters previously chose finer or coarser units. Coverage becomes an explicit declaration (section 5.7.6) rather than an implication of conformance level. Session-scoped extension metadata belongs in the session-level `data` container (section 5.1.3); custom top-level siblings of `events`, accepted by the preview schema, are undefined.
 
 Preview versions (0.x) use two-component version numbers. From 1.0.0 onward, versions follow [semantic versioning](https://semver.org/):
 

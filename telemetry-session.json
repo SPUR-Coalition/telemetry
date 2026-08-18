@@ -66,7 +66,7 @@
           "properties": {
             "identifiers": {
               "type": "array",
-              "description": "Typed institutional identifiers. An array because access rights can derive through consortia, federated identity and proxies at once.",
+              "description": "Typed institutional identifiers. Access rights can derive through consortia, federated identity and proxies at once.",
               "items": {
                 "type": "object",
                 "required": ["scheme", "value"],

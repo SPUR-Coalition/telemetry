@@ -1,5 +1,5 @@
 {
-  "_test_description": "Standalone retrieval event reported under governing terms rather than a grant: an agent reports an access whose consequences are set by a standard-form contract. terms_ref names the governing terms (5.2.4), license_ref is absent because no grant applied, and the envelope carries manifest_ref (7.1) so the record ties the emitter to a domain it controls without a session document. The fee or other consequence is derived by the content owner from this event and the referenced terms; it is not asserted in telemetry.",
+  "_test_description": "Standalone retrieval event reported under governing terms with no grant: terms_ref names the terms (5.2.4), license_ref is absent, and the envelope carries manifest_ref (7.1) to tie the emitter to a domain without a session document.",
   "document_type": "event",
   "schema_version": "0.1",
   "agent_id": "assistant.example.com",

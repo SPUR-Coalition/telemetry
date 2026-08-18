@@ -1,5 +1,5 @@
 {
-  "_test_description": "Session data.access_context.identifiers as a bare string rather than an array of typed identifiers. The schema requires an array of {scheme, value} objects (5.1.3): free-text institutional identifiers are the failure the typed structure exists to prevent.",
+  "_test_description": "Session access_context.identifiers as a bare string. The schema requires an array of {scheme, value} objects (5.1.3).",
   "document_type": "session",
   "schema_version": "0.1",
   "session_id": "880e8400-e29b-41d4-a716-446655440091",
