@@ -88,6 +88,25 @@
           "format": "uri",
           "pattern": "^https://",
           "description": "HTTPS URL of the click-token resolution endpoint operated by or for this participant. Valid on agent and platform manifests. Destinations resolve ctx_iss to this manifest and present the token here. (Section 7.4)"
+        },
+        "coverage": {
+          "type": "object",
+          "description": "Per-event-type coverage declaration, a map from event type to a mode object. A claim subject to the rules of section 5.7.6: complete asserts every qualifying occurrence within the declared relationship scope is emitted. (Sections 8.5, 5.7.6)",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": ["complete", "sampled", "aggregated", "selected"],
+                "description": "Coverage mode (section 5.7.6)"
+              },
+              "terms_ref": {
+                "type": ["string", "null"],
+                "description": "Reference to the terms stating the sampling, aggregation or selection rule and the relationship scope (section 5.2.4)"
+              }
+            }
+          }
         }
       },
       "description": "Telemetry endpoint declaration. (Section 8.5)"
