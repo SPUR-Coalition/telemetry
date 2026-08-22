@@ -1,0 +1,4 @@
+{
+  "document_type": "event", "schema_version": "0.1", "session_id": "550e8400-e29b-41d4-a716-446655440000", "started_at": "2026-07-11T12:00:00Z",
+  "event": {"id": "860e8400-e29b-41d4-a716-446655440000", "type": "content_grounded", "timestamp": "2026-07-11T12:00:02Z", "content_id": "example:article:42", "evidence": [{"assertion_path": "/data/missing", "tier": "claim"}], "data": {}}
+}

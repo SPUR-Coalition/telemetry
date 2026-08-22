@@ -1,0 +1,128 @@
+{
+  "$schema": "https://contenttelemetry.org/schema/v0.2/survivability-matrix.json",
+  "matrix_version": "0.1",
+  "scheme": "c2pa-text",
+  "profile_ref": "https://spec.c2pa.org/specifications/specifications/2.4/specs/C2PA_Specification.html#embedding_manifests_into_unstructured_text",
+  "profile_digest": "sha256:d55caebd96206f0de667962a4bab7098c6b6468fba68f8b55bcdd3a12d1ed26d",
+  "tested_at": "2026-07-11T00:00:00Z",
+  "implementation": "C2PA 2.4 Appendix A.8 carrier fixture generator v1",
+  "runner": "tests/check_survivability.py",
+  "runner_version": "1.0",
+  "scope": "C2PA 2.4 Appendix A.8 association-wrapper recovery only",
+  "qualification": "The synthetic manifest is a structural JUMBF superbox, not a signed C2PA claim. An association_recovered result proves carrier recovery only. It does not prove claim-signature validity, signer identity, hard-binding validity, trusted time, independent observation, or Tier 3 eligibility.",
+  "fixture": {
+    "source_text": "Café provenance sample.",
+    "manifest_hex": "000000086a756d62",
+    "marked_text_utf8_sha256": "sha256:0ce685030de364a8f7303b3781263003185ff8bc481cb7834bc981eb6cedf29c",
+    "marked_text_unicode_escape": "Caf\\xe9 provenance sample.\\ufeff\\U000e0133\\U000e0122\\U000e0140\\U000e0131\\U000e0144\\U000e0148\\U000e0144\\ufe00\\ufe01\\ufe00\\ufe00\\ufe00\\ufe08\\ufe00\\ufe00\\ufe00\\ufe08\\U000e015a\\U000e0165\\U000e015d\\U000e0152"
+  },
+  "test_conditions": {
+    "runtime": "Python 3",
+    "input_normalisation": "implementation normalises visible text to NFC before embedding and extraction",
+    "success_condition": "decoded manifest bytes equal 000000086a756d62"
+  },
+  "transforms": [
+    {
+      "transform": "baseline",
+      "operation": "embed then extract without an intervening transform",
+      "observed_result": "association_recovered",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "utf8_round_trip",
+      "operation": "encode marked Unicode string as UTF-8, then strictly decode as UTF-8",
+      "observed_result": "association_recovered",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "utf16le_round_trip",
+      "operation": "encode marked Unicode string as UTF-16LE, then strictly decode as UTF-16LE",
+      "observed_result": "association_recovered",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "unicode_nfc",
+      "operation": "apply Unicode NFC to the complete marked string",
+      "observed_result": "association_recovered",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "unicode_nfd",
+      "operation": "apply Unicode NFD to the complete marked string",
+      "observed_result": "association_recovered",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "json_string_round_trip",
+      "operation": "Python json.dumps with ensure_ascii=true followed by json.loads",
+      "observed_result": "association_recovered",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "exact_unicode_copy",
+      "operation": "copy the complete Unicode string in memory without editor or clipboard mediation",
+      "observed_result": "association_recovered",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "aggregation_with_prefix_and_suffix",
+      "operation": "prepend 'Preface. ' and append ' Epilogue.' while retaining the complete marked unit",
+      "observed_result": "association_recovered",
+      "full_c2pa_validation": "not_run_expected_hard_binding_failure_for_changed_asset"
+    },
+    {
+      "transform": "default_ignorable_stripping",
+      "operation": "remove U+FEFF, U+FE00 through U+FE0F, and U+E0100 through U+E01EF",
+      "observed_result": "association_removed",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "fragment_extraction_wrapper_retained",
+      "operation": "extract a content fragment that retains the complete Appendix A.8 wrapper",
+      "observed_result": "not_tested",
+      "full_c2pa_validation": "not_run_expected_hard_binding_failure_unless_profile_defines_fragment_binding"
+    },
+    {
+      "transform": "fragment_extraction_wrapper_omitted",
+      "operation": "extract a content fragment that omits the Appendix A.8 wrapper",
+      "observed_result": "association_removed_by_definition",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "wordpress_editor_round_trip",
+      "operation": "publish and retrieve through a named WordPress version and editor configuration",
+      "observed_result": "not_tested",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "spip_editor_round_trip",
+      "operation": "publish and retrieve through a named SPIP version and editor configuration",
+      "observed_result": "not_tested",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "arc_xp_round_trip",
+      "operation": "publish and retrieve through a named Arc XP configuration",
+      "observed_result": "not_tested",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "plain_text_export",
+      "operation": "export through a named editor as plain text and re-import",
+      "observed_result": "not_tested",
+      "full_c2pa_validation": "not_run"
+    },
+    {
+      "transform": "whitespace_collapse",
+      "operation": "collapse visible-text whitespace while retaining the complete wrapper",
+      "observed_result": "not_tested",
+      "full_c2pa_validation": "not_run_expected_hard_binding_failure_for_changed_asset"
+    },
+    {
+      "transform": "paraphrase_or_summary",
+      "operation": "replace the visible text with semantically related generated text",
+      "observed_result": "not_tested",
+      "full_c2pa_validation": "not_run_expected_failure_unless_a_separate_derived-asset_manifest_is_created"
+    }
+  ]
+}

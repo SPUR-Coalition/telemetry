@@ -1,0 +1,16 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: A standalone turn at minimal privacy carries ad_rendered; standalone delivery must enforce the same section 5.5 field gating as session delivery.",
+  "document_type": "event",
+  "schema_version": "0.1",
+  "session_id": "770e8400-e29b-41d4-a716-446655440023",
+  "event": {
+    "type": "turn_completed",
+    "timestamp": "2026-03-28T10:00:05Z",
+    "turn_id": "1",
+    "turn": {
+      "privacy_level": "minimal",
+      "ad_rendered": true,
+      "response_tokens": 200
+    }
+  }
+}
