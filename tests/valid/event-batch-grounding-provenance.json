@@ -1,7 +1,7 @@
 {
   "_test_description": "Batch envelope carrying grounding events from cached and third-party-sourced representations, exercising the shared provenance schema across batch delivery.",
   "document_type": "event_batch",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440181",
   "agent_id": "enterprise-rag-v1",
   "started_at": "2026-08-12T10:10:00Z",

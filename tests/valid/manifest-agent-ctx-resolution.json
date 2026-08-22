@@ -1,6 +1,6 @@
 {
   "_test_description": "Agent manifest declaring a click-token resolution endpoint in telemetry.ctx_resolution. A destination receiving ctx_iss=searchco.com/agents/web-search resolves this manifest and presents the token at the declared endpoint (sections 7.4, 8.5).",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "https://searchco.com/agents/web-search/.well-known/content-telemetry.json",
   "roles": ["agent"],
   "operator": { "name": "SearchCo" },

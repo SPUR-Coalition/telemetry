@@ -1,6 +1,6 @@
 {
   "_test_description": "The same URL presented twice in one session: two content_presented events with distinct ids and distinct minted click tokens, and a content_engaged bound by presentation_id to the second occurrence. Matching on URL alone could not tell the two presentations apart (sections 6.8, 7.4).",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440210",
   "agent_id": "assistant-v2",
   "started_at": "2026-08-10T09:00:00Z",

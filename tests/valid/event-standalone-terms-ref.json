@@ -1,7 +1,7 @@
 {
   "_test_description": "Standalone retrieval event reported under governing terms with no grant: terms_ref names the terms (5.2.4), license_ref is absent, and the envelope carries manifest_ref (7.1) to tie the emitter to a domain without a session document.",
   "document_type": "event",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "agent_id": "assistant.example.com",
   "manifest_ref": "https://assistant.example.com/.well-known/content-telemetry.json",
   "event": {

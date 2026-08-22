@@ -383,7 +383,7 @@ One container is defined in core. `access_context` records the context from whic
 
 ```json
 {
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "770e8400-e29b-41d4-a716-446655440000",
   "content_scope": "consortium-agreement-4471",
   "started_at": "2026-08-13T14:02:10Z",
