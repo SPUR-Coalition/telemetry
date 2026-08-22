@@ -28,11 +28,11 @@
     },
     "ctx_token": {
       "type": "string",
-      "pattern": "^ct_[A-Za-z0-9_-]{8,240}$",
+      "pattern": "^ct_[A-Za-z0-9_-]{16,240}$",
       "description": "Opaque click token issued by the originating agent, carried in place of session_id on batches of content_engaged events emitted from a landing page after a click-out. Applies to every event in the batch and is resolved by the telemetry consumer to the click context (section 7.4). An event MUST carry either session_id or ctx_token at Grounding conformance and above."
     },
     "agent_id": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "Responding agent identifier. REQUIRED for emitters at Grounding conformance or above when using event batch delivery. Mirrors the session-level agent_id field."
     },
     "started_at": {
@@ -42,6 +42,7 @@
     },
     "manifest_ref": {
       "type": ["string", "null"],
+      "format": "uri",
       "description": "Manifest reference - the URL of a manifest at /.well-known/content-telemetry.json identifying the emitter. Applies to every event in the batch and mirrors the session-level manifest_ref field. See sections 7.1 and 8."
     },
     "events": {

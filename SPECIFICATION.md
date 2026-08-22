@@ -330,7 +330,7 @@ Additional content metadata - version, last-modified timestamp, content hash, me
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `schema_version` | string | Yes | Schema version (v1 documents declare "1.0") |
+| `schema_version` | string | Yes | Schema version as `major.minor` (v1 documents declare "1.0"; see section 12) |
 | `session_id` | UUID | Yes | Unique session identifier |
 | `parent_session_id` | UUID | No | Immediate parent session that delegated work to this session |
 | `agent_id` | string | No | Responding agent identifier |
@@ -437,7 +437,7 @@ Content events without a `turn_id` (e.g., `content_grounded` with `scope: sessio
 
 #### 5.2.2 Source role
 
-The `source_role` field SHOULD be set on `content_retrieved` events. When multiple systems observe the same retrieval, the `content_telemetry_id` field correlates their events for deduplication.
+The `source_role` field MUST be set on `content_retrieved` events (section 5.7.1): without it a consumer cannot tell an agent-reported fetch from an origin- or edge-reported one, or correlate the observers of one retrieval. When multiple systems observe the same retrieval, the `content_telemetry_id` field correlates their events for deduplication.
 
 #### 5.2.3 Licence reference
 
@@ -568,7 +568,7 @@ Reproduction, presentation, and engagement events are optional lifecycle signals
 A conforming **Retrieval** emitter MUST:
 
 - Set `source_role` on `content_retrieved` events
-- Include at least one of `content_url` or `content_id` on every event
+- Include at least one of `content_url` or `content_id` on every content event
 - Set `type` and `timestamp` on every event
 
 This level requires no agent cooperation. Content owners can implement it using CDN edge compute (Cloudflare Workers, Fastly Compute, etc.).
@@ -580,7 +580,7 @@ Origin-side emitters operating at the CDN edge SHOULD include `bot_category`, `r
 A conforming **Grounding** emitter MUST satisfy Retrieval requirements and also:
 
 - Produce sessions with `schema_version`, `session_id`, `agent_id`, and `started_at`
-- Emit `content_grounded` events with `data.scope`
+- Emit `content_grounded` events with `data.scope` (schema-enforced; section 6.4)
 - Include at least one of `content_url` or `content_id` on every content event
 - Emit `turn_started` and `turn_completed` events with `privacy_level`
 - Restrict conversation turn fields to the declared `privacy_level` (section 5.5)
@@ -609,7 +609,7 @@ A Citation emitter SHOULD:
 
 A conforming **telemetry consumer** MUST:
 
-- Accept sessions with any `schema_version` that shares the same major version. V1 documents declare `schema_version` `"1.0"`. A v1 consumer MUST reject documents declaring `"0.1"`: v0.1 is a different wire version, not a compatible minor. Conversely, a v0.1 consumer following the preview rule (a 0.x consumer accepts only the exact same minor version, so a 0.1 consumer accepts 0.1 only) rejects documents declaring `"1.0"`. The major-version compatibility rule takes effect from 1.0.0 onward.
+- Accept documents declaring any `schema_version` with the same major version as the one the consumer implements. `schema_version` is `major.minor` (section 12): v1.0 documents declare `"1.0"`, and the v1.0 schemas accept that value only. Each minor version publishes its own schemas. A consumer implementing 1.y validates a document declaring 1.x, x ≤ y, against the 1.x schemas, and a document declaring a later minor against the latest schemas it implements, tolerating the optional fields that minor added. A v1 consumer MUST reject documents declaring `"0.1"`: v0.1 is a different wire version, not a compatible minor. Conversely, a v0.1 consumer following the preview rule (a 0.x consumer accepts only the exact same minor version, so a 0.1 consumer accepts 0.1 only) rejects documents declaring `"1.0"`.
 - Tolerate unknown fields without error
 - Tolerate events from any conformance level
 - Accept the session-document, standalone-event, and event-batch delivery formats, reconstructing sessions from standalone events and event batches where needed (see section 7.1)
@@ -624,6 +624,11 @@ The JSON Schema (`telemetry-session.json`) validates structure and types but can
 - The conformance-level requirements (sections 5.7.1 to 5.7.3) are cumulative.
 - When `content_grounded.data.provenance` is `agent_fetched`, `data.cached` MUST be `false`; when it is `agent_cached`, `data.cached` MUST be `true` (section 6.4).
 - `content_grounded.data.content_fingerprint` MUST NOT contain `preserved_in_output`; output-side reuse is reported with `content_reproduced` (sections 6.4 and 12.1).
+- `source_role` MUST be present on every `content_retrieved` event (sections 5.2.2, 5.7.1).
+- Fields scoped to an event type MUST NOT appear on other types: `presentation_id` and the event-level `ctx_token` only on `content_engaged`; `citation_id` only on `content_presented` and `content_reproduced`; `turn` only on `turn_started` and `turn_completed` (section 5.2).
+- Within a session document, event `id` values MUST be distinct; a `content_engaged.presentation_id` MUST reference a `content_presented` event, and a `citation_id` a `content_cited` event, that identifies the same content - where both events carry `content_id` the values MUST be equal, and likewise for `content_url` (sections 6.7, 6.8); one event-level `ctx_token` MUST NOT appear on engagements bound to two different presentations (section 7.4.1).
+- An envelope `ctx_token` (section 7.1) MUST accompany `content_engaged` events only.
+- Manifests: `domains` MUST appear only on a manifest served at the domain root, and `telemetry.ctx_resolution` only on a manifest declaring the `agent` or `platform` role (sections 8.5, 8.6).
 
 The `tests/` directory provides an informative reference suite for these rules. A consumer that receives a privacy-violating turn (e.g., `query_text` present at `minimal` level) SHOULD strip the offending fields rather than reject the document carrying them.
 
@@ -648,7 +653,7 @@ Whether an emitter's reporting in fact met its declared coverage is the complete
 
 ## 6. Data profiles
 
-The `data` field on events carries type-specific metadata. These profiles document the recommended fields by event type and source role. None are required except where a section states otherwise (`reproduction_type` in 6.6; `presentation_kind` and `presentation_type` in 6.7), but emitting them enables richer attribution.
+The `data` field on events carries type-specific metadata. These profiles document the recommended fields by event type and source role. None are required except where a section states otherwise - `scope` in 6.4, `citation_type` in 6.5, `reproduction_type` in 6.6, `presentation_kind` and `presentation_type` in 6.7, each enforced by the JSON Schema - but emitting them enables richer attribution.
 
 ### 6.1 Retrieved content metadata (`content_retrieved`)
 
@@ -710,7 +715,7 @@ Emitting a `training`-category `content_retrieved` event is permitted but non-at
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `scope` | string | Influence scope: `session` or `turn` (see below) |
+| `scope` | string | Required. Influence scope: `session` or `turn` (see below) |
 | `cached` | boolean | Content served from agent-side cache rather than a live fetch |
 | `provenance` | string | How content reached the context: `agent_fetched`, `agent_cached`, or `third_party_sourced` (see below) |
 | `chars_ingested` | integer | Character count of content placed in the generation context (see below) |
@@ -725,7 +730,7 @@ Both fields measure the content actually placed in the generation model's contex
 
 `chars_ingested` counts Unicode code points in the exact text placed in context. Count the string as ingested: an emitter MUST NOT apply Unicode normalisation solely to calculate this field. It is the portable measure: two emitters that ingest the same code-point sequence agree, so a content owner can compare volumes across agents and over time without knowing which model produced the number. Different normalised representations remain different ingested sequences and may therefore produce different counts.
 
-`tokens_ingested` counts the same content in the generation model's tokeniser (the model identified in `model_id` on the corresponding `turn_completed` event), not the retrieval or embedding model's tokeniser. It is supplementary. Token counts are model-specific, change when a vendor revises a tokeniser, and are not comparable between agents, so a consumer cannot aggregate them across emitters or treat a difference as a difference in volume. Emitters SHOULD send `chars_ingested` where they send `tokens_ingested`, and consumers that receive only token counts SHOULD record which model produced them.
+`tokens_ingested` counts the same content in the generation model's tokeniser (the model identified in `model_id` on the corresponding `turn_completed` event), not the retrieval or embedding model's tokeniser. It is supplementary. Token counts are model-specific, change when a vendor revises a tokeniser, and are not comparable between agents, so a consumer cannot aggregate them across emitters or treat a difference as a difference in volume. Emitters SHOULD send `chars_ingested` where they send `tokens_ingested`, and consumers that receive only token counts SHOULD record which model produced them. At `minimal` privacy the turn carries no `model_id` (section 5.5); token counts reported at that level name no tokeniser, and consumers SHOULD NOT compare them with counts from any other emitter or model.
 
 #### Provenance and content fingerprints
 
@@ -763,6 +768,8 @@ Output-side reuse is reported with `content_reproduced`, not a fingerprint-prese
 | `turn` | Content informed this specific response only. |
 
 For session-scoped grounding, the number of turns influenced is derivable from the session's `turn_started` events following the grounding event. This avoids redundant per-turn grounding events for content that persists across responses.
+
+`scope` is required on every `content_grounded` event and the JSON Schema enforces it: the occurrence boundary of section 4.3 and every counting model in section 10 depend on knowing whether a grounding informed one response or the rest of the session.
 
 #### Agent architecture and the grounding boundary
 
@@ -803,7 +810,7 @@ Agents SHOULD preserve the `license_ref` from the original retrieval when emitti
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `citation_type` | string | How content was used: `direct_quote`, `paraphrase`, `reference`, `contradiction`, `unclassified` |
+| `citation_type` | string | Required. How content was used: `direct_quote`, `paraphrase`, `reference`, `contradiction`, `unclassified` |
 | `media_type` | string | Content medium: `text`, `image`, `video`, `audio` (open vocabulary, see 6.1) |
 | `excerpt_tokens` | integer | Token count of the excerpt used |
 | `excerpt_chars` | integer | Character count of the excerpt used |
@@ -812,7 +819,7 @@ Agents SHOULD preserve the `license_ref` from the original retrieval when emitti
 | `content_hash` | string | SHA-256 matching the corresponding `content_grounded` event (`sha256:{hex}`). When the agent chunked the source, this is the chunk hash, not the full document hash. |
 | `url_verified` | boolean | Whether the cited URL was verified to resolve to matching content |
 
-A citation MUST carry a resolvable source reference: a non-null `content_url` or `content_id` at the event level. This is what distinguishes a citation from vague attribution - the credit names a source that owner routing (section 7.3) can resolve. The JSON Schema enforces this for `content_cited` events; an association the emitter cannot resolve to a URL or identifier is not reportable as a citation. This is stricter than the application-layer identifier rule that applies to content events generally (section 5.7.5).
+A citation MUST carry a resolvable source reference: a non-null `content_url` or `content_id` at the event level. This is what distinguishes a citation from vague attribution - the credit names a source that owner routing (section 7.3) can resolve. The JSON Schema enforces this for `content_cited` events; an association the emitter cannot resolve to a URL or identifier is not reportable as a citation. This is stricter than the application-layer identifier rule that applies to content events generally (section 5.7.5). `citation_type` is likewise required and schema-enforced; an emitter that cannot classify a citation uses `unclassified` rather than omitting the field.
 
 `media_type` identifies the content medium. Defaults to `text` when absent.
 
@@ -881,7 +888,7 @@ For non-text media, `media_type` and `reproduced_hash` identify the reproduced m
 
 These are the core values. Platforms with additional presentation surfaces MAY use custom string values. Telemetry consumers MUST tolerate unknown `presentation_type` values.
 
-Each presentation event MUST have an `id` and `output_id`. When it presents a citation, `citation_id` references that `content_cited` event's `id`; an uncited presentation omits `citation_id`. Repeated presentations of the same source or output element receive distinct event IDs. This allows a later `content_engaged.presentation_id` to identify the exact surface occurrence rather than matching only by URL.
+Each presentation event MUST have an `id` and `output_id`. When it presents a citation, `citation_id` references that `content_cited` event's `id`, and the two events identify the same content; an uncited presentation omits `citation_id`. Repeated presentations of the same source or output element MUST receive distinct event IDs - event `id` values are unique within a session document. This allows a later `content_engaged.presentation_id` to identify the exact surface occurrence rather than matching only by URL.
 
 When a session includes `content_presented` events but no subsequent `content_engaged` events, the telemetry establishes only that content or a reference was made perceivable and no reported interaction followed. It does not establish human attention. Whether this pattern is meaningful depends on the governing terms. Retrieval remains the only lifecycle stage observable from the CDN edge.
 
@@ -891,7 +898,7 @@ When a session includes `content_presented` events but no subsequent `content_en
 |-------|------|-------------|
 | `engagement_type` | string | Type of interaction (see below) |
 
-The content URL is identified by the event-level `content_url` field (section 5.2), not duplicated in `data`. Every agent-reported engagement MUST carry `presentation_id`, referencing the exact `content_presented.id` on which the action occurred. Matching on URL alone is insufficient because the same source reference can be presented more than once. A destination-reported engagement carries `ctx_token` on its envelope instead: the destination cannot know the presentation UUID, and the telemetry consumer restores the binding from the token at resolution (section 7.4).
+The content URL is identified by the event-level `content_url` field (section 5.2), not duplicated in `data`. Every agent-reported engagement MUST carry `presentation_id`, referencing the exact `content_presented.id` on which the action occurred, and identifies the same content as that presentation (section 5.7.5). Matching on URL alone is insufficient because the same source reference can be presented more than once. A destination-reported engagement carries `ctx_token` on its envelope instead: the destination cannot know the presentation UUID, and the telemetry consumer restores the binding from the token at resolution (section 7.4).
 
 #### Engagement types
 
@@ -906,6 +913,8 @@ The content URL is identified by the event-level `content_url` field (section 5.
 These are the core values. Extensions MAY define additional engagement actions - commerce actions such as directing the agent to purchase a listed item belong in a commerce extension or profile (section 5.3, extension events). Telemetry consumers MUST tolerate unknown `engagement_type` values.
 
 `agent_navigate` is the agent-mediated counterpart of a click: the user reached the source through the agent rather than through a browser. Consumers measuring traffic SHOULD count it alongside `link_click`, distinguishing the two where the commercial agreement does.
+
+An action that touches several presentations at once - a `share` of a response containing three source cards - is one engagement occurrence per presentation shared (section 4.3), each bound to its own `presentation_id`; a surface that shares a single card reports one. An `agent_navigate` to a URL the recipient supplied, which no presentation made perceivable, is not an engagement: it begins with a `content_retrieved` event like any other fetch.
 
 `link_click` is the primary signal for clickthrough rate calculation. Telemetry consumers can derive per-content-owner and aggregate clickthrough rates from `link_click` engagements and link presentations, joining each engagement through `presentation_id` rather than URL alone.
 
@@ -980,7 +989,7 @@ Session documents use `"document_type": "session"`. When `document_type` is abse
 
 For origin-side emitters at Retrieval conformance level, `session_id` MAY be omitted when the content owner has no session context. Telemetry consumers correlate these events with agent-reported sessions using the `content_telemetry_id` field.
 
-For `content_engaged` events emitted from a landing page after a click-out (typically by a content marketplace, affiliate network, or destination site), `session_id` MAY be replaced by a `ctx_token` field that carries an opaque click token issued by the originating agent. This lets a downstream observer report a corroborating engagement event without sharing the session UUID across trust boundaries. An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above. Token issuance, carriage, binding, resolver discovery, and the resolution response are defined in section 7.4.
+For `content_engaged` events emitted from a landing page after a click-out (typically by a content marketplace, affiliate network, or destination site), `session_id` MAY be replaced by a `ctx_token` field that carries an opaque click token issued by the originating agent. This lets a downstream observer report a corroborating engagement event without sharing the session UUID across trust boundaries. An event MUST carry either `session_id` or `ctx_token` at Grounding conformance and above, and an envelope `ctx_token` accompanies `content_engaged` events only: an envelope carrying any other event type carries `session_id`. Token issuance, carriage, binding, resolver discovery, and the resolution response are defined in section 7.4.
 
 The primary schema (`telemetry-session.json`) validates session documents. A standalone event envelope schema (`telemetry-event.json`) validates the event delivery format, and a batch envelope schema (`telemetry-event-batch.json`) validates the event batch format. All three schemas share the `TelemetryEvent` definition.
 
@@ -1047,7 +1056,7 @@ A click-out is the moment content usage becomes traffic the destination can obse
 
 #### 7.4.1 Token issuance
 
-A `ctx_token` is an opaque token minted by the originating agent. Its value MUST match `^ct_[A-Za-z0-9_-]{8,240}$` and MUST NOT encode content, session, or user identifiers recoverable without the issuer's state.
+A `ctx_token` is an opaque token minted by the originating agent. Its value MUST match `^ct_[A-Za-z0-9_-]{16,240}$`, MUST be unguessable - the suffix is drawn from at least 96 bits of cryptographically secure randomness, or is a keyed construction of equivalent strength, so that holding one token gives no way to derive or enumerate another - and MUST NOT encode content, session, or user identifiers recoverable without the issuer's state.
 
 A token MUST be bound to exactly one `content_presented` occurrence at mint time. The same URL presented twice receives two tokens; a token observed on two presentations is malformed issuance and consumers MUST NOT resolve it. Surfaces that route outbound navigation through the agent SHOULD mint per click, additionally binding the token to the resulting `content_engaged` event. Direct-link surfaces mint per presentation; repeated clicks on one presentation then share a token, and are distinguished at resolution by the destination's event timestamps.
 
@@ -1074,7 +1083,7 @@ A telemetry consumer that supports resolution exposes, for a presented token, th
 3. **The contributing sources, gated per owner.** The sources that informed the response the click came from: `content_grounded` events in scope for the engaged presentation's turn (including session-scoped groundings) and that turn's `content_cited` and `content_presented` events, for content other than the clicked content. A contributing owner's events appear only when that owner has opted in to contributing-source disclosure with the resolving consumer; owners without a recorded opt-in are visible only through the counts in the session summary. This is the component that supports multi-citation attribution when the clicked content is not the contributing content - a click through to a commerce destination whose recommendation a publisher's review produced - and it restores the consent-gated role of the v0.1 click manifest (section 12.1), scoped to the click's provenance rather than the whole session.
 4. **An optional privacy-bounded session summary.** Event counts by type and a distinct-source count. Counts, not events, and no content identifiers of owners not disclosed above.
 
-A resolution response MUST NOT include the resolved session's raw `session_id`: the token exists so the session UUID never crosses the trust boundary. Outside the contributing-source component, a resolution response MUST NOT include events for content other than the clicked content; within it, a response MUST NOT include events for an owner without a recorded contributing-source opt-in. Whole-session cross-content detail remains a reporting concern, delivered through publisher-filtered views (section 7.3), not through per-click resolution. A consumer MUST resolve a token only when the issuing agent has opted in to click-token resolution, and the response is gated by the resolved session's `privacy_level`. The mechanisms by which the issuer and contributing-owner opt-ins are recorded are operator-defined; both gates are normative.
+A resolution response MUST NOT include the resolved session's raw `session_id`: the token exists so the session UUID never crosses the trust boundary. Outside the contributing-source component, a resolution response MUST NOT include events for content other than the clicked content; within it, a response MUST NOT include events for an owner without a recorded contributing-source opt-in. Whole-session cross-content detail remains a reporting concern, delivered through publisher-filtered views (section 7.3), not through per-click resolution. A consumer MUST resolve a token only when the issuing agent has opted in to click-token resolution. The response is further gated by the `privacy_level` of the turn the engaged presentation belongs to - the turn named by the presentation's `turn_id`, or the turn in progress at its timestamp: at `minimal` the consumer returns the engagement and the lineage (components 1 and 2) only, withholding the contributing-source component and the session summary; at `intent` and above all four components are available. A resolution response never carries conversation-turn fields at any level. The mechanisms by which the issuer and contributing-owner opt-ins are recorded are operator-defined; all three gates are normative.
 
 A worked resolution response (informative):
 
@@ -1111,11 +1120,13 @@ The response shape above is informative in v1; the constraints in this section a
 
 The agent-authored click `content_engaged` is a session event like any other: it reaches content owners through routing and aggregation (section 7.3), independent of whether the token in the URL survived the redirect chain. A telemetry consumer that provides owner-filtered views MUST include the agent-authored `content_engaged` event in the filtered view of the engaged content's owner, on the same terms as `content_grounded` and `content_cited` events - including the session identifier that owner-scoped delivery carries. The `session_id` prohibition in section 7.4.4 binds token resolution, where the requesting party is authenticated by nothing more than possession of a URL-carried value; it does not bind section 7.3 delivery to an owner whose domain registration the consumer has verified.
 
-This delivery is deliberately redundant with the token path. It notifies the destination owner of the click even when `ctx_token` was stripped in transit; it lets that owner join the click to their own grounded and cited events on `session_id` without calling a resolver; and it lets a party processing owner-scoped streams for both a contributing publisher and a click destination match its clients' events on `session_id` for attribution. The owner's filtered view SHOULD carry the event-level `ctx_token`, so a destination that captured the query parameters at landing can join the URL-channel observation to the server-side event directly. This is not token distribution to contributing owners (the limit recorded in section 7.4.6): only the owner of the clicked content receives the event, and that owner already saw the token in the URL.
+This delivery is deliberately redundant with the token path. It notifies the destination owner of the click even when `ctx_token` was stripped in transit; it lets that owner join the click to their own grounded and cited events on `session_id` without calling a resolver; and it lets a party processing owner-scoped streams for both a contributing publisher and a click destination match its clients' events on `session_id` for attribution. The owner's filtered view SHOULD carry the event-level `ctx_token`, so a destination that captured the query parameters at landing can join the URL-channel observation to the server-side event directly. This is not token distribution to contributing owners (the limit recorded in section 7.4.6): only the owner of the clicked content receives the event, and that owner already saw the token in the URL. Where the clicked content's owner is also the destination, that owner therefore holds both the token from the URL and the session identifier from this delivery: the boundary of section 7.4.4 protects sessions from unregistered holders of a URL, not from the verified owner of the content that was clicked.
 
 #### 7.4.6 Recorded limit: consumer custody
 
 Resolution depends on the telemetry consumer the agent chose, because that consumer holds the session. Grounding and citation events precede the click and cannot carry its later token, and distributing tokens to every contributing content owner after the fact would weaken the privacy boundary this section maintains. Publisher-derived tokens would require a federation and key-management design; that belongs in a later attribution or evidence profile. Core v1 mitigates the dependency with resolver discoverability (7.4.3) and exact click binding (7.4.1).
+
+Token lifetime and requester authentication are likewise not defined in v1: a token resolves for as long as the consumer retains the session, and the resolver authenticates the requester by possession of the token alone (section 7.4.5). A resolution window after issuance, and requester credentials - for example authenticating a destination against the manifest its domain serves (section 8) - belong to the evidence profile, together with the federation design above.
 
 ## 8. Manifest
 
@@ -1138,7 +1149,7 @@ https://example.com/agents/search/.well-known/content-telemetry.json  # operated
 
 Each manifest is self-contained at its own well-known URL.
 
-Trust derives from TLS and DNS control of the domain. Manifests are unsigned in v0.1.
+Trust derives from TLS and DNS control of the domain. Manifests are unsigned in v1 (section 8.9).
 
 ### 8.2 Schema
 
@@ -1147,7 +1158,7 @@ Machine-readable schema: [`./manifest.json`](./manifest.json) (JSON Schema draft
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `schema_version` | string | Yes | Manifest schema version. v1 emitters MUST use `"1.0"`. |
-| `id` | string | Yes | The manifest's canonical URL (e.g. `https://example.com/.well-known/content-telemetry.json`). |
+| `id` | string | Yes | The manifest's canonical `https://` URL, ending in `/.well-known/content-telemetry.json` (e.g. `https://example.com/.well-known/content-telemetry.json`); the schema rejects other schemes and locations (section 8.1). |
 | `roles` | string[] | Yes | One or more of `content_owner`, `agent`, `platform`. |
 | `operator` | object | Yes | Operating organisation (see 8.3). |
 | `keys` | object[] | No | Public keys for signing telemetry events (see 8.4). |
@@ -1167,12 +1178,12 @@ A manifest MAY declare multiple roles (e.g. `["content_owner", "agent"]`). A mor
 
 ### 8.4 Keys
 
-Public keys used to sign telemetry events emitted by this participant. Per-event signing is informational in v0.1; consumers MAY verify signatures but are not required to.
+Public keys used to sign telemetry events emitted by this participant. Per-event signing remains informational in v1; consumers MAY verify signatures but are not required to.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `id` | string | Yes | Key identifier, unique within the manifest. |
-| `type` | string | Yes | Key type. v0.1: `Ed25519`. |
+| `type` | string | Yes | Key type. v1 defines `Ed25519` only. |
 | `publicKey` | string | Yes | Multibase-encoded public key (multicodec prefix, base58btc - the same format as `did:key`). |
 | `expires` | datetime | No | ISO 8601 expiry. |
 
@@ -1180,7 +1191,7 @@ Public keys used to sign telemetry events emitted by this participant. Per-event
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `endpoint` | string | Yes | HTTPS URL. For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the content owner's content. |
+| `endpoint` | string | Yes | HTTPS URL (schema-enforced). For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the content owner's content. |
 | `conformance_level` | string | No | Conformance level advertised by this participant's own emitter(s). One of `retrieval`, `grounding`, `citation` (see 5.7). |
 | `ctx_resolution` | string | No | HTTPS URL of the click-token resolution endpoint operated by or for this participant (see 7.4). Valid on `agent` and `platform` manifests. |
 | `coverage` | object | No | Per-event-type coverage declaration: a map from event type to `{ "mode": …, "terms_ref": … }`, where `mode` is one of `complete`, `sampled`, `aggregated`, `selected` (see 5.7.6) and `terms_ref` optionally names the terms stating the rule or condition. |
@@ -1193,9 +1204,9 @@ Public keys used to sign telemetry events emitted by this participant. Per-event
 
 The `domains` array MAY appear only on manifests served from the domain root (`https://<domain>/.well-known/content-telemetry.json`). Manifests under path prefixes MUST NOT include `domains`.
 
-In v0.1, every entry in `domains` MUST be self-validating: either the manifest's own host, or a subdomain of it (literal `news.example.com` or wildcard `*.example.com`). Control of the apex - proven by serving the manifest at the apex over TLS - implies DNS control of subdomains, so no further validation is needed. A manifest containing entries that are not subdomains of its own host is malformed.
+In v1, every entry in `domains` MUST be self-validating: either the manifest's own host, or a subdomain of it (literal `news.example.com` or wildcard `*.example.com`). Control of the apex - proven by serving the manifest at the apex over TLS - implies DNS control of subdomains, so no further validation is needed. A manifest containing entries that are not subdomains of its own host is malformed.
 
-This keeps the v0.1 protocol fully decentralised: every manifest is a self-contained credential, validated by TLS plus the well-known location, with no dependency on consumer-side validation state or any external registry. Cross-apex claims (one operator unifying several unrelated apex domains in a single manifest) are deferred to a later version.
+This keeps the v1 protocol fully decentralised: every manifest is a self-contained credential, validated by TLS plus the well-known location, with no dependency on consumer-side validation state or any external registry. Cross-apex claims (one operator unifying several unrelated apex domains in a single manifest) are deferred to a later version.
 
 ### 8.7 Consumer behaviour
 
@@ -1203,10 +1214,10 @@ When resolving a manifest from `manifest_ref`, a `content_url` domain, or any ot
 
 - **404 or network error.** Treat the participant as unverified. Do not reject telemetry events on this basis alone.
 - **Invalid JSON or schema validation failure.** Reject the manifest. Treat the participant as unverified.
-- **Unknown `schema_version`.** During the v0.x preview period, consumers MUST accept only the exact same minor version. The semver-major compatibility rule applies from 1.0.0 onward (see section 12).
+- **Unknown `schema_version`.** Manifests follow the same rule as telemetry documents (section 5.7.4): accept any `1.x` the consumer implements, validating against that minor's schema, and reject `0.x` manifests. During the v0.x preview period consumers accepted only the exact same minor version.
 - **Duplicate `keys[].id`.** Reject the manifest.
 - **`domains` entry that is not the manifest's host or a subdomain of it.** Reject the manifest as malformed (see 8.6).
-- **Missing `keys` on a manifest referenced by `manifest_ref`.** Not an error in v0.1, since signing is informational.
+- **Missing `keys` on a manifest referenced by `manifest_ref`.** Not an error in v1, since signing is informational.
 
 Consumers SHOULD cache resolved manifests respecting the response's `Cache-Control` headers. Manifest hosts SHOULD set `Cache-Control: max-age=3600` during onboarding and `max-age=86400` steady-state.
 
@@ -1280,7 +1291,7 @@ Consumers SHOULD cache resolved manifests respecting the response's `Cache-Contr
 
 The two manifests live independently at distinct well-known URLs. The content-owner manifest's `domains` and `telemetry` apply to publisher.com's content; the agent manifest's `keys` and `telemetry` apply to events emitted by the assistant.
 
-### 8.9 Out of scope for v0.1
+### 8.9 Out of scope for v1
 
 The following are deferred to later versions:
 
@@ -1290,7 +1301,7 @@ The following are deferred to later versions:
 - Deployment context, purpose, brand affiliation
 - Revocation registries
 - Key rotation procedures beyond the `expires` field
-- `did:web` compatibility (the `id` field uses the manifest URL in v0.1)
+- `did:web` compatibility (the `id` field uses the manifest URL in v1)
 - Cross-apex claims (one operator unifying several unrelated apex domains in a single manifest)
 
 ---
@@ -1308,6 +1319,8 @@ Emitters SHOULD:
 Hashing does not anonymise a value drawn from a space small enough to enumerate. The entire IPv4 address space can be hashed and compared against a candidate digest on commodity hardware, so a hashed IP address is a pseudonym rather than an anonymous value and should be treated as personal data. Version 0.1 defined an `ip_hash` field in the edge and origin data profiles (sections 6.2 and 6.3). Version 1 withdraws it, and emitters MUST NOT populate it.
 
 The schemas cannot enforce this v1 migration rule: event `data` accepts additional properties by design, so `ip_hash` would otherwise validate as an ordinary extension. The conformance suite therefore checks this specific prohibition at the application layer. This does not establish a general registry of withdrawn extension names.
+
+`privacy_level` gates the named conversation-turn fields of section 5.5 and nothing else. Extension fields in `turn` or `data`, content identifiers and URLs, `license_ref`, `terms_ref`, `output_id`, `turn_id` and every other opaque string pass through at every level, so their contents are the emitter's responsibility: an emitter MUST NOT use them to carry the end user's identity, or the query and response text that the declared level withholds, and SHOULD apply the minimisation guidance above to them as it does to the named fields.
 
 ### 9.2 Recommended levels
 
@@ -1452,6 +1465,24 @@ exists and `citation_id` when the presentation carries a citation. For every
 event. Do not migrate clicks by matching URL alone: repeated presentations of the
 same URL are distinct occurrences.
 
+V1 requires `data.citation_type` on every `content_cited` event and `data.scope`
+on every `content_grounded` event; both are schema-enforced. A v0.1 emitter that
+omitted them migrates a citation it cannot classify with `citation_type:
+unclassified`, and a grounding whose scope it did not record with `scope: turn`
+where the event carries a `turn_id` and `scope: session` otherwise. V1 also
+rejects a `content_cited` or `content_reproduced` event whose `content_url` and
+`content_id` are both absent or null (sections 6.5, 6.6): a v0.1 citation with no
+resolvable reference is not migrated as a citation.
+
+V1 withdraws `ip_hash` from the edge and origin retrieval profiles (section 9.1).
+Emitters remove the field and MUST NOT populate it; `asn`, `asn_org` and `country`
+remain. V1 also requires `source_role` on every `content_retrieved` event
+(section 5.7.1); preview emitters that omitted it add the role they report under.
+
+`license_ref` keeps its wire form but no longer asserts that the use was licensed
+(section 5.2.3): a consumer that read a v0.1 `license_ref` as verification of
+entitlement now reads it as the emitter's claim about which grant applied.
+
 V1 adds `content_reproduced`. The v0.1 preview has no equivalent: verbatim reuse
 was inferable only from `direct_quote` citations, which conflate the credit with
 the material and cannot record an uncredited copy. When migrating historical
@@ -1459,14 +1490,16 @@ v0.1 data, consumers MAY treat a `direct_quote` citation as an implied
 reproduction of its excerpt. V1 emitters record reproduction explicitly and
 SHOULD NOT rely on that inference.
 
-V1 grounding fingerprints report detection only. A preview implementation that
-used `data.content_fingerprint.preserved_in_output` removes that field during
-migration. When its value was `true` and the historical record contains enough
-information to populate every required `content_reproduced` field, the
-implementation MAY also create the corresponding reproduction event. It MUST
-NOT synthesize a reproduction event from `false` or incomplete historical data.
-A grounding event MAY retain `content_fingerprint.scheme`, `detected`, and a
-scheme-defined `value`.
+V1 grounding fingerprints report detection only. The published v0.1 preview
+defined no `content_fingerprint` object; the object, and a
+`preserved_in_output` field within it, appeared only on the pre-release
+`v1-draft` line. An implementation built against that draft removes
+`preserved_in_output` during migration. When its value was `true` and the
+historical record contains enough information to populate every required
+`content_reproduced` field, the implementation MAY also create the corresponding
+reproduction event. It MUST NOT synthesize a reproduction event from `false` or
+incomplete historical data. A grounding event MAY retain
+`content_fingerprint.scheme`, `detected`, and a scheme-defined `value`.
 
 V1 narrows `ctx_token` resolution. The v0.1 click manifest returned every
 source that informed the resolved session, gated by per-owner opt-in; the v1
@@ -1476,19 +1509,20 @@ per-owner opt-in gate - scoped to the turn the click came from rather than
 the whole session - and at most a count-based session summary. Consumers
 implementing v0.1 resolution narrow the contributing-source scope accordingly
 and MUST NOT return events for owners without a recorded opt-in. Token values
-gain the `ct_` pattern; presentation binding moves from the URL-carried
-`presentation_id` a destination could never legitimately know to issuer state
-restored at resolution.
+gain the `ct_` pattern and the unguessability rule of section 7.4.1. The binding
+from a token to the presentation it was minted for is issuer state: v0.1 defined
+no `presentation_id`, and v1 never places one in a URL; a destination reports
+the token, and the consumer restores the binding at resolution.
 
 V1 tightens occurrence boundaries (section 4.3). Each core event now has a stated occurrence and cardinality: retrieval per completed fetch (a cache serve is not a retrieval), grounding per distinct content item per declared scope (chunk-level events deduplicate to one occurrence by content identity), reproduction per source item per output element, presentation per rendering occurrence, engagement per observed action. Preview emitters that emitted per chunk, per passage, or re-emitted `content_retrieved` on cache serves remain schema-valid but SHOULD re-map to the stated boundaries; consumers comparing preview and v1 volumes should expect counts to shift where emitters previously chose finer or coarser units. Coverage becomes an explicit declaration (section 5.7.6) rather than an implication of conformance level. Session-scoped extension metadata belongs in the session-level `data` container (section 5.1.3); custom top-level siblings of `events`, accepted by the preview schema, are undefined.
 
-Preview versions (0.x) use two-component version numbers. From 1.0.0 onward, versions follow [semantic versioning](https://semver.org/):
+Version numbers are `major.minor`, and a document declares the version it was produced under in `schema_version`. From 1.0 onward:
 
-- **Major** (1.0.0 → 2.0.0) - breaking changes to required fields
-- **Minor** (1.0.0 → 1.1.0) - new optional fields, new event types
-- **Patch** (1.0.0 → 1.0.1) - clarifications
+- **Major** (1.0 → 2.0) - breaking changes to required fields or to the meaning of an event
+- **Minor** (1.0 → 1.1) - new optional fields and new event types; each minor version publishes its own schemas
+- **Patch** - clarifications and errata to prose, examples and fixtures that change no field or constraint; a patch does not change `schema_version`
 
-From 1.0.0 onward, consumers SHOULD accept sessions with any compatible minor version (same major version). During the preview period (0.x) the stricter rule in section 5.7.4 applies: a consumer accepts only the exact same minor version (a 0.1 consumer accepts 0.1 only).
+From 1.0 onward, consumers accept documents with any compatible minor version (same major version) as described in section 5.7.4. During the preview period (0.x) the stricter rule applied: a consumer accepted only the exact same minor version (a 0.1 consumer accepts 0.1 only).
 
 ## Annex A (normative): JSON Schema
 
@@ -1820,3 +1854,113 @@ The same turn from B.3 at `minimal` privacy. No intent, no topics, no platform m
 ```
 
 Compare with the `intent` version in B.3: `query_intent`, `topics`, `response_type`, `response_mode`, and `ad_rendered` are all absent.
+
+### B.5 Multi-owner catalogue under one agreement
+
+A marketplace intermediary delivers content from many publishers under a single agreement. `content_scope` identifies the agreement, and is the same for every session reported under it; content owner resolution is per event, from each event's `content_url` domain or registered `content_id` prefix (section 7.3). One session, two owners, each event resolving to its own owner.
+
+```json
+{
+  "schema_version": "1.0",
+  "session_id": "990e8400-e29b-41d4-a716-446655440500",
+  "agent_id": "research-assistant-v5",
+  "content_scope": "marketplace-agreement-2026-017",
+  "manifest_ref": "https://assistant.example.com/.well-known/content-telemetry.json",
+  "started_at": "2026-08-20T09:00:00Z",
+  "ended_at": "2026-08-20T09:00:09Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-08-20T09:00:00Z",
+      "turn_id": "1",
+      "turn": { "privacy_level": "intent", "query_intent": "comparison", "topics": ["electric vehicles", "charging"] }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-20T09:00:01Z",
+      "source_role": "index",
+      "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440501",
+      "content_url": "https://www.autoreview.example/ev/charging-networks-2026",
+      "content_id": "mkt:autoreview:88213",
+      "license_ref": "agreement-2026-017:autoreview",
+      "data": { "media_type": "text", "content_depth": "full" }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-20T09:00:01Z",
+      "source_role": "index",
+      "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440502",
+      "content_id": "mkt:gridnews:5520",
+      "license_ref": "agreement-2026-017:gridnews",
+      "data": { "media_type": "text", "content_depth": "full" }
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T09:00:02Z",
+      "turn_id": "1",
+      "content_url": "https://www.autoreview.example/ev/charging-networks-2026",
+      "content_id": "mkt:autoreview:88213",
+      "data": { "scope": "turn", "cached": false, "provenance": "third_party_sourced", "chars_ingested": 11200 }
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T09:00:02Z",
+      "turn_id": "1",
+      "content_id": "mkt:gridnews:5520",
+      "data": { "scope": "turn", "cached": false, "provenance": "third_party_sourced", "chars_ingested": 6400 }
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440503",
+      "type": "content_cited",
+      "timestamp": "2026-08-20T09:00:06Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:networks:1",
+      "content_url": "https://www.autoreview.example/ev/charging-networks-2026",
+      "content_id": "mkt:autoreview:88213",
+      "data": { "citation_type": "paraphrase", "position": "primary" }
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440504",
+      "type": "content_cited",
+      "timestamp": "2026-08-20T09:00:06Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:tariffs:1",
+      "content_id": "mkt:gridnews:5520",
+      "data": { "citation_type": "reference", "position": "supporting" }
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440505",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T09:00:07Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:networks:1",
+      "citation_id": "990e8400-e29b-41d4-a716-446655440503",
+      "content_url": "https://www.autoreview.example/ev/charging-networks-2026",
+      "content_id": "mkt:autoreview:88213",
+      "data": { "presentation_kind": "source_reference", "presentation_type": "link" }
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440506",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T09:00:07Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:tariffs:1",
+      "citation_id": "990e8400-e29b-41d4-a716-446655440504",
+      "content_id": "mkt:gridnews:5520",
+      "data": { "presentation_kind": "source_reference", "presentation_type": "card" }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-08-20T09:00:09Z",
+      "turn_id": "1",
+      "turn": { "privacy_level": "intent", "response_type": "comparison", "response_mode": "standard", "response_tokens": 410 }
+    }
+  ]
+}
+```
+
+The telemetry consumer resolves `autoreview.example` by domain registration and the `mkt:gridnews:` prefix by identifier registration, and produces two owner-filtered views: AutoReview sees its retrieval, grounding, citation and link presentation; GridNews sees its own four events and nothing of AutoReview's. Neither view carries the other owner's identifiers, and both carry the shared `content_scope` so the marketplace can reconcile the session against the agreement. The second retrieval has no `content_url` at all - marketplace API content with no canonical URL - and resolves by `content_id` alone.

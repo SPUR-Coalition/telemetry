@@ -1,0 +1,56 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: one event-level ctx_token appears on engagements bound to two different presentations. A token is minted for exactly one presentation occurrence (section 7.4.1).",
+  "_expected_error": "appears on engagements bound to two presentations",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440640",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440602",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T10:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440604",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T10:00:05Z",
+      "turn_id": "1",
+      "output_id": "response:2",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T10:00:06Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440602",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "engagement_type": "link_click"
+      },
+      "ctx_token": "ct_5d1c9e4b2a7f8036"
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T10:00:07Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440604",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "engagement_type": "link_click"
+      },
+      "ctx_token": "ct_5d1c9e4b2a7f8036"
+    }
+  ]
+}

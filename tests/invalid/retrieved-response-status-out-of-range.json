@@ -1,0 +1,19 @@
+{
+  "_test_description": "Edge retrieval with response_status 999, outside the HTTP status range 100-599 (section 6.2).",
+  "_expected_error": "/events/0/data/response_status 999 is greater than the maximum of 599",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440623",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-20T10:00:01Z",
+      "source_role": "edge",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "response_status": 999
+      }
+    }
+  ]
+}

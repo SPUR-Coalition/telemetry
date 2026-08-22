@@ -1,6 +1,6 @@
 {
   "_test_description": "Standalone event envelope (document_type 'event') with no event field. Fails the envelope schema, which requires event.",
-  "_expected_error": "'event' is a required property",
+  "_expected_error": "/ 'event' is a required property",
   "document_type": "event",
   "schema_version": "1.0",
   "session_id": "770e8400-e29b-41d4-a716-446655440010"

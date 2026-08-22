@@ -1,0 +1,22 @@
+{
+  "_test_description": "content_cited with an empty output_id. output_id is an opaque identifier and MUST be non-empty (section 5.2).",
+  "_expected_error": "/events/0/output_id '' should be non-empty",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440620",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440601",
+      "type": "content_cited",
+      "timestamp": "2026-08-20T10:00:03Z",
+      "turn_id": "1",
+      "output_id": "",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "citation_type": "reference",
+        "position": "primary"
+      }
+    }
+  ]
+}

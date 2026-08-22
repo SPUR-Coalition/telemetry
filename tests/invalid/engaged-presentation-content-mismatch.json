@@ -1,0 +1,32 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: content_engaged references a presentation of different content. The engagement identifies the same content as the presentation it acted on (sections 5.7.5, 6.8).",
+  "_expected_error": "content_engaged references presentation",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440636",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440602",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T10:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-review.com/headphones/best-noise-cancelling",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T10:00:06Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440602",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "engagement_type": "link_click"
+      }
+    }
+  ]
+}

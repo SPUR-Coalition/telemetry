@@ -1,0 +1,10 @@
+{
+  "_test_description": "Manifest with an empty roles array; at least one role is required (section 8.2).",
+  "_expected_error": "/roles [] should be non-empty",
+  "schema_version": "1.0",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": [],
+  "operator": {
+    "name": "Example Media"
+  }
+}

@@ -1,4 +1,5 @@
 {
+  "_test_description": "Standalone grounding of a third-party-sourced representation that the agent had cached (cached true is unconstrained for third_party_sourced, section 6.4), identified by an ISCC content_id alongside the URL, with an iscc fingerprint detection.",
   "document_type": "event",
   "schema_version": "1.0",
   "session_id": "550e8400-e29b-41d4-a716-446655440000",

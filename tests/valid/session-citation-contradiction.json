@@ -1,0 +1,79 @@
+{
+  "_test_description": "Negative attribution and unclassified values: the response explicitly disagrees with a retrieved source (citation_type contradiction, section 6.5), a second association the agent could not classify carries citation_type and position unclassified, the grounding carries a content_version (ETag), and the turn ran in deep_research mode.",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440651",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-08-20T10:00:05Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "fact_check",
+        "topics": [
+          "battery recycling"
+        ]
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-20T10:00:01Z",
+      "source_role": "agent",
+      "content_url": "https://www.example-news.com/energy/battery-recycling-claims",
+      "data": {
+        "media_type": "text"
+      }
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T10:00:02Z",
+      "content_url": "https://www.example-news.com/energy/battery-recycling-claims",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "chars_ingested": 5100,
+        "content_version": "W/\"a1b2c3\"",
+        "content_last_modified": "2026-08-19T07:30:00Z"
+      }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440601",
+      "type": "content_cited",
+      "timestamp": "2026-08-20T10:00:03Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/energy/battery-recycling-claims",
+      "data": {
+        "citation_type": "contradiction",
+        "position": "primary"
+      },
+      "output_element_id": "answer:claim:1"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440604",
+      "type": "content_cited",
+      "timestamp": "2026-08-20T10:00:03Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/energy/battery-recycling-claims",
+      "data": {
+        "citation_type": "unclassified",
+        "position": "unclassified"
+      },
+      "output_element_id": "answer:aside:1"
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-08-20T10:00:05Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "response_type": "fact_check",
+        "response_mode": "deep_research",
+        "response_tokens": 900
+      }
+    }
+  ]
+}

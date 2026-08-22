@@ -1,0 +1,18 @@
+{
+  "_test_description": "Manifest key without the required id (section 8.4).",
+  "_expected_error": "/keys/0 'id' is a required property",
+  "schema_version": "1.0",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": [
+    "agent"
+  ],
+  "operator": {
+    "name": "Example Media"
+  },
+  "keys": [
+    {
+      "type": "Ed25519",
+      "publicKey": "z6Mk"
+    }
+  ]
+}

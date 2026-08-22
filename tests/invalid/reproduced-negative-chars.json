@@ -1,6 +1,6 @@
 {
   "_test_description": "content_reproduced with a negative reproduced_chars. The reproduced span length is a Unicode code point count and cannot be negative (section 6.6); the schema requires a minimum of 0.",
-  "_expected_error": "reproduced_chars -412 is less than the minimum",
+  "_expected_error": "/events/0/data/reproduced_chars -412 is less than the minimum of 0",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440211",
   "started_at": "2026-08-05T10:10:00Z",

@@ -1,6 +1,6 @@
 {
   "_test_description": "content_presented event with an event id and presentation data but no output_id. output_id is required on presentation events so presentation can be correlated with the output artifact it delivers (section 6.7).",
-  "_expected_error": "'output_id' is a required property",
+  "_expected_error": "/events/0 'output_id' is a required property",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440201",
   "started_at": "2026-08-05T09:10:00Z",

@@ -1,5 +1,5 @@
 {
-  "_test_description": "Bare minimum conforming session: schema_version, session_id, started_at, and one event with type and timestamp.",
+  "_test_description": "Bare minimum conforming session: schema_version, session_id, started_at, and one content_retrieved event with type, timestamp, source_role and a content_url.",
   "schema_version": "1.0",
   "session_id": "550e8400-e29b-41d4-a716-446655440000",
   "started_at": "2026-03-28T10:00:00Z",
@@ -7,6 +7,7 @@
     {
       "type": "content_retrieved",
       "timestamp": "2026-03-28T10:00:01Z",
+      "source_role": "agent",
       "content_url": "https://example.com/article/getting-started"
     }
   ]

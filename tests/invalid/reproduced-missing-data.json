@@ -1,0 +1,18 @@
+{
+  "_test_description": "content_reproduced with no data object. reproduction_type is required, so data itself is required (section 6.6).",
+  "_expected_error": "/events/0 'data' is a required property",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440616",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440603",
+      "type": "content_reproduced",
+      "timestamp": "2026-08-20T10:00:03Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis"
+    }
+  ]
+}

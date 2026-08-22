@@ -1,6 +1,6 @@
 {
   "_test_description": "content_grounded with a negative chars_ingested. Ingestion counts are Unicode code point counts and cannot be negative (section 6.4); the schema requires a minimum of 0.",
-  "_expected_error": "chars_ingested -7200 is less than the minimum",
+  "_expected_error": "/events/0/data/chars_ingested -7200 is less than the minimum of 0",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440210",
   "started_at": "2026-08-05T10:00:00Z",

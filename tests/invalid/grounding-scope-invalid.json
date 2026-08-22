@@ -1,0 +1,19 @@
+{
+  "_test_description": "content_grounded with scope 'document'. scope is session or turn only (section 6.4).",
+  "_expected_error": "/events/0/data/scope 'document' is not one of ['session', 'turn']",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440604",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T10:00:02Z",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "scope": "document",
+        "cached": false
+      }
+    }
+  ]
+}

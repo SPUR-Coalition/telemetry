@@ -1,0 +1,33 @@
+{
+  "_test_description": "Agent-reported content_engaged whose event-level ctx_token is shorter than the 16-character minimum (section 7.4.1). Tokens MUST be unguessable; the pattern enforces the length floor.",
+  "_expected_error": "/events/1/ctx_token 'ct_short' does not match '^ct_[A-Za-z0-9_-]{16,240}$'",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440618",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440602",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T10:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T10:00:06Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440602",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "engagement_type": "link_click"
+      },
+      "ctx_token": "ct_short"
+    }
+  ]
+}

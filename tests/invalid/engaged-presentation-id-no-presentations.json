@@ -1,0 +1,30 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: content_engaged carries a presentation_id in a session with no content_presented events at all (section 6.8).",
+  "_expected_error": "does not match any content_presented event id",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440639",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T10:00:02Z",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "chars_ingested": 4200
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T10:00:06Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440602",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "engagement_type": "link_click"
+      }
+    }
+  ]
+}

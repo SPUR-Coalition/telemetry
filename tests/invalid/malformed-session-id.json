@@ -1,0 +1,16 @@
+{
+  "_test_description": "Session document whose session_id is not a UUID (section 5.1 format: uuid).",
+  "_expected_error": "/session_id 'session-42' is not a 'uuid'",
+  "schema_version": "1.0",
+  "session_id": "session-42",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-20T10:00:01Z",
+      "source_role": "agent",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis"
+    }
+  ]
+}

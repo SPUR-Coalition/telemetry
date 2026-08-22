@@ -14,7 +14,8 @@
     "id": {
       "type": "string",
       "format": "uri",
-      "description": "The manifest's canonical URL, e.g. https://example.com/.well-known/content-telemetry.json. (Section 8.2)"
+      "pattern": "^https://[^?#]+/\\.well-known/content-telemetry\\.json$",
+      "description": "The manifest's canonical https URL, ending in /.well-known/content-telemetry.json, e.g. https://example.com/.well-known/content-telemetry.json. (Section 8.2)"
     },
     "roles": {
       "type": "array",
@@ -76,7 +77,8 @@
         "endpoint": {
           "type": "string",
           "format": "uri",
-          "description": "HTTPS URL. For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the owner's content. (Section 8.5)"
+          "pattern": "^https://",
+          "description": "HTTPS URL (schema-enforced). For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the owner's content. (Section 8.5)"
         },
         "conformance_level": {
           "type": "string",
@@ -87,7 +89,7 @@
           "type": "string",
           "format": "uri",
           "pattern": "^https://",
-          "description": "HTTPS URL of the click-token resolution endpoint operated by or for this participant. Valid on agent and platform manifests. Destinations resolve ctx_iss to this manifest and present the token here. (Section 7.4)"
+          "description": "HTTPS URL of the click-token resolution endpoint operated by or for this participant. Valid on agent and platform manifests (enforced at the application layer). Destinations resolve ctx_iss to this manifest and present the token here. (Section 7.4)"
         },
         "coverage": {
           "type": "object",
@@ -116,7 +118,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Domains the participant claims authority over. MAY appear only on root manifests; each entry MUST be the manifest's own host or a subdomain of it (literal or wildcard). (Section 8.6)"
+      "description": "Domains the participant claims authority over. MAY appear only on root manifests (enforced at the application layer); each entry MUST be the manifest's own host or a subdomain of it (literal or wildcard). (Section 8.6)"
     }
   }
 }

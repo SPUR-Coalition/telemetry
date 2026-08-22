@@ -20,3 +20,5 @@ jobs:
         run: uv run --with "jsonschema[format-nongpl]" python tests/validate.py
       - name: Validate worked examples in the spec
         run: uv run --with "jsonschema[format-nongpl]" python tests/check_examples.py
+      - name: Replay suite-weakening mutations
+        run: uv run --with "jsonschema[format-nongpl]" python tests/mutation_smoke.py

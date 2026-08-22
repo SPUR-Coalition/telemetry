@@ -1,0 +1,15 @@
+{
+  "_test_description": "Manifest whose telemetry block lacks the required endpoint (section 8.5).",
+  "_expected_error": "/telemetry 'endpoint' is a required property",
+  "schema_version": "1.0",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": [
+    "content_owner"
+  ],
+  "operator": {
+    "name": "Example Media"
+  },
+  "telemetry": {
+    "conformance_level": "retrieval"
+  }
+}

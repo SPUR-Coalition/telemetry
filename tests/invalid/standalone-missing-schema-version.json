@@ -1,0 +1,12 @@
+{
+  "_test_description": "Standalone event envelope missing schema_version, which the envelope schema requires.",
+  "_expected_error": "/ 'schema_version' is a required property",
+  "document_type": "event",
+  "session_id": "660e8400-e29b-41d4-a716-446655440626",
+  "event": {
+    "type": "content_retrieved",
+    "timestamp": "2026-08-20T10:00:01Z",
+    "source_role": "agent",
+    "content_url": "https://www.example-news.com/economy/rate-decision-analysis"
+  }
+}

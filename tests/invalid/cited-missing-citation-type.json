@@ -1,6 +1,6 @@
 {
   "_test_description": "content_cited must classify how content was used in the response: data.citation_type is required. Emitters that cannot confidently classify use citation_type 'unclassified' rather than omitting the field (section 6.5).",
-  "_expected_error": "'citation_type' is a required property",
+  "_expected_error": "/events/0/data 'citation_type' is a required property",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440204",
   "started_at": "2026-08-05T09:30:00Z",

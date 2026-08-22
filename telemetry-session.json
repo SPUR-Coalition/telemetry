@@ -42,6 +42,7 @@
     },
     "manifest_ref": {
       "type": ["string", "null"],
+      "format": "uri",
       "description": "Manifest reference - the URL of a manifest at /.well-known/content-telemetry.json. See section 8."
     },
     "started_at": {
@@ -112,7 +113,7 @@
         "id": {
           "type": "string",
           "format": "uuid",
-          "description": "Unique event identifier"
+          "description": "Unique event identifier; distinct within a session document (section 6.7)"
         },
         "type": {
           "$ref": "#/$defs/EventType"
@@ -148,12 +149,12 @@
         },
         "ctx_token": {
           "type": "string",
-          "pattern": "^ct_[A-Za-z0-9_-]{8,240}$",
-          "description": "The click token the agent minted for this engagement's presentation, recorded so the consumer can join destination-reported events to it. Valid only on content_engaged events. See section 7.4."
+          "pattern": "^ct_[A-Za-z0-9_-]{16,240}$",
+          "description": "The click token the agent minted for this engagement's presentation, recorded so the consumer can join destination-reported events to it. Valid only on content_engaged events (enforced at the application layer, section 5.7.5). Unguessable, at least 16 characters after the ct_ prefix. See section 7.4."
         },
         "source_role": {
           "$ref": "#/$defs/SourceRole",
-          "description": "Who is reporting this event (see section 4.4). SHOULD be set on content_retrieved events."
+          "description": "Who is reporting this event (see section 4.4). MUST be set on content_retrieved events (sections 5.2.2, 5.7.1; enforced at the application layer)."
         },
         "content_telemetry_id": {
           "type": ["string", "null"],
@@ -194,10 +195,12 @@
             "required": ["type"]
           },
           "then": {
+            "required": ["data"],
             "properties": {
               "data": {
+                "required": ["scope"],
                 "properties": {
-                  "scope": { "$ref": "#/$defs/GroundingScope" },
+                  "scope": { "$ref": "#/$defs/GroundingScope", "description": "REQUIRED on every content_grounded event: the occurrence boundary and every counting model depend on it (sections 4.3, 6.4, 10)." },
                   "cached": { "type": "boolean" },
                   "provenance": { "$ref": "#/$defs/SourceProvenance" },
                   "chars_ingested": { "type": "integer", "minimum": 0, "description": "Unicode code points in the exact text placed in the generation context, without normalising solely for counting. Portable across emitters; preferred over tokens_ingested (section 6.4)." },
@@ -310,6 +313,7 @@
               "data": {
                 "properties": {
                   "media_type": { "$ref": "#/$defs/MediaType" },
+                  "content_depth": { "type": "string", "description": "Depth of the content record reached: metadata, abstract, full. Open vocabulary; consumers MUST tolerate unknown values (section 6.1)." },
                   "user_agent": { "type": "string" },
                   "bot_category": { "type": "string", "description": "Edge platform's bot classification. Recommended values: training, inference, search" },
                   "bot_name": { "type": "string", "description": "Recognised bot family parsed from the User-Agent (e.g., Claude-User, GPTBot, Perplexity-User). Stable across product variants within a vendor." },

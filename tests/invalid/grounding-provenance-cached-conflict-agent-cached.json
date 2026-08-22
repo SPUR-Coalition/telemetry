@@ -1,0 +1,20 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: grounding declares agent_cached with cached false. agent_cached requires cached true (section 6.4).",
+  "_expected_error": "agent_cached does not carry cached true",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440641",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T10:00:02Z",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "provenance": "agent_cached"
+      }
+    }
+  ]
+}

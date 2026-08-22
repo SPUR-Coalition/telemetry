@@ -11,6 +11,8 @@ against the matching schema:
     event batch       -> telemetry-event-batch.json
     manifest          -> manifest.json
 
+and against the application-layer conformance rules of validate.py.
+
 A complete bare event object (carrying the required `type` and `timestamp`) is
 validated against the TelemetryEvent definition in telemetry-session.json.
 Genuine fragments (a single turn, a one-field snippet, an event elided below
@@ -54,6 +56,10 @@ EVENT_DEF = "telemetry-session.json#/$defs/TelemetryEvent"
 
 REPO = Path(__file__).resolve().parent.parent
 SOURCES = [REPO / "SPECIFICATION.md", REPO / "README.md"]
+
+# The application-layer conformance rules live in validate.py (same directory).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate import check_application_layer, check_manifest_application_layer  # noqa: E402
 FENCE = re.compile(r"```json\n(.*?)\n```", re.DOTALL)
 
 
@@ -152,12 +158,22 @@ def main():
         checked += 1
         by_schema[schema_name] = by_schema.get(schema_name, 0) + 1
         errors = sorted(validators[schema_name].iter_errors(doc), key=lambda e: e.path)
-        if errors:
+        # Worked examples must also satisfy the application-layer rules; a bare
+        # event is checked as the sole member of a session.
+        if schema_name == "manifest.json":
+            violations = check_manifest_application_layer(doc)
+        elif schema_name == EVENT_DEF:
+            violations = check_application_layer({"events": [doc]})
+        else:
+            violations = check_application_layer(doc)
+        if errors or violations:
             failed += 1
             print(f"  FAIL  {loc}  (against {schema_name})")
             for e in errors[:3]:
                 path = "/".join(str(p) for p in e.path) or "(root)"
                 print(f"        {path}: {e.message}")
+            for v in violations[:3]:
+                print(f"        application-layer: {v}")
         else:
             print(f"  PASS  {loc}  ({schema_name})")
 

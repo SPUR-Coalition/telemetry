@@ -1,8 +1,12 @@
 {
   "_test_description": "Manifest with a role value 'publisher' that is not in the roles enum (content_owner, agent, platform). Fails JSON Schema validation.",
-  "_expected_error": "'publisher' is not one of",
+  "_expected_error": "/roles/0 'publisher' is not one of ['content_owner', 'agent', 'platform']",
   "schema_version": "1.0",
   "id": "https://example.com/.well-known/content-telemetry.json",
-  "roles": ["publisher"],
-  "operator": { "name": "Example Media" }
+  "roles": [
+    "publisher"
+  ],
+  "operator": {
+    "name": "Example Media"
+  }
 }

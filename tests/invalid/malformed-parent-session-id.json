@@ -1,6 +1,6 @@
 {
   "_test_description": "Session document whose parent_session_id is not a UUID. parent_session_id carries format: uuid (section 5.1); this is only rejected when the validator enforces format assertions, which the conformance runners do.",
-  "_expected_error": "'orchestrator-main' is not a 'uuid'",
+  "_expected_error": "/parent_session_id 'orchestrator-main' is not a 'uuid'",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440213",
   "parent_session_id": "orchestrator-main",

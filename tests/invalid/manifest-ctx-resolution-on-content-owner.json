@@ -1,0 +1,16 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: content_owner manifest declaring telemetry.ctx_resolution, which is valid on agent and platform manifests only (section 8.5).",
+  "_expected_error": "valid on agent and platform manifests",
+  "schema_version": "1.0",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": [
+    "content_owner"
+  ],
+  "operator": {
+    "name": "Example Media"
+  },
+  "telemetry": {
+    "endpoint": "https://t.example.com/v1/events",
+    "ctx_resolution": "https://t.example.com/v1/ctx/resolve"
+  }
+}

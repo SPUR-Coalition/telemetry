@@ -82,6 +82,22 @@ if _missing_formats:
 #    across events. Session documents only: standalone envelopes and batch
 #    members may reference events delivered elsewhere.
 #
+# 7. Field placement and source_role (sections 5.2, 5.2.2, 5.7.1, 5.7.5):
+#    source_role is required on content_retrieved; presentation_id and the
+#    event-level ctx_token appear only on content_engaged, citation_id only on
+#    content_presented/content_reproduced, turn only on turn events.
+#
+# 8. Session-document integrity beyond rule 6 (sections 6.7, 6.8, 7.4.1):
+#    event ids are distinct; the engagement and the presentation it references,
+#    and the presentation/reproduction and the citation it references, identify
+#    the same content; one event-level ctx_token binds to one presentation.
+#
+# 9. Envelope ctx_token (section 7.1): an envelope carrying ctx_token carries
+#    content_engaged events only.
+#
+# 10. Manifest placement rules (sections 8.5, 8.6): domains only on a manifest
+#    served at the domain root; ctx_resolution only on agent/platform manifests.
+#
 # Not checked here: agent_id at Grounding/Citation conformance (section
 # 5.7) depends on the emitter's declared conformance level, which fixtures do
 # not carry, so it is out of scope for the fixture suite.
@@ -181,6 +197,106 @@ APPLICATION_LAYER_VIOLATIONS = {
     "grounding-provenance-cached-conflict.json": (
         "Grounding event declares agent_fetched with cached true. "
         "Violates section 6.4: agent_fetched requires cached false."
+    ),
+    "grounding-provenance-cached-conflict-agent-cached.json": (
+        "Grounding event declares agent_cached with cached false. "
+        "Violates section 6.4: agent_cached requires cached true."
+    ),
+    "privacy-violation-response-text-at-intent.json": (
+        "Turn at intent privacy includes response_text. "
+        "Violates section 5.5: response_text MUST NOT be present at intent level."
+    ),
+    "privacy-violation-query-at-minimal-standalone.json": (
+        "Standalone envelope turn at minimal privacy includes query_text. "
+        "Violates section 5.5: the gate applies wherever turns are emitted."
+    ),
+    "privacy-violation-query-at-minimal-batch.json": (
+        "Batch member turn at minimal privacy includes query_text. "
+        "Violates section 5.5: the gate applies wherever turns are emitted."
+    ),
+    "grounded-missing-identifier-standalone.json": (
+        "Standalone content_grounded event has neither content_url nor content_id. "
+        "Violates section 5.7.5 in the standalone envelope shape."
+    ),
+    "grounded-missing-identifier-batch.json": (
+        "Batch member content_grounded event has neither content_url nor content_id. "
+        "Violates section 5.7.5 in the event batch shape."
+    ),
+    "withdrawn-ip-hash-session.json": (
+        "Session document retrieval event carries ip_hash in data. "
+        "Violates section 9.1 in the session document shape."
+    ),
+    "withdrawn-ip-hash-batch.json": (
+        "Batch member retrieval event carries ip_hash in data. "
+        "Violates section 9.1 in the event batch shape."
+    ),
+    "retrieved-missing-source-role.json": (
+        "content_retrieved event carries no source_role. "
+        "Violates sections 5.2.2 and 5.7.1: source_role MUST be set on every retrieval."
+    ),
+    "ctx-token-on-grounded.json": (
+        "Event-level ctx_token on a content_grounded event. "
+        "Violates section 5.2: ctx_token is valid only on content_engaged."
+    ),
+    "citation-id-on-grounded.json": (
+        "citation_id on a content_grounded event. "
+        "Violates section 5.2: citation_id is valid only on content_presented and content_reproduced."
+    ),
+    "presentation-id-on-cited.json": (
+        "presentation_id on a content_cited event. "
+        "Violates section 5.2: presentation_id is valid only on content_engaged."
+    ),
+    "turn-on-content-event.json": (
+        "turn object on a content_grounded event. "
+        "Violates section 5.2: turn data is carried on turn_started and turn_completed only."
+    ),
+    "duplicate-event-id.json": (
+        "Two content_presented events share one id. "
+        "Violates section 6.7: repeated presentations receive distinct event IDs."
+    ),
+    "engaged-presentation-content-mismatch.json": (
+        "content_engaged references a content_presented event of different content. "
+        "Violates section 6.8: the engagement identifies the same content as the presentation it acted on."
+    ),
+    "presented-citation-content-mismatch.json": (
+        "content_presented.citation_id references a content_cited event of different content. "
+        "Violates section 6.7: the presentation and the citation it realises identify the same content."
+    ),
+    "reproduced-citation-id-unmatched.json": (
+        "content_reproduced.citation_id matches no content_cited event id in the session. "
+        "Violates section 6.6: citation_id references the crediting content_cited event's id."
+    ),
+    "engaged-presentation-id-no-presentations.json": (
+        "content_engaged carries a presentation_id in a session with no content_presented events. "
+        "Violates section 6.8: every engagement references an exact presentation occurrence."
+    ),
+    "shared-ctx-token-two-presentations.json": (
+        "One event-level ctx_token appears on engagements bound to two different presentations. "
+        "Violates section 7.4.1: a token is bound to exactly one presentation occurrence."
+    ),
+    "standalone-ctx-token-non-engagement.json": (
+        "Standalone envelope carries ctx_token with a content_grounded event. "
+        "Violates section 7.1: an envelope ctx_token accompanies content_engaged events only."
+    ),
+    "batch-ctx-token-non-engagement.json": (
+        "Event batch under ctx_token carries a content_grounded event. "
+        "Violates section 7.1: an envelope ctx_token accompanies content_engaged events only."
+    ),
+    "batch-missing-session-mixed-retrieval.json": (
+        "Event batch mixing a retrieval with a grounding event carries neither session_id nor ctx_token. "
+        "Violates section 7.1: the retrieval-only exemption does not extend to a batch that carries other events."
+    ),
+    "manifest-domains-on-path-manifest.json": (
+        "Manifest served under a path prefix carries domains. "
+        "Violates section 8.6: domains MAY appear only on manifests served from the domain root."
+    ),
+    "manifest-ctx-resolution-on-content-owner.json": (
+        "content_owner manifest declares telemetry.ctx_resolution. "
+        "Violates section 8.5: ctx_resolution is valid on agent and platform manifests."
+    ),
+    "manifest-lookalike-domain.json": (
+        "Manifest at example.com claims evilexample.com in domains. "
+        "Violates section 8.6: a lookalike host is not a subdomain of the manifest host."
     ),
 }
 
@@ -497,6 +613,104 @@ def check_grounding_provenance(data):
     return violations
 
 
+# Fields that belong to one event type (section 5.2). A key present with a
+# non-null value on any other type is a placement violation.
+FIELD_PLACEMENT = {
+    "presentation_id": {"content_engaged"},
+    "ctx_token": {"content_engaged"},
+    "citation_id": {"content_presented", "content_reproduced"},
+    "turn": {"turn_started", "turn_completed"},
+}
+
+
+def check_field_placement(data):
+    """Check source_role on retrievals (sections 5.2.2, 5.7.1) and the
+    event-type scoping of presentation_id, ctx_token, citation_id and turn
+    (section 5.2). Applies to every document shape."""
+    violations = []
+    for event in _iter_events(data):
+        etype = event.get("type")
+        if etype == "content_retrieved" and not event.get("source_role"):
+            violations.append("content_retrieved event carries no source_role")
+        for field, allowed in FIELD_PLACEMENT.items():
+            if event.get(field) is not None and etype not in allowed:
+                violations.append(
+                    f"Field '{field}' present on '{etype}' event; valid only on "
+                    + ", ".join(sorted(allowed))
+                )
+    return violations
+
+
+def _same_content(a, b):
+    """Two events identify the same content unless a shared identifier field
+    (content_id or content_url) carries different non-null values."""
+    for field in ("content_id", "content_url"):
+        x, y = a.get(field), b.get(field)
+        if x is not None and y is not None and x != y:
+            return False
+    return True
+
+
+def check_session_integrity(data):
+    """Session-document rules beyond check_referential_integrity (sections
+    6.7, 6.8, 7.4.1): distinct event ids; engagement/presentation and
+    presentation|reproduction/citation pairs identify the same content; one
+    event-level ctx_token binds to one presentation. Session documents only."""
+    if is_standalone_event(data) or is_event_batch(data):
+        return []
+    events = data.get("events", [])
+    violations = []
+    seen_ids = set()
+    for e in events:
+        eid = e.get("id")
+        if eid:
+            if eid in seen_ids:
+                violations.append(f"Duplicate event id '{eid}' in session")
+            seen_ids.add(eid)
+    presented = {e.get("id"): e for e in events if e.get("type") == "content_presented" and e.get("id")}
+    cited = {e.get("id"): e for e in events if e.get("type") == "content_cited" and e.get("id")}
+    token_binding = {}
+    for e in events:
+        etype = e.get("type")
+        if etype == "content_engaged":
+            pid = e.get("presentation_id")
+            if pid in presented and not _same_content(e, presented[pid]):
+                violations.append(
+                    f"content_engaged references presentation '{pid}' but identifies different content"
+                )
+            token = e.get("ctx_token")
+            if token and pid:
+                bound = token_binding.setdefault(token, pid)
+                if bound != pid:
+                    violations.append(
+                        f"ctx_token '{token}' appears on engagements bound to two presentations"
+                    )
+        if etype in ("content_presented", "content_reproduced"):
+            cid = e.get("citation_id")
+            if cid in cited and not _same_content(e, cited[cid]):
+                violations.append(
+                    f"{etype} references citation '{cid}' but identifies different content"
+                )
+    return violations
+
+
+def check_envelope_ctx_token(data):
+    """An envelope ctx_token accompanies content_engaged events only (section
+    7.1); any other event type on such an envelope needs session_id instead."""
+    if not (is_standalone_event(data) or is_event_batch(data)):
+        return []
+    if not data.get("ctx_token"):
+        return []
+    violations = []
+    for event in _iter_events(data):
+        etype = event.get("type")
+        if etype != "content_engaged":
+            violations.append(
+                f"Envelope ctx_token accompanies a '{etype}' event; ctx_token is carried only for content_engaged"
+            )
+    return violations
+
+
 def check_application_layer(data):
     """Run every application-layer conformance rule and return all violations."""
     return (
@@ -506,15 +720,19 @@ def check_application_layer(data):
         + check_referential_integrity(data)
         + check_v1_migration_prohibitions(data)
         + check_grounding_provenance(data)
+        + check_field_placement(data)
+        + check_session_integrity(data)
+        + check_envelope_ctx_token(data)
     )
 
 
 def check_manifest_application_layer(data):
     """
-    Check the manifest rejection rules of section 8.7 that JSON Schema cannot
-    express: duplicate keys[].id values, and domains entries that are not the
-    manifest's own host or a subdomain of it (section 8.6).
-    Returns a list of violation descriptions.
+    Check the manifest rejection rules that JSON Schema cannot express:
+    duplicate keys[].id values (section 8.7), domains entries that are not the
+    manifest's own host or a subdomain of it, domains on a path-prefixed
+    manifest (section 8.6), and ctx_resolution on a manifest without the agent
+    or platform role (section 8.5). Returns a list of violation descriptions.
     """
     violations = []
 
@@ -525,7 +743,8 @@ def check_manifest_application_layer(data):
             violations.append(f"Duplicate keys[].id '{kid}'")
         seen.add(kid)
 
-    host = urlparse(data.get("id", "")).hostname
+    parsed = urlparse(data.get("id", ""))
+    host = parsed.hostname
     if host:
         for entry in data.get("domains", []):
             bare = entry[2:] if entry.startswith("*.") else entry
@@ -534,6 +753,22 @@ def check_manifest_application_layer(data):
                     f"domains entry '{entry}' is not the manifest host "
                     f"'{host}' or a subdomain of it"
                 )
+
+    # domains only on a root manifest (section 8.6)
+    if "domains" in data and parsed.path != "/.well-known/content-telemetry.json":
+        violations.append(
+            f"domains present on a manifest served under a path prefix "
+            f"('{parsed.path}'); only root manifests carry domains"
+        )
+
+    # ctx_resolution only on agent/platform manifests (section 8.5)
+    telemetry = data.get("telemetry") or {}
+    roles = set(data.get("roles") or [])
+    if telemetry.get("ctx_resolution") and not roles & {"agent", "platform"}:
+        violations.append(
+            f"telemetry.ctx_resolution on a manifest with roles {sorted(roles)}; "
+            "valid on agent and platform manifests"
+        )
 
     return violations
 

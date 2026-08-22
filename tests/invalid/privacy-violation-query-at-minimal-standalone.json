@@ -1,0 +1,19 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: standalone envelope carrying a turn_completed at minimal privacy with query_text. The privacy gate applies wherever turns are emitted (section 5.5).",
+  "_expected_error": "'query_text' present on turn with privacy_level 'minimal'",
+  "document_type": "event",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440643",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "event": {
+    "type": "turn_completed",
+    "timestamp": "2026-08-20T10:00:05Z",
+    "turn_id": "1",
+    "turn": {
+      "privacy_level": "minimal",
+      "query_text": "What is the best coffee grinder under 100 pounds?",
+      "response_tokens": 120
+    }
+  }
+}
