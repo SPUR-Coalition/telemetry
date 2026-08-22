@@ -167,10 +167,14 @@ threads and five pull requests. The maintainers are now:
 - [ ] publishing final v1 only after publisher, intermediary and agent/platform
   acceptance cases pass.
 
-Consultation issues remain open while their dispositions are recorded. An open
-issue does not mean its proposal has been accepted, and a preparation branch does
-not change the published specification. The issue tracker and pull-request
-history will remain the public decision record.
+A final disposition is now recorded on every consultation thread, and accepted
+core changes are tracked on the
+[v1 release candidate milestone](https://github.com/SPUR-Coalition/telemetry/milestone/1)
+towards the 21 August 2026 schema freeze. Each thread's outcome label and
+disposition comment, not its open or closed state, record the decision: threads
+that remain open do so pending their recorded follow-ups. A preparation branch
+does not change the published specification. The issue tracker and pull-request
+history remain the public decision record.
 
 Concrete schema, fixture and documentation bugs may still be filed using the
 *Schema or example bug* template, and questions or unclear requirements using
