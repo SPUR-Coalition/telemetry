@@ -26,4 +26,4 @@ An implementation uses the core schema and specification, a small profile bundle
 
 For example, an operator could choose a SPUR advertising deployment recipe and supply the publisher endpoints and commercial requirements. The SDK or collector would resolve the required delivery, advertising and evidence capabilities at startup. The agent would then emit ordinary lifecycle events; the collector would route publisher reports and send relevant evidence to the configured verification service. The developer would not select profiles or negotiate capabilities inside each agent turn.
 
-The closed consultation feeds a v1 release candidate rather than an intermediate v0.2 release. Compatibility with a mistake in the preview version is not a constraint. A breaking change is acceptable when it makes v1 easier to implement. It must include migration notes and replacement fixtures, and must not silently change meaning within an existing version.
+Breaking changes follow the versioning policy in SPECIFICATION.md section 12: they require a major version, migration notes and replacement fixtures, and meaning never changes silently within an existing version.

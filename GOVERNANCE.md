@@ -16,24 +16,22 @@ The SPUR Coalition stewards the specification and holds this repository. The sta
 
 ## Who the SPUR Coalition is
 
-The SPUR Coalition is a group of publishers and content owners that maintains the Content Telemetry standard. It holds the intellectual property through the preview period and releases the standard under Apache 2.0 from 12 June 2026.
+The SPUR Coalition is a group of publishers and content owners that maintains the Content Telemetry standard and releases it under Apache 2.0.
 
-Contributing to the standard does not require membership. The wire format is developed in the open, and anyone - content owner, agent operator, intermediary, or implementer - can take part through the issue tracker and the process described in the [README](./README.md#consultation-record).
+Contributing to the standard does not require membership. The wire format is developed in the open, and anyone - content owner, agent operator, intermediary, or implementer - can take part through the issue tracker and the process described in the [README](./README.md#feedback).
 
 The standard is maintained by Alex Springer (alex@spurcoalition.org).
 
-## Version 1.0 and decisions
-
-The specification reached 1.0 on 2 September 2026, following the public consultation of 12 June to 24 July 2026 and the release-candidate work recorded on the issue tracker.
+## Decisions
 
 Decisions follow the proposal and alignment process in [CONTRIBUTING.md](./CONTRIBUTING.md): anyone may propose a change, a maintainer records the disposition publicly on the issue tracker, and the SPUR Steering Board approves releases. The tracker and pull-request history are the public decision record. Minor versions add optional fields and event types; breaking changes require a major version (SPECIFICATION.md section 12).
 
 ## How to participate
 
 - File questions and bugs on the [issue tracker](https://github.com/SPUR-Coalition/telemetry/issues) (see the templates).
-- See the [consultation record](./README.md#consultation-record). The formal
-  v1 comment window is closed, but concrete bugs and implementation evidence
-  remain welcome on the issue tracker.
+- The issue tracker and pull-request history are the public decision record
+  (see the [README](./README.md#feedback)); concrete bugs and implementation
+  evidence are always welcome.
 - Propose new capabilities or changes in behaviour as a short human-written note
   in [`proposals/`](./proposals/), following
   [CONTRIBUTING.md](./CONTRIBUTING.md).

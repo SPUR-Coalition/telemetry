@@ -10,8 +10,11 @@ This repo contains the **specification** - the data model, event types, privacy 
 | [telemetry-session.json](./telemetry-session.json) | JSON Schema for session validation |
 | [telemetry-event.json](./telemetry-event.json) | JSON Schema for standalone event validation |
 | [telemetry-event-batch.json](./telemetry-event-batch.json) | JSON Schema for event batch validation |
+| [manifest.json](./manifest.json) | JSON Schema for the well-known manifest |
+| [SCOPE.md](./SCOPE.md) | The boundary between core, profiles and governing terms |
+| [proposals/](./proposals/) | Human-written proposals for new capabilities |
 | [tests/](./tests/) | Conformance test suite |
-| [GOVERNANCE.md](./GOVERNANCE.md) | Stewardship and preview-status policy |
+| [GOVERNANCE.md](./GOVERNANCE.md) | Stewardship, versioning status, relationship to profiles |
 | [LICENSE](./LICENSE) | Apache License 2.0 |
 
 ## Proposing changes
@@ -75,13 +78,14 @@ implementation pull request should:
 From a clean checkout, with no setup beyond [uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv run --with jsonschema python tests/validate.py        # conformance suite
-uv run --with jsonschema python tests/check_examples.py  # examples in the spec validate against the schemas
+uv run --with "jsonschema[format-nongpl]" python tests/validate.py        # conformance suite
+uv run --with "jsonschema[format-nongpl]" python tests/check_examples.py  # examples in the spec validate against the schemas
+uv run --with "jsonschema[format-nongpl]" python tests/mutation_smoke.py  # suite-weakening mutations are caught
 ```
 
-(Without uv: `pip install jsonschema` then `python3 tests/validate.py`.)
+(Without uv: `pip install "jsonschema[format-nongpl]"` then `python3 tests/validate.py`.)
 
-`check_examples.py` validates every complete worked example in SPECIFICATION.md and README.md against its schema; an example that no longer matches its schema fails the build. Both commands run in CI on every pull request (`.github/workflows/ci.yml`).
+`check_examples.py` validates every complete worked example in SPECIFICATION.md and README.md against its schema; an example that no longer matches its schema fails the build. All three commands run in CI on every pull request (`.github/workflows/ci.yml`).
 
 ## Conformance levels
 
