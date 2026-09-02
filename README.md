@@ -33,12 +33,11 @@ Platforms self-report usage metrics (if they report at all), and content owners 
 
 ## Telemetry events
 
-Content Telemetry tracks content through six stages:
+Content Telemetry tracks content through five stages:
 
 ```
 Retrieved    →  content fetched over HTTP (content owner can see this today)
   Grounded   →  content loaded into the agent's generation context
-    Reproduced →  content appearing verbatim or near-verbatim in the response
     Cited    →  content explicitly referenced in the response
       Presented  →  content or a source reference made perceivable on a recipient-facing surface
         Engaged  →  user clicked, copied, shared, or directed the agent to act
@@ -50,7 +49,6 @@ The gaps between stages show how content was used:
 
 - **Retrieval without grounding** - your content was fetched but not used
 - **Grounding without citation** - your content influenced the answer but you got no credit
-- **Reproduction without citation** - your content appeared in the answer without credit
 - **Citation without engagement** - your content was cited but the user didn't click through
 
 The grounding event captures the boundary "this content entered the agent's generation context." It is architecture-neutral and decoupled from retrieval: content cached by the agent for days still produces a grounding event in every session it influences.
@@ -61,7 +59,7 @@ Grounding and presentation record different boundary crossings: grounding means 
 
 **Post-hoc, not pre-declared.** Events report what actually happened, not what the agent said it would do at request time. An agent cannot reliably declare how it will use content before reading it.
 
-**Observable boundaries, not agent internals.** The six content event types mark boundary crossings. What happens between them - the fan-out, relevance evaluation, re-ranking, reasoning chains - is internal to the agent and changes constantly. The spec does not model it.
+**Observable boundaries, not agent internals.** The five content event types mark boundary crossings. What happens between them - the fan-out, relevance evaluation, re-ranking, reasoning chains - is internal to the agent and changes constantly. The spec does not model it.
 
 **Multiple observers, one event.** A content retrieval can be reported by the content owner's CDN, the content owner's origin server, and the AI agent independently. The `Content-Telemetry-ID` header correlates these into a single corroborated event. Uncorroborated retrievals (no matching agent event) may indicate an agent that does not yet support the telemetry protocol.
 
@@ -208,7 +206,7 @@ This is a preview specification. The following areas are under active discussion
 
 **Event volume at scale.** A single deep-research query can produce 100+ retrieval events and dozens of grounding/citation events. The session document format already handles transport - one POST with all events after the session ends, not one request per event. Volume management beyond that (storage, processing, consumer-side aggregation) is an implementation concern, not a protocol gap. Version 1 adds an explicit coverage declaration - `complete`, `sampled`, `aggregated` or `selected` (section 5.7.6) - and a manifest field for it (section 8.5); the standard still sets no default for reporting granularity, leaving it to profiles and deployments.
 
-**Verification of grounding and citation.** Grounding and citation events are reported by the agent, which is also the party that may owe compensation under a licence. In v0.1, manifest signing is informational: consumers may verify signatures but are not required to, and the specification defines no required proof binding an event to its emitter (sections 8.4 and 8.9). The events attribution depends on are therefore self-reported by the reporting party. Verifiable credentials and signed events are deferred (section 8.9). One corroboration mechanism works without signing: the `Content-Telemetry-ID` field correlates an agent-reported retrieval with an origin- or edge-reported one (section 7.2), but it covers retrieval only - grounding, reproduction, citation, presentation, and engagement have no independent observer. Signing, even once required, would prove who reported an event, not that the event is true or that all qualifying events were reported. Input is wanted on what a verification layer should cover and where it belongs. Mechanisms that test truthfulness and completeness rather than origin, such as sampled audits or publisher-seeded canary content, are of particular interest.
+**Verification of grounding and citation.** Grounding and citation events are reported by the agent, which is also the party that may owe compensation under a licence. In v0.1, manifest signing is informational: consumers may verify signatures but are not required to, and the specification defines no required proof binding an event to its emitter (sections 8.4 and 8.9). The events attribution depends on are therefore self-reported by the reporting party. Verifiable credentials and signed events are deferred (section 8.9). One corroboration mechanism works without signing: the `Content-Telemetry-ID` field correlates an agent-reported retrieval with an origin- or edge-reported one (section 7.2), but it covers retrieval only - grounding, citation, presentation, and engagement have no independent observer. Signing, even once required, would prove who reported an event, not that the event is true or that all qualifying events were reported. Input is wanted on what a verification layer should cover and where it belongs. Mechanisms that test truthfulness and completeness rather than origin, such as sampled audits or publisher-seeded canary content, are of particular interest.
 
 **Reporting granularity.** The standard sets no default for reporting granularity, leaving it to profiles and deployments (see *Event volume* above). The SPUR profile requires event-level delivery and does not permit aggregation. Version 1 answers the first half of the question: coverage modes are defined once, in section 5.7.6, so that profiles reference them rather than each define their own. How event-level delivery scales for the highest-volume case remains open.
 

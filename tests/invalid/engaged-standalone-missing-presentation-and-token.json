@@ -1,5 +1,5 @@
 {
-  "_test_description": "Agent-reported standalone content_engaged with session_id but no presentation_id. The presentation_id relaxation applies only to envelopes carrying ctx_token; an emitter that knows the session knows the presentation and MUST bind to it (sections 6.8, 7.4).",
+  "_test_description": "Agent-reported standalone content_engaged with session_id but no presentation_id. The presentation_id relaxation applies only to envelopes carrying ctx_token; an emitter that knows the session knows the presentation and MUST bind to it (sections 6.7, 7.4).",
   "_expected_error": "/event 'presentation_id' is a required property",
   "document_type": "event",
   "schema_version": "1.0",

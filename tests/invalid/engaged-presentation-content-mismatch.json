@@ -1,5 +1,5 @@
 {
-  "_test_description": "APPLICATION-LAYER VIOLATION: content_engaged references a presentation of different content. The engagement identifies the same content as the presentation it acted on (sections 5.7.5, 6.8).",
+  "_test_description": "APPLICATION-LAYER VIOLATION: content_engaged references a presentation of different content. The engagement identifies the same content as the presentation it acted on (sections 5.7.5, 6.7).",
   "_expected_error": "content_engaged references presentation",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440636",

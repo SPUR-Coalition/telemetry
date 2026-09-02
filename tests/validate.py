@@ -72,12 +72,12 @@ if _missing_formats:
 #
 # 5. Grounding provenance and fingerprint migration (sections 5.7.5, 6.4, 12.1):
 #    agent_fetched requires cached false; agent_cached requires cached true.
-#    content_fingerprint MUST NOT carry preserved_in_output because output-side
-#    reuse is represented by content_reproduced.
+#    content_fingerprint MUST NOT carry preserved_in_output: v1 defines no
+#    output-side reuse reporting.
 #
-# 6. Referential integrity within a session document (sections 6.6-6.8):
+# 6. Referential integrity within a session document (sections 6.6-6.7):
 #    content_engaged.presentation_id references the exact content_presented
-#    event id, and citation_id on content_presented/content_reproduced
+#    event id, and citation_id on content_presented
 #    references a content_cited event id. JSON Schema cannot compare values
 #    across events. Session documents only: standalone envelopes and batch
 #    members may reference events delivered elsewhere.
@@ -85,11 +85,11 @@ if _missing_formats:
 # 7. Field placement and source_role (sections 5.2, 5.2.2, 5.7.1, 5.7.5):
 #    source_role is required on content_retrieved; presentation_id and the
 #    event-level ctx_token appear only on content_engaged, citation_id only on
-#    content_presented/content_reproduced, turn only on turn events.
+#    content_presented, turn only on turn events.
 #
-# 8. Session-document integrity beyond rule 6 (sections 6.7, 6.8, 7.4.1):
+# 8. Session-document integrity beyond rule 6 (sections 6.6, 6.7, 7.4.1):
 #    event ids are distinct; the engagement and the presentation it references,
-#    and the presentation/reproduction and the citation it references, identify
+#    and the presentation and the citation it references, identify
 #    the same content; one event-level ctx_token binds to one presentation.
 #
 # 9. Envelope ctx_token (section 7.1): an envelope carrying ctx_token carries
@@ -160,7 +160,7 @@ APPLICATION_LAYER_VIOLATIONS = {
     ),
     "engaged-presentation-id-unmatched.json": (
         "content_engaged.presentation_id matches no content_presented event id "
-        "in the session. Violates section 6.8: every engagement references the "
+        "in the session. Violates section 6.7: every engagement references the "
         "exact content_presented.id on which the action occurred."
     ),
     "presented-citation-id-unmatched.json": (
@@ -192,7 +192,7 @@ APPLICATION_LAYER_VIOLATIONS = {
     ),
     "grounding-fingerprint-preserved-in-output.json": (
         "Grounding fingerprint carries preserved_in_output. "
-        "Violates section 6.4: output-side reuse is reported as content_reproduced."
+        "Violates section 6.4: v1 defines no output-side reuse reporting and the field is withdrawn (section 12.1)."
     ),
     "grounding-provenance-cached-conflict.json": (
         "Grounding event declares agent_fetched with cached true. "
@@ -240,7 +240,7 @@ APPLICATION_LAYER_VIOLATIONS = {
     ),
     "citation-id-on-grounded.json": (
         "citation_id on a content_grounded event. "
-        "Violates section 5.2: citation_id is valid only on content_presented and content_reproduced."
+        "Violates section 5.2: citation_id is valid only on content_presented."
     ),
     "presentation-id-on-cited.json": (
         "presentation_id on a content_cited event. "
@@ -252,23 +252,19 @@ APPLICATION_LAYER_VIOLATIONS = {
     ),
     "duplicate-event-id.json": (
         "Two content_presented events share one id. "
-        "Violates section 6.7: repeated presentations receive distinct event IDs."
+        "Violates section 6.6: repeated presentations receive distinct event IDs."
     ),
     "engaged-presentation-content-mismatch.json": (
         "content_engaged references a content_presented event of different content. "
-        "Violates section 6.8: the engagement identifies the same content as the presentation it acted on."
+        "Violates section 6.7: the engagement identifies the same content as the presentation it acted on."
     ),
     "presented-citation-content-mismatch.json": (
         "content_presented.citation_id references a content_cited event of different content. "
-        "Violates section 6.7: the presentation and the citation it realises identify the same content."
-    ),
-    "reproduced-citation-id-unmatched.json": (
-        "content_reproduced.citation_id matches no content_cited event id in the session. "
-        "Violates section 6.6: citation_id references the crediting content_cited event's id."
+        "Violates section 6.6: the presentation and the citation it realises identify the same content."
     ),
     "engaged-presentation-id-no-presentations.json": (
         "content_engaged carries a presentation_id in a session with no content_presented events. "
-        "Violates section 6.8: every engagement references an exact presentation occurrence."
+        "Violates section 6.7: every engagement references an exact presentation occurrence."
     ),
     "shared-ctx-token-two-presentations.json": (
         "One event-level ctx_token appears on engagements bound to two different presentations. "
@@ -312,7 +308,7 @@ V1_PROHIBITED_V0_1_EVENT_DATA_FIELDS = {
 # (content_url or content_id) under section 5.7.5. turn_started and
 # turn_completed are turn events, not content events, and are exempt.
 CONTENT_EVENT_TYPES = {
-    "content_retrieved", "content_grounded", "content_reproduced",
+    "content_retrieved", "content_grounded",
     "content_cited", "content_presented", "content_engaged",
 }
 
@@ -531,9 +527,9 @@ def check_referential_integrity(data):
     Check the intra-document event references of a session document:
 
     - Every content_engaged.presentation_id MUST reference the exact
-      content_presented.id on which the action occurred (section 6.8).
-    - Every citation_id on a content_presented or content_reproduced event
-      references that content_cited event's id (sections 6.6, 6.7).
+      content_presented.id on which the action occurred (section 6.7).
+    - Every citation_id on a content_presented event
+      references that content_cited event's id (section 6.6).
 
     Applies only to session documents, where the referenced events live in
     the same document. Standalone envelopes and batch members legitimately
@@ -562,7 +558,7 @@ def check_referential_integrity(data):
                     f"content_engaged presentation_id '{pid}' does not match "
                     "any content_presented event id in the session"
                 )
-        if etype in ("content_presented", "content_reproduced"):
+        if etype == "content_presented":
             cid = event.get("citation_id")
             if cid and cid not in cited_ids:
                 violations.append(
@@ -608,7 +604,7 @@ def check_grounding_provenance(data):
         fingerprint = event_data.get("content_fingerprint")
         if isinstance(fingerprint, dict) and "preserved_in_output" in fingerprint:
             violations.append(
-                "content_fingerprint carries preserved_in_output; use content_reproduced"
+                "content_fingerprint carries preserved_in_output; withdrawn in v1"
             )
     return violations
 
@@ -618,7 +614,7 @@ def check_grounding_provenance(data):
 FIELD_PLACEMENT = {
     "presentation_id": {"content_engaged"},
     "ctx_token": {"content_engaged"},
-    "citation_id": {"content_presented", "content_reproduced"},
+    "citation_id": {"content_presented"},
     "turn": {"turn_started", "turn_completed"},
 }
 
@@ -653,8 +649,8 @@ def _same_content(a, b):
 
 def check_session_integrity(data):
     """Session-document rules beyond check_referential_integrity (sections
-    6.7, 6.8, 7.4.1): distinct event ids; engagement/presentation and
-    presentation|reproduction/citation pairs identify the same content; one
+    6.6, 6.7, 7.4.1): distinct event ids; engagement/presentation and
+    presentation/citation pairs identify the same content; one
     event-level ctx_token binds to one presentation. Session documents only."""
     if is_standalone_event(data) or is_event_batch(data):
         return []
@@ -685,7 +681,7 @@ def check_session_integrity(data):
                     violations.append(
                         f"ctx_token '{token}' appears on engagements bound to two presentations"
                     )
-        if etype in ("content_presented", "content_reproduced"):
+        if etype == "content_presented":
             cid = e.get("citation_id")
             if cid in cited and not _same_content(e, cited[cid]):
                 violations.append(

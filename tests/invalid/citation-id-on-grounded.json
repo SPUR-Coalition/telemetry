@@ -1,5 +1,5 @@
 {
-  "_test_description": "APPLICATION-LAYER VIOLATION: citation_id on a content_grounded event. Valid only on content_presented and content_reproduced (sections 5.2, 5.7.5).",
+  "_test_description": "APPLICATION-LAYER VIOLATION: citation_id on a content_grounded event. Valid only on content_presented (sections 5.2, 5.7.5).",
   "_expected_error": "Field 'citation_id' present on 'content_grounded' event",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440632",

@@ -30,11 +30,11 @@ Run from the repository root. Without uv: `pip install "jsonschema[format-nongpl
 - Turn required fields (`privacy_level`)
 - Enum validation (event types, privacy levels, source roles, schema version)
 - Citation source-reference requirement (content_cited rejected when content_url/content_id are missing or null) and required citation_type
-- Required event and output identifiers on cited, reproduced, and presented events
-- Closed enums (citation_type, position, scope, provenance, reproduction_type, presentation_kind) and non-negative counts
+- Required event and output identifiers on cited and presented events
+- Closed enums (citation_type, position, scope, provenance, presentation_kind) and non-negative counts
 - Required `data.scope` on grounding events; required `source_role` on retrieval events
 - Format assertions on every uuid, date-time and uri field (malformed session, event, citation, presentation and parent ids; malformed started_at; malformed turn URL arrays)
-- Field placement: presentation_id and event-level ctx_token only on content_engaged, citation_id only on presented/reproduced, turn only on turn events; envelope ctx_token only with engagements
+- Field placement: presentation_id and event-level ctx_token only on content_engaged, citation_id only on presented events, turn only on turn events; envelope ctx_token only with engagements
 - Session integrity: distinct event ids, engagement/presentation and presentation/citation identify the same content, one token per presentation
 - Rejection of documents declaring the v0.1 wire version
 - All three conformance levels (Retrieval, Grounding, Citation) and all four source roles (origin, edge, index, agent)
@@ -42,8 +42,7 @@ Run from the repository root. Without uv: `pip install "jsonschema[format-nongpl
 - Manifests for all three roles, including platform; manifest rejection for http endpoints, path-prefixed domains, ctx_resolution on the wrong role, duplicate or empty roles, missing endpoint and coverage mode
 - Standalone event envelopes (CDN edge, agent with session FK)
 - Privacy level field gating (application-layer conformance), one fixture per forbidden field at minimal and intent, in session, standalone and batch shapes
-- Funnel exceptions (presented-no-cited, cited-no-grounded, presented-no-grounded, reproduced-no-cited, reproduced-no-grounded)
-- Reproduction cases: credited quotation (reproduction + direct_quote citation sharing an output element) and uncredited reproduction in unpresented API output
+- Funnel exceptions (presented-no-cited, cited-no-grounded, presented-no-grounded)
 - Text, image, audio, video, suppressed-citation, and repeated-presentation cases
 - Exact presentation-to-engagement correlation across session and standalone envelopes
 - Multi-turn sessions and cached grounding
@@ -58,9 +57,9 @@ Some rules cannot be expressed in JSON Schema alone. These are tested as applica
 
 - Privacy level field gating (e.g. `query_text` MUST NOT be present at `minimal` level), applied to turns wherever they appear: session documents, batches, and standalone envelopes - each shape has its own fixture
 - `content_url` or `content_id` requirement on every content event, and `source_role` on every `content_retrieved` event (sections 5.2.2, 5.7.5), in every document shape
-- Field placement by event type (section 5.7.5): `presentation_id` and event-level `ctx_token` only on `content_engaged`, `citation_id` only on `content_presented`/`content_reproduced`, `turn` only on turn events; an envelope `ctx_token` only with `content_engaged` events
+- Field placement by event type (section 5.7.5): `presentation_id` and event-level `ctx_token` only on `content_engaged`, `citation_id` only on `content_presented`, `turn` only on turn events; an envelope `ctx_token` only with `content_engaged` events
 - `session_id` or `ctx_token` on a standalone event or event batch envelope at Grounding conformance and above (sections 5.7.5, 7.1)
-- Referential integrity within a session document: event ids are distinct; `content_engaged.presentation_id` matches a `content_presented` event id and `citation_id` on `content_presented`/`content_reproduced` matches a `content_cited` event id, in each case identifying the same content; one event-level `ctx_token` binds to one presentation (sections 6.6-6.8, 7.4.1). Standalone envelopes and batch members are exempt - they may reference events delivered elsewhere.
+- Referential integrity within a session document: event ids are distinct; `content_engaged.presentation_id` matches a `content_presented` event id and `citation_id` on `content_presented` matches a `content_cited` event id, in each case identifying the same content; one event-level `ctx_token` binds to one presentation (sections 6.6-6.7, 7.4.1). Standalone envelopes and batch members are exempt - they may reference events delivered elsewhere.
 - Manifest rejection rules: duplicate `keys[].id`; `domains` entries that are not the manifest's own host or a subdomain of it; `domains` on a manifest served under a path prefix; `ctx_resolution` on a manifest without the `agent` or `platform` role (sections 8.5-8.7)
 - Withdrawn `ip_hash` prohibition on event data (section 9.1 migration rule), in every document shape
 - Grounding provenance/cache consistency and the prohibition on `preserved_in_output` in `content_fingerprint` (sections 5.7.5, 6.4, 12.1)

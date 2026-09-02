@@ -1,5 +1,5 @@
 {
-  "_test_description": "APPLICATION-LAYER VIOLATION: content_engaged carries a presentation_id in a session with no content_presented events at all (section 6.8).",
+  "_test_description": "APPLICATION-LAYER VIOLATION: content_engaged carries a presentation_id in a session with no content_presented events at all (section 6.7).",
   "_expected_error": "does not match any content_presented event id",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440639",

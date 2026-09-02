@@ -1,5 +1,5 @@
 {
-  "_test_description": "The non-click engagement types: a snippet presentation is expanded, and the detail view it opens is copied from and shared. Each action is one engagement occurrence on one presentation (sections 4.3, 6.8); three actions on two presentations, all in-product and agent-reported.",
+  "_test_description": "The non-click engagement types: a snippet presentation is expanded, and the detail view it opens is copied from and shared. Each action is one engagement occurrence on one presentation (sections 4.3, 6.7); three actions on two presentations, all in-product and agent-reported.",
   "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440650",
   "agent_id": "assistant-v4",

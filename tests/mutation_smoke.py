@@ -137,9 +137,6 @@ _M = "manifest.json"
 
 REVIEW_MUTATIONS = [
     # validate.py application-layer weakenings
-    ("drop content_reproduced from the citation_id integrity check",
-     _text(_V, 'if etype in ("content_presented", "content_reproduced"):', 'if etype in ("content_presented",):',
-           "reproduced-citation-id-unmatched.json")),
     ("exempt any envelope containing a retrieval from the session/ctx_token rule",
      _text(_V, 'if types <= {"content_retrieved"}:', 'if "content_retrieved" in types:',
            "batch-missing-session-mixed-retrieval.json")),
@@ -216,8 +213,6 @@ REVIEW_MUTATIONS = [
      _json(_S, lambda d: _event_branch(d, "content_presented")["required"].remove("data"), "presented-missing-data.json")),
     ("drop required data on content_cited",
      _json(_S, lambda d: _event_branch(d, "content_cited")["required"].remove("data"), "cited-missing-data.json")),
-    ("drop required data on content_reproduced",
-     _json(_S, lambda d: _event_branch(d, "content_reproduced")["required"].remove("data"), "reproduced-missing-data.json")),
     ("remove the sha256 hash patterns",
      _text(_S, '"pattern": "^sha256:[a-f0-9]{64}$"', '"type": "string"', "malformed-content-hash.json")),
     ("remove minLength on output_id",

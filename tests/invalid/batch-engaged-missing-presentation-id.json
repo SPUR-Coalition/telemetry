@@ -1,5 +1,5 @@
 {
-  "_test_description": "Event batch with session_id (no ctx_token) whose content_engaged lacks presentation_id. The relaxation applies only to envelopes carrying ctx_token (sections 6.8, 7.4).",
+  "_test_description": "Event batch with session_id (no ctx_token) whose content_engaged lacks presentation_id. The relaxation applies only to envelopes carrying ctx_token (sections 6.7, 7.4).",
   "_expected_error": "/events/0 'presentation_id' is a required property",
   "document_type": "event_batch",
   "schema_version": "1.0",
