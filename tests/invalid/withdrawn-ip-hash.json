@@ -11,7 +11,7 @@
     "content_url": "https://www.telegraph.co.uk/business/2026/03/28/ftse-100-markets-live",
     "data": {
       "user_agent": "PerplexityBot/1.0",
-      "bot_category": "inference",
+      "purpose": "inference",
       "response_status": 200,
       "asn": 396982,
       "asn_org": "Perplexity AI",

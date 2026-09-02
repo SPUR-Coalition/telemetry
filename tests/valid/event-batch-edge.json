@@ -11,7 +11,7 @@
       "content_url": "https://www.telegraph.co.uk/business/2026/03/28/ftse-100-markets-live",
       "data": {
         "user_agent": "PerplexityBot/1.0",
-        "bot_category": "inference",
+        "purpose": "inference",
         "verified": false,
         "cache_status": "miss",
         "response_status": 200
@@ -24,7 +24,7 @@
       "content_url": "https://www.telegraph.co.uk/business/2026/03/28/bank-of-england-rates",
       "data": {
         "user_agent": "GPTBot/1.2",
-        "bot_category": "training",
+        "purpose": "training",
         "verified": true,
         "cache_status": "hit",
         "response_status": 200

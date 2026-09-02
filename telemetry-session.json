@@ -289,7 +289,7 @@
                   "media_type": { "$ref": "#/$defs/MediaType" },
                   "content_depth": { "type": "string", "description": "Depth of the content record reached: metadata, abstract, full. Open vocabulary; consumers MUST tolerate unknown values (section 6.1)." },
                   "user_agent": { "type": "string" },
-                  "bot_category": { "type": "string", "description": "Edge platform's bot classification. Recommended values: training, inference, search" },
+                  "purpose": { "type": "string", "description": "Purpose of the access as classified by the reporting party. Open enum; core values: training, inference, search, advertising" },
                   "bot_name": { "type": "string", "description": "Recognised bot family parsed from the User-Agent (e.g., Claude-User, GPTBot, Perplexity-User). Stable across product variants within a vendor." },
                   "verified": { "type": "boolean" },
                   "cache_status": { "type": "string", "description": "Edge cache result. Recommended values: hit, miss, bypass, dynamic" },

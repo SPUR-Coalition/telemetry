@@ -11,7 +11,7 @@
 3. [Terms and definitions](#3-terms-and-definitions)
 4. [Concepts](#4-concepts) - roles, sessions, event lifecycle, source roles, content identification
 5. [Schema](#5-schema) - session, event, event types, conversation turn, privacy, intent, conformance levels
-6. [Data profiles](#6-data-profiles) - retrieval, edge enrichment, origin enrichment, grounding, citation, presentation, engagement
+6. [Data profiles](#6-data-profiles) - retrieval, edge enrichment, origin enrichment, grounding, citation, presentation, engagement, evidence references
 7. [Transport](#7-transport) - delivery formats, Content-Telemetry-ID header, routing, click context
 8. [Manifest](#8-manifest) - discovery, schema, operator, keys, telemetry, domains
 9. [Privacy](#9-privacy) - data minimisation, recommended levels, retention
@@ -20,6 +20,7 @@
 12. [Versioning](#12-versioning)
 - [Annex A (normative): JSON Schema](#annex-a-normative-json-schema)
 - [Annex B (informative): Examples](#annex-b-informative-examples)
+- [Annex C (informative): Vendor bot-classification mappings](#annex-c-informative-vendor-bot-classification-mappings)
 
 ## 1. Introduction
 
@@ -60,7 +61,7 @@ Content Telemetry does not:
 
 The five-stage lifecycle reports content use observable at inference time: identified content entered a generation context for a particular response, and what the resulting output did with it.
 
-Retrieval is the boundary case. A crawl whose purpose is training or index building can be reported as a `content_retrieved` event, and `bot_category` (section 6.2) distinguishes it, but the event is non-attributable: no grounding, citation, presentation or engagement follows it. What the system then does with the content, whether it enters a training corpus, a fine-tuning set, an embedding store or a search index, is outside this specification. Nothing here reports that a model was trained on a work, and a conforming implementation says nothing either way about it.
+Retrieval is the boundary case. A crawl whose purpose is training or index building can be reported as a `content_retrieved` event, and `purpose` (section 6.2) distinguishes it, but the event is non-attributable: no grounding, citation, presentation or engagement follows it. What the system then does with the content, whether it enters a training corpus, a fine-tuning set, an embedding store or a search index, is outside this specification. Nothing here reports that a model was trained on a work, and a conforming implementation says nothing either way about it.
 
 Using such a store at inference time is inside scope. When an index built over a content owner's material is queried during a response and returns content that grounds the answer, that is a `content_grounded` event like any other, with `source_role: index` on the retrieval that served it (section 4.4). The line is between constructing a derived artefact and using one to answer a query, not whether an index was involved.
 
@@ -562,7 +563,7 @@ A conforming **Retrieval** emitter MUST:
 
 This level requires no agent cooperation. Content owners can implement it using CDN edge compute (Cloudflare Workers, Fastly Compute, etc.).
 
-Origin-side emitters operating at the CDN edge SHOULD include `bot_category`, `response_status`, and `response_bytes` alongside the required fields. These fields make retrieval events useful for bot classification and volume analysis. Without them, the event confirms a fetch occurred but cannot support attribution correlation.
+Origin-side emitters operating at the CDN edge SHOULD include `purpose`, `response_status`, and `response_bytes` alongside the required fields. These fields make retrieval events useful for bot classification and volume analysis. Without them, the event confirms a fetch occurred but cannot support attribution correlation.
 
 #### 5.7.2 Grounding conformance
 
@@ -667,7 +668,7 @@ CDN and edge network integrations SHOULD include these fields:
 | Field | Type | Description |
 |-------|------|-------------|
 | `user_agent` | string | Request User-Agent header |
-| `bot_category` | string | Edge platform's bot classification (see below) |
+| `purpose` | string | Purpose of the access, as classified by the reporting party (see below) |
 | `bot_name` | string | Recognised bot family parsed from the User-Agent (e.g., `Claude-User`, `GPTBot`, `Perplexity-User`) |
 | `verified` | boolean | Whether the bot identity was cryptographically verified |
 | `cache_status` | string | Edge cache result: `hit`, `miss`, `bypass`, `dynamic` |
@@ -678,19 +679,20 @@ CDN and edge network integrations SHOULD include these fields:
 | `asn_org` | string | Client AS organisation name |
 | `country` | string | ISO 3166-1 alpha-2 country code |
 
-#### Bot categories
+#### Access purpose
 
-The `bot_category` field carries the edge platform's classification of the requesting bot. Recommended values:
+The `purpose` field carries the reporting party's classification of what the access was for. It is an open enum: these are the core values, emitters MAY use custom values, and telemetry consumers MUST tolerate unknown ones. It classifies the access, not the organisation - who is reporting stays in `source_role` (section 4.4).
 
-| Value | Description | Fastly signal | Cloudflare signal |
-|-------|-------------|---------------|-------------------|
-| `training` | Crawling for model training | `AI-CRAWLER` | `AI Crawler` |
-| `inference` | Fetching at query time (RAG) | `AI-FETCHER` | `AI Assistant` |
-| `search` | AI search indexing | - | `AI Search` |
+| Value | Description |
+|-------|-------------|
+| `training` | Crawling for model training |
+| `inference` | Fetching at query time to inform a response |
+| `search` | AI search indexing |
+| `advertising` | Access to derive advertising signals (contextual classification, brand safety, campaign targeting) |
 
-The `inference` category is where content attribution is most relevant - there is a user, a query, and a session behind the retrieval. `training` crawls have no session context. `bot_category` can distinguish training crawls from inference fetches, but training-specific telemetry is out of scope for this specification (see section 1.3). Edge platforms map their native classification to these values.
+The `inference` purpose is where content attribution is most relevant - there is a user, a query, and a session behind the retrieval. `training` crawls have no session context. `purpose` can distinguish training crawls from inference fetches, but training-specific telemetry is out of scope for this specification (see section 1.3). Edge platforms map their native bot classifications to these values; the mappings for common platforms are informative and collected in Annex C.
 
-Emitting a `training`-category `content_retrieved` event is permitted but non-attributable - there is no session, grounding, or citation to follow it. An edge emitter can report these events through its normal pipeline and need not special-case or suppress them.
+Emitting a `training`-purpose `content_retrieved` event is permitted but non-attributable - there is no session, grounding, or citation to follow it. An edge emitter can report these events through its normal pipeline and need not special-case or suppress them.
 
 ### 6.3 Origin enrichment (`content_retrieved` + `source_role: origin`)
 
@@ -885,6 +887,18 @@ An action that touches several presentations at once - a `share` of a response c
 
 A `link_click` or `agent_navigate` engagement reported from the landing page after a click-out crosses a trust boundary. Such events carry a `ctx_token` in place of `session_id`, which the telemetry consumer resolves to the click context (see section 7.4). The agent-authored engagement itself reaches the engaged content's owner through owner-scoped routing whether or not the token survived the redirect chain (section 7.4.5).
 
+### 6.8 Evidence references (any content event)
+
+The `data.evidence` field MAY appear on any content event: an array of profile-defined evidence references attached to the event's claim.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `scheme` | string | Yes | Open identifier for the evidence scheme, following the same rules as `content_fingerprint.scheme` (section 6.4) |
+| `ref` | string | No | URI of a detached evidence artefact, resolvable independently of the event |
+| `digest` | string | No | Digest binding the reference to the artefact's bytes (`sha256:{hex}`) |
+
+Core defines the slot and nothing more. It does not interpret entries, register schemes, or assign evidentiary status: an event remains a claim by its emitter (SCOPE.md), and the presence of evidence entries raises no event's status by itself. Which schemes a consumer accepts, and what a verified entry establishes, is consumer trust policy defined in an evidence profile outside core. Consumers MUST tolerate unknown schemes and unknown fields within entries. A detached reference - a `ref` with a `digest` - is admitted deliberately, so evidence can remain independently verifiable after the fact without travelling inline.
+
 ## 7. Transport
 
 Content Telemetry defines a signal format, not a wire protocol. Common delivery patterns include HTTP postback, bulk upload after session end, MCP tool calls, message queues (Kafka, SQS), and direct database writes. The choice of transport is left to implementers.
@@ -913,7 +927,7 @@ A standalone event carries `document_type`, `schema_version`, and optionally `se
     "content_telemetry_id": "770e8400-e29b-41d4-a716-446655440300",
     "content_url": "https://www.ft.com/content/abc123",
     "data": {
-      "bot_category": "inference",
+      "purpose": "inference",
       "cache_status": "miss",
       "response_status": 200
     }
@@ -1462,6 +1476,13 @@ Emitters remove the field and MUST NOT populate it; `asn`, `asn_org` and `countr
 remain. V1 also requires `source_role` on every `content_retrieved` event
 (section 5.7.1); preview emitters that omitted it add the role they report under.
 
+V1 renames the retrieval profile's `bot_category` field to `purpose` and defines
+it as an open enum classifying the access rather than the bot: the v0.1 values
+`training`, `inference` and `search` keep their meaning, `advertising` is added,
+and the vendor signal mappings move to informative Annex C. Emitters rename the
+field; consumers MAY read a v0.1 `bot_category` value as `purpose` when
+migrating historical data.
+
 `license_ref` keeps its wire form but no longer asserts that the use was licensed
 (section 5.2.3): a consumer that read a v0.1 `license_ref` as verification of
 entitlement now reads it as the emitter's claim about which grant applied.
@@ -1641,7 +1662,7 @@ A content owner's CDN detects an AI agent fetching content. The agent also repor
   "content_url": "https://www.wirecutter.com/reviews/best-wireless-headphones",
   "data": {
     "user_agent": "ClaudeBot/1.0",
-    "bot_category": "inference",
+    "purpose": "inference",
     "bot_name": "ClaudeBot",
     "verified": true,
     "cache_status": "miss",
@@ -1938,3 +1959,13 @@ A marketplace intermediary delivers content from many publishers under a single 
 ```
 
 The telemetry consumer resolves `autoreview.example` by domain registration and the `mkt:gridnews:` prefix by identifier registration, and produces two owner-filtered views: AutoReview sees its retrieval, grounding, citation and link presentation; GridNews sees its own four events and nothing of AutoReview's. Neither view carries the other owner's identifiers, and both carry the shared `content_scope` so the marketplace can reconcile the session against the agreement. The second retrieval has no `content_url` at all - marketplace API content with no canonical URL - and resolves by `content_id` alone.
+
+## Annex C (informative): Vendor bot-classification mappings
+
+Edge platforms classify AI bot traffic in their own vocabularies. These mappings to the `purpose` values of section 6.2 are informative, reflect the platforms' published categories at the time of writing, and change on the platforms' own cadence.
+
+| `purpose` | Fastly signal | Cloudflare signal |
+|-----------|---------------|-------------------|
+| `training` | `AI-CRAWLER` | `AI Crawler` |
+| `inference` | `AI-FETCHER` | `AI Assistant` |
+| `search` | - | `AI Search` |

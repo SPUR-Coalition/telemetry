@@ -12,7 +12,7 @@
       "content_url": "https://www.theguardian.com/technology/2026/mar/28/ai-agents-roundup",
       "data": {
         "user_agent": "ClaudeBot/1.0",
-        "bot_category": "inference",
+        "purpose": "inference",
         "verified": true,
         "cache_status": "miss",
         "response_status": 200,
