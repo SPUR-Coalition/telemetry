@@ -1,0 +1,17 @@
+{
+  "_test_description": "Identifier-scheme entry with an empty prefix. prefix is required and non-empty: an empty string would match every content_id (section 8.6).",
+  "_expected_error": "prefix",
+  "schema_version": "1.0",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": [
+    "content_owner"
+  ],
+  "operator": {
+    "name": "Example Media"
+  },
+  "identifier_schemes": [
+    {
+      "prefix": ""
+    }
+  ]
+}

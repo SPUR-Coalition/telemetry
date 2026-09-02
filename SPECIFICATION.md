@@ -74,6 +74,8 @@ An agent cannot reliably declare how it will use content before reading it - a r
 
 Events can reference a licence via the `license_ref` field (section 5.2), connecting telemetry to whatever access protocol issued the licence. The telemetry schema does not depend on any specific access protocol.
 
+Discovery protocols and registries - catalogues that describe where content sources are and what they offer, such as agent resource discovery formats - sit upstream of both layers. A catalogue records where a content source is; telemetry records what happened when an agent used it. Content Telemetry is the outcome layer for discovery in the same sense that it is the reporting counterpart to access: it carries no ranking or discovery metadata of its own, and a discovery service that wants outcome signal consumes telemetry like any other party (section 7.3).
+
 ### 1.5 Conventions
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119) and [RFC 8174](https://www.rfc-editor.org/rfc/rfc8174).
@@ -1003,9 +1005,11 @@ Two deployment patterns are common:
 
 Any party may operate a consumer: an agent operator, a licensing intermediary, or an independent third party offering it as a service. Both patterns above consume the same session format. The telemetry consumer is responsible for domain resolution, content owner filtering, and access control. The spec does not mandate a specific aggregation topology, nor does it require any particular operator to provide one.
 
+The telemetry-consumer function and the `index` emitter role (section 4.4) are distinct. A discovery registry or ranking service that consumes telemetry to build ranking signal is acting as a telemetry consumer; an operator that also brokers or serves content additionally acts as an `index` emitter. This specification does not restrict combining the two, but where one operator holds both, the telemetry it consumes in the ranking capacity carries the same filtering and access-control responsibilities as any consumer's - operating an index confers no additional visibility into other parties' events.
+
 **Origin-side `.well-known/content-telemetry.json` manifests** declare where origin-emitted retrieval events are sent (CDN → content owner's chosen endpoint). They do not instruct agents where to send session documents. Agent routing is governed by the agent's telemetry configuration, not by content owner manifests.
 
-**Content owner resolution.** Telemetry consumers resolve content owner identity from `content_url` domains. Content owners register and verify their domains with the telemetry consumer; the consumer maps incoming event URLs to the owning organisation. This is the primary resolution path and requires `content_url` to be present on events. Events identified only by `content_id` (e.g., cached groundings where the URL was not preserved, or marketplace API content with no canonical URL) cannot be resolved by domain alone. Telemetry consumers SHOULD support `content_id` prefix-based resolution as a secondary path when content owners register their identifier schemes, but this is not yet a normative requirement.
+**Content owner resolution.** Telemetry consumers resolve content owner identity through two co-primary paths: the `content_url` domain, via verified domain registrations, and the registered `content_id` prefix, via identifier-scheme declarations (section 8.6). Content owners register domains and identifier prefixes with the telemetry consumer; the consumer maps each incoming event to the owning organisation by whichever identifier the event carries. An event carrying only one of the two resolves through that path - a cached grounding with no preserved URL, or marketplace API content with no canonical URL, resolves by `content_id` prefix alone. When an event carries both and the two paths resolve to different owners, the consumer MUST NOT deliver the event to either owner's filtered view until its trust policy resolves the conflict, and SHOULD surface the conflict to both registrants. When neither path resolves, the event is unattributed; consumers SHOULD retain unattributed events rather than discard them, so a later registration can claim them.
 
 **Cross-consumer correlation.** Origin-side emitters and agent-side emitters MAY use different telemetry consumers. A content owner's CDN sends retrieval events to one telemetry consumer; an agent sends sessions to another. The `content_telemetry_id` field (section 7.2) correlates the same retrieval across consumers - both sides share the same UUID from the HTTP request. This correlation operates at the retrieval level only. Grounding, citation, presentation, and engagement events have no independent origin-side counterpart to correlate against.
 
@@ -1091,6 +1095,8 @@ Token lifetime and requester authentication are likewise not defined in v1: a to
 
 Content owners, agents, and platforms publish a manifest declaring their identity and telemetry endpoints. The `manifest_ref` field on session documents (5.1.2) and the routing logic for origin-side emitters (7.3) resolve to manifests defined in this section.
 
+The identity a manifest establishes is control of a domain, or a path under one - not a legal person. `operator.name` is a display name; nothing in a manifest binds the domain to an organisation, and no field carries a jurisdiction or registered legal entity. Where settlement or audit requires a legal counterparty, that binding lives in the governing terms the parties hold (`terms_ref`, section 5.2.4), not in the manifest. A party-identity declaration is deferred (section 8.9).
+
 ### 8.1 Discovery
 
 Manifests are served as JSON at:
@@ -1123,6 +1129,7 @@ Machine-readable schema: [`./manifest.json`](./manifest.json) (JSON Schema draft
 | `keys` | object[] | No | Public keys for signing telemetry events (see 8.4). |
 | `telemetry` | object | No | Telemetry endpoint declaration (see 8.5). |
 | `domains` | string[] | No | Domains the participant claims authority over (see 8.6). MAY appear only on root manifests. |
+| `identifier_schemes` | object[] | No | Identifier prefixes the participant claims and, optionally, where they resolve (see 8.6). MAY appear only on `content_owner` manifests. |
 
 Consumers MUST tolerate unknown fields and treat absent optional sections as "not declared" rather than rejecting the manifest.
 
@@ -1159,13 +1166,24 @@ Public keys used to sign telemetry events emitted by this participant. Per-event
 
 `conformance_level` is informational. It advertises the level of telemetry the manifest's participant emits. It does **not** constrain what an inbound `endpoint` accepts - an endpoint accepts whatever events it is configured to accept, regardless of any level declared here - and it places **no requirement** on other emitters. On a `content_owner` manifest it describes only the events the owner's own infrastructure emits (typically a CDN edge worker at `retrieval`); it says nothing about what agents or platforms report about the owner's content, which those parties advertise in their own manifests. A `content_owner` manifest SHOULD omit `conformance_level` unless the owner operates its own emitter. There is no field for a content owner to *request* a minimum level from agents; consumers tolerate events from any level (see 5.7), and the protocol does not give a manifest a way to demand more.
 
-### 8.6 Domains
+### 8.6 Domains and identifier schemes
 
 The `domains` array MAY appear only on manifests served from the domain root (`https://<domain>/.well-known/content-telemetry.json`). Manifests under path prefixes MUST NOT include `domains`.
 
 In v1, every entry in `domains` MUST be self-validating: either the manifest's own host, or a subdomain of it (literal `news.example.com` or wildcard `*.example.com`). Control of the apex - proven by serving the manifest at the apex over TLS - implies DNS control of subdomains, so no further validation is needed. A manifest containing entries that are not subdomains of its own host is malformed.
 
 This keeps the v1 protocol fully decentralised: every manifest is a self-contained credential, validated by TLS plus the well-known location, with no dependency on consumer-side validation state or any external registry. Cross-apex claims (one operator unifying several unrelated apex domains in a single manifest) are deferred to a later version.
+
+#### Identifier schemes
+
+The `identifier_schemes` array declares the `content_id` prefixes a content owner claims, so that events identified only by `content_id` can be routed to their owner (section 7.3). It MAY appear only on manifests declaring the `content_owner` role. Each entry contains:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prefix` | string | Yes | The identifier prefix claimed, matched against `content_id` values up to and including the prefix (e.g. `ft:`, `iscc:`, `mkt:gridnews:`). |
+| `resolution` | string | No | HTTPS URL of an endpoint that maps a `content_id` under this prefix to the owning content record or organisation. |
+
+Unlike `domains`, a prefix claim is not self-validating: nothing about a manifest's host proves authority over an identifier namespace. The manifest is the carrier of the claim, verified to domain level by TLS and the well-known location; a telemetry consumer verifies prefix ownership at registration, as it verifies domain registrations today, and resolves conflicting claims on the same prefix through its trust policy. A `resolution` endpoint supports owner-identity mapping; it does not verify that grounding or citation happened.
 
 ### 8.7 Consumer behaviour
 
@@ -1193,7 +1211,10 @@ Consumers SHOULD cache resolved manifests respecting the response's `Cache-Contr
   "telemetry": {
     "endpoint": "https://telemetry.example.com/v1/events"
   },
-  "domains": ["example.com", "*.example.com"]
+  "domains": ["example.com", "*.example.com"],
+  "identifier_schemes": [
+    { "prefix": "exm:", "resolution": "https://id.example.com/resolve" }
+  ]
 }
 ```
 
@@ -1255,6 +1276,7 @@ The two manifests live independently at distinct well-known URLs. The content-ow
 The following are deferred to later versions:
 
 - Content licence declarations (what content the participant is licensed to access)
+- Party-identity declarations binding a domain to a legal entity or jurisdiction (the manifest identifies a domain; section 8 opening)
 - Manifest signing (W3C Verifiable Credentials, JWS proofs)
 - Training data and model provenance
 - Deployment context, purpose, brand affiliation

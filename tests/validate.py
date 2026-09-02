@@ -96,7 +96,8 @@ if _missing_formats:
 #    content_engaged events only.
 #
 # 10. Manifest placement rules (sections 8.5, 8.6): domains only on a manifest
-#    served at the domain root; ctx_resolution only on agent/platform manifests.
+#    served at the domain root; ctx_resolution only on agent/platform manifests;
+#    identifier_schemes only on content_owner manifests.
 #
 # Not checked here: agent_id at Grounding/Citation conformance (section
 # 5.7) depends on the emitter's declared conformance level, which fixtures do
@@ -289,6 +290,10 @@ APPLICATION_LAYER_VIOLATIONS = {
     "manifest-ctx-resolution-on-content-owner.json": (
         "content_owner manifest declares telemetry.ctx_resolution. "
         "Violates section 8.5: ctx_resolution is valid on agent and platform manifests."
+    ),
+    "manifest-identifier-schemes-on-non-owner.json": (
+        "Agent manifest carries identifier_schemes. "
+        "Violates section 8.6: identifier_schemes only on content_owner manifests."
     ),
     "manifest-lookalike-domain.json": (
         "Manifest at example.com claims evilexample.com in domains. "
@@ -727,8 +732,10 @@ def check_manifest_application_layer(data):
     Check the manifest rejection rules that JSON Schema cannot express:
     duplicate keys[].id values (section 8.7), domains entries that are not the
     manifest's own host or a subdomain of it, domains on a path-prefixed
-    manifest (section 8.6), and ctx_resolution on a manifest without the agent
-    or platform role (section 8.5). Returns a list of violation descriptions.
+    manifest (section 8.6), ctx_resolution on a manifest without the agent
+    or platform role (section 8.5), and identifier_schemes on a manifest
+    without the content_owner role (section 8.6). Returns a list of violation
+    descriptions.
     """
     violations = []
 
@@ -764,6 +771,13 @@ def check_manifest_application_layer(data):
         violations.append(
             f"telemetry.ctx_resolution on a manifest with roles {sorted(roles)}; "
             "valid on agent and platform manifests"
+        )
+
+    # identifier_schemes only on content_owner manifests (section 8.6)
+    if data.get("identifier_schemes") and "content_owner" not in roles:
+        violations.append(
+            f"identifier_schemes on a manifest with roles {sorted(roles)}; "
+            "identifier_schemes only on content_owner manifests"
         )
 
     return violations

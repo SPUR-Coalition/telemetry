@@ -119,6 +119,27 @@
         "type": "string"
       },
       "description": "Domains the participant claims authority over. MAY appear only on root manifests (enforced at the application layer); each entry MUST be the manifest's own host or a subdomain of it (literal or wildcard). (Section 8.6)"
+    },
+    "identifier_schemes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["prefix"],
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The content_id prefix claimed, matched against content_id values up to and including the prefix, e.g. ft: or mkt:gridnews:. (Section 8.6)"
+          },
+          "resolution": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://",
+            "description": "HTTPS URL of an endpoint mapping a content_id under this prefix to the owning content record or organisation. (Section 8.6)"
+          }
+        }
+      },
+      "description": "Identifier prefixes the participant claims for content_id routing. MAY appear only on content_owner manifests (enforced at the application layer); prefix ownership is verified by the consumer at registration. (Sections 7.3, 8.6)"
     }
   }
 }
