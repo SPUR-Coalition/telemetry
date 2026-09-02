@@ -1,0 +1,18 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: agent manifest served under a path prefix that carries domains. domains MAY appear only on manifests served from the domain root (section 8.6).",
+  "_expected_error": "only root manifests carry domains",
+  "schema_version": "1.0",
+  "id": "https://example.com/agents/search/.well-known/content-telemetry.json",
+  "roles": [
+    "agent"
+  ],
+  "operator": {
+    "name": "Example Media"
+  },
+  "telemetry": {
+    "endpoint": "https://t.example.com/v1/events"
+  },
+  "domains": [
+    "example.com"
+  ]
+}

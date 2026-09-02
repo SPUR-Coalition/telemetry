@@ -1,7 +1,7 @@
 {
   "_test_description": "Standalone presentation envelope using the shared modality-neutral presentation schema.",
   "document_type": "event",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440080",
   "agent_id": "voice-assistant-v1",
   "started_at": "2026-07-18T12:30:00Z",

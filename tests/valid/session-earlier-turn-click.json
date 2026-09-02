@@ -1,6 +1,6 @@
 {
   "_test_description": "A click in a later turn on a presentation from an earlier turn: the content_engaged event carries the turn of the click but binds by presentation_id to the turn-1 presentation. Resolution returns the clicked content's lineage across turns by content identity, not a turn or timestamp cut (section 7.4).",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440220",
   "agent_id": "assistant-v2",
   "started_at": "2026-08-10T10:00:00Z",

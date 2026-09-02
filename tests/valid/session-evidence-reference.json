@@ -1,0 +1,30 @@
+{
+  "_test_description": "Grounding event carrying a data.evidence array (section 6.8): one detached reference (ref plus digest) and one entry in an unknown scheme, which consumers tolerate. The slot attaches profile-defined evidence to an event's claim without raising its status.",
+  "schema_version": "1.0",
+  "session_id": "aa0e8400-e29b-41d4-a716-446655440600",
+  "agent_id": "assistant-v1",
+  "started_at": "2026-08-30T10:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-30T10:00:01Z",
+      "content_url": "https://example.com/articles/energy-prices",
+      "data": {
+        "scope": "session",
+        "cached": false,
+        "chars_ingested": 5400,
+        "evidence": [
+          {
+            "scheme": "org.example.retrieval-receipt",
+            "ref": "https://evidence.example.com/receipts/8f3a",
+            "digest": "sha256:c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+          },
+          {
+            "scheme": "com.vendor.unknown-scheme",
+            "inline_note": "consumers tolerate unknown schemes and fields"
+          }
+        ]
+      }
+    }
+  ]
+}

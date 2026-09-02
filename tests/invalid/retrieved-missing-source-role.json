@@ -1,0 +1,15 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: content_retrieved without source_role. Every retrieval event MUST say who observed it (sections 5.2.2, 5.7.1).",
+  "_expected_error": "content_retrieved event carries no source_role",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440630",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-20T10:00:01Z",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis"
+    }
+  ]
+}

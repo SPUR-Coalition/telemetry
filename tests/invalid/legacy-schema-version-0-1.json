@@ -1,0 +1,16 @@
+{
+  "_test_description": "Document declaring the v0.1 wire version. A v1 consumer MUST reject it (sections 5.7.4, 12.1): v0.1 is a different wire version, not a compatible minor.",
+  "_expected_error": "/schema_version '1.0' was expected",
+  "schema_version": "0.1",
+  "session_id": "660e8400-e29b-41d4-a716-446655440601",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-20T10:00:01Z",
+      "source_role": "agent",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis"
+    }
+  ]
+}

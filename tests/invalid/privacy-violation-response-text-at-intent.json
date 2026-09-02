@@ -1,0 +1,21 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: turn at intent privacy with response_text present (section 5.5).",
+  "_expected_error": "'response_text' present on turn with privacy_level 'intent'",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440642",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-08-20T10:00:05Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "response_text": "The Baratza Encore ESP is the best grinder under 100 pounds.",
+        "query_intent": "comparison",
+        "response_tokens": 120
+      }
+    }
+  ]
+}

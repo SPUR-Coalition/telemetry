@@ -1,0 +1,19 @@
+{
+  "_test_description": "Standalone retrieval reported by the content owner's own web server (source_role origin) at Retrieval conformance: no session context, origin enrichment fields (6.3) and content_depth recording that the agent reached the abstract only.",
+  "document_type": "event",
+  "schema_version": "1.0",
+  "event": {
+    "type": "content_retrieved",
+    "timestamp": "2026-08-20T10:00:01Z",
+    "source_role": "origin",
+    "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440601",
+    "content_url": "https://journals.example.com/article/10.1000/xyz123",
+    "content_id": "doi:10.1000/xyz123",
+    "data": {
+      "user_agent": "ClaudeBot/1.0",
+      "response_status": 200,
+      "media_type": "text",
+      "content_depth": "abstract"
+    }
+  }
+}

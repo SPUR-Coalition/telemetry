@@ -1,0 +1,24 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: event batch mixing a retrieval with a grounding event, with neither session_id nor ctx_token. The retrieval-only exemption does not extend to a batch that carries other events (sections 5.7.5, 7.1).",
+  "_expected_error": "neither session_id nor ctx_token",
+  "document_type": "event_batch",
+  "schema_version": "1.0",
+  "events": [
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-20T10:00:01Z",
+      "source_role": "agent",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis"
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T10:00:02Z",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "chars_ingested": 4200
+      }
+    }
+  ]
+}

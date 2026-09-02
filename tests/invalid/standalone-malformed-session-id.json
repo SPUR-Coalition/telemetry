@@ -1,0 +1,13 @@
+{
+  "_test_description": "Standalone envelope whose session_id is not a UUID (telemetry-event.json format: uuid).",
+  "_expected_error": "/session_id 'session-42' is not a 'uuid'",
+  "document_type": "event",
+  "schema_version": "1.0",
+  "session_id": "session-42",
+  "event": {
+    "type": "content_retrieved",
+    "timestamp": "2026-08-20T10:00:01Z",
+    "source_role": "agent",
+    "content_url": "https://www.example-news.com/economy/rate-decision-analysis"
+  }
+}

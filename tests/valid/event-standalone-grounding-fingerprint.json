@@ -1,7 +1,7 @@
 {
   "_test_description": "Standalone grounding event from a publisher-authorised live fetch with an emitter-reported generic fingerprint detection. The event schema is shared by session, standalone and batch envelopes.",
   "document_type": "event",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440180",
   "agent_id": "research-agent-v1",
   "started_at": "2026-08-12T10:00:00Z",

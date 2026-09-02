@@ -1,7 +1,8 @@
 {
-  "_test_description": "Agent-reported standalone content_engaged with session_id but no presentation_id. The presentation_id relaxation applies only to envelopes carrying ctx_token; an emitter that knows the session knows the presentation and MUST bind to it (sections 6.8, 7.4).",
+  "_test_description": "Agent-reported standalone content_engaged with session_id but no presentation_id. The presentation_id relaxation applies only to envelopes carrying ctx_token; an emitter that knows the session knows the presentation and MUST bind to it (sections 6.7, 7.4).",
+  "_expected_error": "/event 'presentation_id' is a required property",
   "document_type": "event",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440230",
   "agent_id": "assistant-v2",
   "started_at": "2026-08-10T12:00:00Z",
@@ -9,6 +10,8 @@
     "type": "content_engaged",
     "timestamp": "2026-08-10T12:00:30Z",
     "content_url": "https://news.example.com/markets/rate-decision",
-    "data": { "engagement_type": "link_click" }
+    "data": {
+      "engagement_type": "link_click"
+    }
   }
 }

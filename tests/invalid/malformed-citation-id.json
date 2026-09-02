@@ -1,0 +1,35 @@
+{
+  "_test_description": "content_presented whose citation_id is not a UUID (section 5.2 format: uuid).",
+  "_expected_error": "/events/1/citation_id 'cite-1' is not a 'uuid'",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440609",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440601",
+      "type": "content_cited",
+      "timestamp": "2026-08-20T10:00:03Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "citation_type": "reference",
+        "position": "primary"
+      }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440602",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T10:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      },
+      "citation_id": "cite-1"
+    }
+  ]
+}

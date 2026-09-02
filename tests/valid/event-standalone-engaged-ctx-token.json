@@ -1,7 +1,7 @@
 {
   "_test_description": "Standalone content_engaged (link_click) reported from a landing page after a click-out. Carries ctx_token in place of session_id and no presentation_id: the destination cannot know the presentation UUID, and the consumer restores the token's presentation binding at resolution (section 7.4).",
   "document_type": "event",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "ctx_token": "ct_9f3a1c7e2b8d4a06",
   "event": {
     "type": "content_engaged",

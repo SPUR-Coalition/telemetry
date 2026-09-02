@@ -1,0 +1,21 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: event-level ctx_token on a content_grounded event. The field is valid only on content_engaged (sections 5.2, 5.7.5).",
+  "_expected_error": "Field 'ctx_token' present on 'content_grounded' event",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440631",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T10:00:02Z",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "chars_ingested": 4200
+      },
+      "ctx_token": "ct_9f3a1c7e2b8d4a06"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "_test_description": "Manifest coverage entry without the required mode (sections 8.5, 5.7.6).",
+  "_expected_error": "/telemetry/coverage/content_grounded 'mode' is a required property",
+  "schema_version": "1.0",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": [
+    "agent"
+  ],
+  "operator": {
+    "name": "Example Media"
+  },
+  "telemetry": {
+    "endpoint": "https://t.example.com/v1/events",
+    "coverage": {
+      "content_grounded": {
+        "terms_ref": "https://terms.example.com/r/1"
+      }
+    }
+  }
+}

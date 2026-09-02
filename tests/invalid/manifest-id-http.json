@@ -1,0 +1,12 @@
+{
+  "_test_description": "Manifest whose id is an http URL; manifests are served over https (sections 8.1, 8.2).",
+  "_expected_error": "/id 'http://example.com/.well-known/content-telemetry.json' does not match '^https://[^?#]+/\\\\.well-known/content-telemetry\\\\.json$'",
+  "schema_version": "1.0",
+  "id": "http://example.com/.well-known/content-telemetry.json",
+  "roles": [
+    "content_owner"
+  ],
+  "operator": {
+    "name": "Example Media"
+  }
+}

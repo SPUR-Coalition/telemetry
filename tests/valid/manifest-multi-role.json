@@ -1,6 +1,6 @@
 {
   "_test_description": "Single manifest declaring multiple roles (content_owner and agent) with a key, telemetry endpoint, and domains.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "id": "https://publisher.com/.well-known/content-telemetry.json",
   "roles": ["content_owner", "agent"],
   "operator": { "name": "Publisher Co" },

@@ -1,6 +1,7 @@
 {
   "_test_description": "content_cited event carrying neither content_url nor content_id. A source association with no resolvable reference is not a citation; unlike other content events, the JSON Schema enforces the identifier requirement for content_cited (section 6.5).",
-  "schema_version": "0.1",
+  "_expected_error": "/events/0 'content_url' is a required property",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440140",
   "agent_id": "research-assistant-v1",
   "started_at": "2026-08-01T12:00:00Z",

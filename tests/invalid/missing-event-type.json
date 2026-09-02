@@ -1,6 +1,7 @@
 {
   "_test_description": "Event without type field. Fails JSON Schema validation: type is required on TelemetryEvent.",
-  "schema_version": "0.1",
+  "_expected_error": "/events/0 'type' is a required property",
+  "schema_version": "1.0",
   "session_id": "770e8400-e29b-41d4-a716-446655440004",
   "started_at": "2026-03-28T10:00:00Z",
   "events": [

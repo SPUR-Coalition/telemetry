@@ -1,0 +1,12 @@
+{
+  "_test_description": "Manifest whose id is not at the well-known location. Every manifest is served at its own /.well-known/content-telemetry.json URL (sections 8.1, 8.2).",
+  "_expected_error": "/id 'https://example.com/manifest.json' does not match '^https://[^?#]+/\\\\.well-known/content-telemetry\\\\.json$'",
+  "schema_version": "1.0",
+  "id": "https://example.com/manifest.json",
+  "roles": [
+    "content_owner"
+  ],
+  "operator": {
+    "name": "Example Media"
+  }
+}

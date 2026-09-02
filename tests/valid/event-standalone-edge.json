@@ -1,7 +1,7 @@
 {
   "_test_description": "Standalone event envelope from a CDN at Retrieval conformance level. No session_id (content owner has no session context). source_role is edge with full edge enrichment data. Validated against telemetry-event.json envelope schema.",
   "document_type": "event",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "event": {
     "type": "content_retrieved",
     "timestamp": "2026-03-28T08:15:00Z",
@@ -10,7 +10,7 @@
     "content_url": "https://www.telegraph.co.uk/business/2026/03/28/ftse-100-markets-live",
     "data": {
       "user_agent": "PerplexityBot/1.0",
-      "bot_category": "inference",
+      "purpose": "inference",
       "verified": false,
       "cache_status": "miss",
       "response_status": 200,

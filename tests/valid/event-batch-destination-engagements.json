@@ -1,0 +1,25 @@
+{
+  "_test_description": "Destination-reported engagements delivered as a batch under one ctx_token: a direct-link surface minted the token per presentation, so two clicks on the same presentation share it and are distinguished by timestamp at resolution (section 7.4.1). No presentation_id and no session_id: the consumer restores both from the token.",
+  "document_type": "event_batch",
+  "schema_version": "1.0",
+  "ctx_token": "ct_77b41f0ac93e5d28",
+  "manifest_ref": "https://shop.example.com/.well-known/content-telemetry.json",
+  "events": [
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T11:15:42Z",
+      "content_url": "https://shop.example.com/products/anc-headphones-x9",
+      "data": {
+        "engagement_type": "link_click"
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T11:21:09Z",
+      "content_url": "https://shop.example.com/products/anc-headphones-x9",
+      "data": {
+        "engagement_type": "link_click"
+      }
+    }
+  ]
+}

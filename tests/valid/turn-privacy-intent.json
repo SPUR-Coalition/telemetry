@@ -1,6 +1,6 @@
 {
   "_test_description": "turn_completed at intent privacy level: query_intent, topics, response_type, response_mode, model_id, ad_rendered present. No query_text or response_text.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440012",
   "agent_id": "assistant-v4",
   "started_at": "2026-03-28T18:30:00Z",

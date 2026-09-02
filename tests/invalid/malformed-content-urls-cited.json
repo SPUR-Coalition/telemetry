@@ -1,0 +1,22 @@
+{
+  "_test_description": "Turn whose content_urls_cited carries a value that is not a URI (section 5.4: URI[]).",
+  "_expected_error": "/events/0/turn/content_urls_cited/0 'not a url' is not a 'uri'",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440613",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-08-20T10:00:05Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "minimal",
+        "content_urls_cited": [
+          "not a url"
+        ],
+        "response_tokens": 10
+      }
+    }
+  ]
+}
