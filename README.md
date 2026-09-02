@@ -161,8 +161,10 @@ session or supplied implementation evidence.
 The consultation produced 29 specification issue threads, three profile issue
 threads and five pull requests. Every thread carries a recorded outcome, and
 the issue tracker and pull-request history remain the public decision record.
-The accepted changes were merged on the `v1-draft` integration line and
-published as version 1.0 on 2 September 2026.
+The accepted core changes were tracked on the
+[v1 release candidate milestone](https://github.com/SPUR-Coalition/telemetry/milestone/1),
+merged on the `v1-draft` integration line, and published as version 1.0 on
+2 September 2026.
 
 Concrete schema, fixture and documentation bugs may be filed using the
 *Schema or example bug* template, and questions or unclear requirements using
