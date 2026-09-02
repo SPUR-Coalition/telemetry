@@ -55,7 +55,7 @@
           "type": {
             "type": "string",
             "const": "Ed25519",
-            "description": "Key type. v0.1: Ed25519. (Section 8.4)"
+            "description": "Key type. v1 defines Ed25519 only. (Section 8.4)"
           },
           "publicKey": {
             "type": "string",
@@ -68,7 +68,7 @@
           }
         }
       },
-      "description": "Public keys for signing telemetry events. Per-event signing is informational in v0.1. (Section 8.4)"
+      "description": "Public keys for signing telemetry events. Per-event signing is informational in v1. (Section 8.4)"
     },
     "telemetry": {
       "type": "object",

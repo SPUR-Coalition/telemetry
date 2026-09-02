@@ -2,7 +2,7 @@
 
 **Signal format for AI content usage reporting.**
 
-**Version 1.0** is the current specification, published 2 September 2026. It replaces the v0.1 preview; the changes and migration steps are recorded in [SPECIFICATION.md section 12.1](./SPECIFICATION.md#121-migration-from-the-v01-preview).
+**Version 1.0** is the current specification. Migration from the v0.1 preview is recorded in [SPECIFICATION.md section 12.1](./SPECIFICATION.md#121-migration-from-the-v01-preview).
 
 ## Contents
 
@@ -12,7 +12,7 @@
 - [Repo contents](#repo-contents)
 - [Example](#example)
 - [Relationship to other protocols](#relationship-to-other-protocols)
-- [Consultation record](#consultation-record)
+- [Feedback](#feedback)
 - [Open questions in v1](#open-questions-in-v1)
 - [Versioning](#versioning)
 
@@ -40,7 +40,8 @@ The gaps between stages show how content was used:
 
 - **Retrieval without grounding** - your content was fetched but not used
 - **Grounding without citation** - your content influenced the answer but you got no credit
-- **Citation without engagement** - your content was cited but the user didn't click through
+- **Citation without presentation** - your content was credited in the output but the credit never reached the user
+- **Presentation without engagement** - your link was shown but the user didn't click through
 
 The grounding event captures the boundary "this content entered the agent's generation context." It is architecture-neutral and decoupled from retrieval: content cached by the agent for days still produces a grounding event in every session it influences.
 
@@ -152,29 +153,22 @@ The content owner can derive: FT article `abc123` was in context for the respons
 
 Content Telemetry is focussed on **reporting**, while content **access** protocols (Really Simple Licensing, peek-then-pay, IAB CoMP, bilateral APIs) aim to govern how agents discover and license content. The `license_ref` field on events connects telemetry to whatever access protocol issued the licence, but the schemas are independent - telemetry works with any access protocol, or none.
 
-## Consultation record
+## Feedback
 
-The public comment period ran from **12 June to 24 July 2026**. Thank you to
-everyone who opened an issue, submitted a pull request, joined a working
-session or supplied implementation evidence.
-
-The consultation produced 29 specification issue threads, three profile issue
-threads and five pull requests. Every thread carries a recorded outcome, and
-the issue tracker and pull-request history remain the public decision record.
-The accepted core changes were tracked on the
-[v1 release candidate milestone](https://github.com/SPUR-Coalition/telemetry/milestone/1),
-merged on the `v1-draft` integration line, and published as version 1.0 on
-2 September 2026.
-
-Concrete schema, fixture and documentation bugs may be filed using the
-*Schema or example bug* template, and questions or unclear requirements using
-*Spec feedback / open question*. For a new capability or change in behaviour,
-submit a short human-written note to [`proposals/`](./proposals/) and wait for
+File concrete schema, fixture and documentation bugs with the *Schema or
+example bug* template, and questions or unclear requirements with *Spec
+feedback / open question*. For a new capability or change in behaviour, submit
+a short human-written note to [`proposals/`](./proposals/) and wait for
 explicit maintainer alignment before beginning implementation (see
-[CONTRIBUTING.md](./CONTRIBUTING.md)). Pull requests remain welcome for
-specific fixes. Feedback on accreditation or the conformance mark belongs on
-the [profile
+[CONTRIBUTING.md](./CONTRIBUTING.md)). Pull requests are welcome for specific
+fixes. Feedback on accreditation or the conformance mark belongs on the
+[profile
 repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
+
+The [issue tracker](https://github.com/SPUR-Coalition/telemetry/issues) and
+pull-request history are the public decision record, including the v1
+consultation (12 June - 24 July 2026) and the
+[v1 release candidate milestone](https://github.com/SPUR-Coalition/telemetry/milestone/1).
 
 ## Open questions in v1
 
@@ -184,7 +178,7 @@ The following areas are expected to develop in 1.x minor versions and profiles, 
 
 **Event volume at scale.** A single deep-research query can produce 100+ retrieval events and dozens of grounding/citation events. The session document format already handles transport - one POST with all events after the session ends, not one request per event. Volume management beyond that (storage, processing, consumer-side aggregation) is an implementation concern, not a protocol gap. Version 1 adds an explicit coverage declaration - `complete`, `sampled`, `aggregated` or `selected` (section 5.7.6) - and a manifest field for it (section 8.5); the standard still sets no default for reporting granularity, leaving it to profiles and deployments.
 
-**Verification of grounding and citation.** Grounding and citation events are reported by the agent, which is also the party that may owe compensation under a licence. In v1, manifest signing is informational: consumers may verify signatures but are not required to, and the specification defines no required proof binding an event to its emitter (sections 8.4 and 8.9). The events attribution depends on are therefore self-reported by the reporting party. Verifiable credentials and signed events are deferred (section 8.9). One corroboration mechanism works without signing: the `Content-Telemetry-ID` field correlates an agent-reported retrieval with an origin- or edge-reported one (section 7.2), but it covers retrieval only - grounding, citation, presentation, and engagement have no independent observer. Signing, even once required, would prove who reported an event, not that the event is true or that all qualifying events were reported. Input is wanted on what a verification layer should cover and where it belongs. Mechanisms that test truthfulness and completeness rather than origin, such as sampled audits or publisher-seeded canary content, are of particular interest.
+**Verification of grounding and citation.** Grounding and citation events are reported by the agent, which is also the party that may owe compensation under a licence. In v1, manifest signing is informational: consumers may verify signatures but are not required to, and the specification defines no required proof binding an event to its emitter (sections 8.4 and 8.9). The events attribution depends on are therefore self-reported by the reporting party. Verifiable credentials and signed events are deferred (section 8.9). One corroboration mechanism works without signing: the `Content-Telemetry-ID` header correlates an agent-reported retrieval with an origin- or edge-reported one (section 7.2), but it covers retrieval only - grounding, citation, presentation, and engagement have no independent observer. Signing, even once required, would prove who reported an event, not that the event is true or that all qualifying events were reported. Input is wanted on what a verification layer should cover and where it belongs. Mechanisms that test truthfulness and completeness rather than origin, such as sampled audits or publisher-seeded canary content, are of particular interest.
 
 **Reporting granularity.** The standard sets no default for reporting granularity, leaving it to profiles and deployments (see *Event volume* above). The SPUR profile requires event-level delivery and does not permit aggregation. Version 1 answers the first half of the question: coverage modes are defined once, in section 5.7.6, so that profiles reference them rather than each define their own. How event-level delivery scales for the highest-volume case remains open.
 
