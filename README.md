@@ -2,16 +2,7 @@
 
 **Signal format for AI content usage reporting.**
 
-This is a preview specification. Field names, event types, and schema structure may change before 1.0.
-
-> **Consultation status — 12 August 2026:** The public comment period closed on
-> **24 July 2026**. The SPUR Steering Board has approved the v1 direction, and a
-> final disposition is now recorded on every consultation thread: each carries
-> an outcome label, and accepted core changes sit on the
-> [v1 release candidate milestone](https://github.com/SPUR-Coalition/telemetry/milestone/1)
-> with a schema freeze targeted for **21 August 2026**. Accepted changes are
-> merging on the `v1-draft` integration line. Version 0.1 remains the current
-> published preview. See [Consultation status](#consultation-status) below.
+**Version 1.0** is the current specification, published 2 September 2026. It replaces the v0.1 preview; the changes and migration steps are recorded in [SPECIFICATION.md section 12.1](./SPECIFICATION.md#121-migration-from-the-v01-preview).
 
 ## Contents
 
@@ -21,8 +12,8 @@ This is a preview specification. Field names, event types, and schema structure 
 - [Repo contents](#repo-contents)
 - [Example](#example)
 - [Relationship to other protocols](#relationship-to-other-protocols)
-- [Consultation status](#consultation-status)
-- [Open questions in v0.1](#open-questions-in-v01)
+- [Consultation record](#consultation-record)
+- [Open questions in v1](#open-questions-in-v1)
 - [Versioning](#versioning)
 
 ## Problem
@@ -72,7 +63,7 @@ Grounding and presentation record different boundary crossings: grounding means 
 - [telemetry-event-batch.json](./telemetry-event-batch.json) - JSON Schema for event batch envelopes
 - [manifest.json](./manifest.json) - JSON Schema for the `.well-known/content-telemetry.json` manifest ([section 8](./SPECIFICATION.md#8-manifest))
 - [tests/](./tests/) - conformance test suite
-- [GOVERNANCE.md](./GOVERNANCE.md) - stewardship, preview status, relationship to profiles
+- [GOVERNANCE.md](./GOVERNANCE.md) - stewardship, versioning status, relationship to profiles
 - [LICENSE](./LICENSE) - Apache License 2.0
 
 This repository is the **standard** - the wire format. Publisher-facing accreditation and the SPUR conformance mark are defined separately in the [SPUR Content Telemetry Profile](https://github.com/SPUR-Coalition/telemetry-profile), which references this specification by version. The standard defines the privacy mechanism (section 5.5); whether a profile makes any privacy level binding is the profile's choice. See [GOVERNANCE.md](./GOVERNANCE.md).
@@ -161,52 +152,37 @@ The content owner can derive: FT article `abc123` was in context for the respons
 
 Content Telemetry is focussed on **reporting**, while content **access** protocols (Really Simple Licensing, peek-then-pay, IAB CoMP, bilateral APIs) aim to govern how agents discover and license content. The `license_ref` field on events connects telemetry to whatever access protocol issued the licence, but the schemas are independent - telemetry works with any access protocol, or none.
 
-## Consultation status
+## Consultation record
 
-The public comment period ran from **12 June to 24 July 2026** and is now closed.
-Thank you to everyone who opened an issue, submitted a pull request, joined a
-working session or supplied implementation evidence.
+The public comment period ran from **12 June to 24 July 2026**. Thank you to
+everyone who opened an issue, submitted a pull request, joined a working
+session or supplied implementation evidence.
 
 The consultation produced 29 specification issue threads, three profile issue
-threads and five pull requests. The maintainers are now:
+threads and five pull requests. Every thread carries a recorded outcome, and
+the issue tracker and pull-request history remain the public decision record.
+The accepted changes were merged on the `v1-draft` integration line and
+published as version 1.0 on 2 September 2026.
 
-- [x] reviewing the full consultation record;
-- [x] preparing a proposed disposition for every thread;
-- [x] recording the approved dispositions on the issue tracker;
-- [ ] completing focused v1 changes and migration fixtures on `v1-draft`;
-- [ ] publishing a v1 release candidate for implementer testing; and
-- [ ] publishing final v1 only after publisher, intermediary and agent/platform
-  acceptance cases pass.
-
-Consultation issues remain open while their dispositions are recorded. An open
-issue does not mean its proposal has been accepted, and a preparation branch does
-not change the published specification. The issue tracker and pull-request
-history will remain the public decision record.
-
-Concrete schema, fixture and documentation bugs may still be filed using the
+Concrete schema, fixture and documentation bugs may be filed using the
 *Schema or example bug* template, and questions or unclear requirements using
 *Spec feedback / open question*. For a new capability or change in behaviour,
 submit a short human-written note to [`proposals/`](./proposals/) and wait for
 explicit maintainer alignment before beginning implementation (see
-[CONTRIBUTING.md](./CONTRIBUTING.md)); new design proposals are not
-automatically part of the v1 consultation scope. Pull requests remain welcome
-for specific fixes. Feedback on accreditation or the conformance mark belongs
-on the [profile
+[CONTRIBUTING.md](./CONTRIBUTING.md)). Pull requests remain welcome for
+specific fixes. Feedback on accreditation or the conformance mark belongs on
+the [profile
 repository](https://github.com/SPUR-Coalition/telemetry-profile/issues).
 
-Required fields, event types and schema structure may still change before 1.0
-(section 12). Version 0.1 remains the current published preview until a later
-version is released.
+## Open questions in v1
 
-## Open questions in v0.1
-
-This is a preview specification. The following areas are under active discussion and will be refined with implementer input:
+The following areas are expected to develop in 1.x minor versions and profiles, with implementer input:
 
 **Grounding boundary.** The spec defines grounding as content entering the generation model's context (sections 4.3 and 6.4). For straightforward RAG pipelines this is clear. For pipelines with multiple processing stages - embedding, re-ranking, summarisation before context insertion - the boundary requires judgement. The spec draws the line at the generation context (not earlier retrieval stages), but edge cases remain. When a re-ranking or summarisation stage is itself a generative model, the multi-step rule in section 6.4 (content entering a sub-agent's generation context is grounded) can pull selection stages back inside the boundary. Input from platform engineering teams building real implementations will sharpen this definition.
 
 **Event volume at scale.** A single deep-research query can produce 100+ retrieval events and dozens of grounding/citation events. The session document format already handles transport - one POST with all events after the session ends, not one request per event. Volume management beyond that (storage, processing, consumer-side aggregation) is an implementation concern, not a protocol gap. Version 1 adds an explicit coverage declaration - `complete`, `sampled`, `aggregated` or `selected` (section 5.7.6) - and a manifest field for it (section 8.5); the standard still sets no default for reporting granularity, leaving it to profiles and deployments.
 
-**Verification of grounding and citation.** Grounding and citation events are reported by the agent, which is also the party that may owe compensation under a licence. In v0.1, manifest signing is informational: consumers may verify signatures but are not required to, and the specification defines no required proof binding an event to its emitter (sections 8.4 and 8.9). The events attribution depends on are therefore self-reported by the reporting party. Verifiable credentials and signed events are deferred (section 8.9). One corroboration mechanism works without signing: the `Content-Telemetry-ID` field correlates an agent-reported retrieval with an origin- or edge-reported one (section 7.2), but it covers retrieval only - grounding, citation, presentation, and engagement have no independent observer. Signing, even once required, would prove who reported an event, not that the event is true or that all qualifying events were reported. Input is wanted on what a verification layer should cover and where it belongs. Mechanisms that test truthfulness and completeness rather than origin, such as sampled audits or publisher-seeded canary content, are of particular interest.
+**Verification of grounding and citation.** Grounding and citation events are reported by the agent, which is also the party that may owe compensation under a licence. In v1, manifest signing is informational: consumers may verify signatures but are not required to, and the specification defines no required proof binding an event to its emitter (sections 8.4 and 8.9). The events attribution depends on are therefore self-reported by the reporting party. Verifiable credentials and signed events are deferred (section 8.9). One corroboration mechanism works without signing: the `Content-Telemetry-ID` field correlates an agent-reported retrieval with an origin- or edge-reported one (section 7.2), but it covers retrieval only - grounding, citation, presentation, and engagement have no independent observer. Signing, even once required, would prove who reported an event, not that the event is true or that all qualifying events were reported. Input is wanted on what a verification layer should cover and where it belongs. Mechanisms that test truthfulness and completeness rather than origin, such as sampled audits or publisher-seeded canary content, are of particular interest.
 
 **Reporting granularity.** The standard sets no default for reporting granularity, leaving it to profiles and deployments (see *Event volume* above). The SPUR profile requires event-level delivery and does not permit aggregation. Version 1 answers the first half of the question: coverage modes are defined once, in section 5.7.6, so that profiles reference them rather than each define their own. How event-level delivery scales for the highest-volume case remains open.
 
@@ -214,4 +190,4 @@ This is a preview specification. The following areas are under active discussion
 
 This repo tracks the specification version. SDK repos have their own release cadences and declare which spec version they support.
 
-Current spec version: **0.1** (preview)
+Current spec version: **1.0**

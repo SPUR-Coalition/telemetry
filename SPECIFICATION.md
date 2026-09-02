@@ -1,8 +1,8 @@
 # Content Telemetry Specification
 
-**Version:** 1.0 (release candidate draft)
-**Status:** Release candidate in preparation (feature freeze 21 August 2026)
-**Last updated:** 2026-08-12
+**Version:** 1.0
+**Status:** Current specification
+**Published:** 2026-09-02
 
 ## Contents
 
@@ -819,6 +819,8 @@ The `contradiction` type supports negative attribution: content that was retriev
 
 The `unclassified` value for `citation_type` indicates the agent did not classify this citation. The `unclassified` value for `position` indicates the agent did not determine the prominence of the citation. Emitters SHOULD use `unclassified` rather than forcing a classification when the agent cannot confidently determine the citation type or position.
 
+A citation of translated or cross-language content is a `paraphrase` (or `reference`) citation like any other: v1 defines no language fields and no match-confidence claim. `excerpt_hash` identifies the excerpt the agent produced, not the source passage, so a hash that does not match the source is expected for translated and paraphrased citations and does not indicate non-use; establishing which source passage a translated excerpt derives from is verification-layer work outside this specification.
+
 `url_verified` indicates whether the agent confirmed that the cited URL resolves to content matching the citation. When `false` or absent, the citation may reference a hallucinated or outdated URL. `url_verified` MAY be set asynchronously after response generation. Platforms that batch-verify URLs periodically rather than per-request are conforming. A value of `false` indicates the URL was not verified, not that verification failed.
 
 When `content_hash` is absent or does not match any grounding event's hash (for example, because the agent re-chunked content between grounding and citation), consumers SHOULD fall back to matching on `content_url` or `content_id`, accepting that the correlation may be imprecise when the same content appears in multiple grounding events.
@@ -848,6 +850,8 @@ When `content_hash` is absent or does not match any grounding event's hash (for 
 `presentation_kind`, rather than `presentation_type`, determines whether the occurrence carries source content or a source reference. For example, a snippet may be an attributed source reference or an uncredited content excerpt. An embed can occur without a grounding event when the content never entered a generation context (section 4.3, *Departures from the funnel model*).
 
 These are the core values. Platforms with additional presentation surfaces MAY use custom string values. Telemetry consumers MUST tolerate unknown `presentation_type` values.
+
+A presentation identifies whole content items. Finer-grained portion references for time-based and spatial media - time ranges, regions, segments - are not defined in this version.
 
 Each presentation event MUST have an `id` and `output_id`. When it presents a citation, `citation_id` references that `content_cited` event's `id`, and the two events identify the same content; an uncited presentation omits `citation_id`. Repeated presentations of the same source or output element MUST receive distinct event IDs - event `id` values are unique within a session document. This allows a later `content_engaged.presentation_id` to identify the exact surface occurrence rather than matching only by URL.
 
