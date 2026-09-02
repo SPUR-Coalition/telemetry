@@ -469,7 +469,7 @@ A processor that stores, forwards or transforms a document MUST preserve `terms_
 
 #### Extension events
 
-The core schema defines content and conversation events. Implementations MAY define additional event types using the `data` field for type-specific metadata. Commerce-specific fields (product identifiers, checkout events) are a planned extension.
+The core schema defines content and conversation events. Implementations MAY define additional event types using the `data` field for type-specific metadata. Extension event types SHOULD use namespaced names (for example `com.example.checkout_completed`) so they cannot collide with each other or with future core types. Commerce-specific fields (product identifiers, checkout events) are a planned extension.
 
 ### 5.4 Conversation turn
 
@@ -1959,6 +1959,44 @@ A marketplace intermediary delivers content from many publishers under a single 
 ```
 
 The telemetry consumer resolves `autoreview.example` by domain registration and the `mkt:gridnews:` prefix by identifier registration, and produces two owner-filtered views: AutoReview sees its retrieval, grounding, citation and link presentation; GridNews sees its own four events and nothing of AutoReview's. Neither view carries the other owner's identifiers, and both carry the shared `content_scope` so the marketplace can reconcile the session against the agreement. The second retrieval has no `content_url` at all - marketplace API content with no canonical URL - and resolves by `content_id` alone.
+
+### B.6 Delegated sub-agent session
+
+An orchestrating agent delegates a research step to a sub-agent. The child session links to its parent with `parent_session_id`, keeps its own `session_id` and events, and grounds the source in its own generation context (section 5.1). No citation or presentation is emitted merely because the child returns an internal result to its orchestrator - those events belong to the session whose output reaches the end user.
+
+```json
+{
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440021",
+  "parent_session_id": "660e8400-e29b-41d4-a716-446655440020",
+  "agent_id": "research-subagent-v1",
+  "started_at": "2026-07-29T09:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-07-29T09:00:02Z",
+      "turn_id": "child-turn-1",
+      "content_url": "https://example.org/research/source",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "chars_ingested": 3600
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-07-29T09:00:05Z",
+      "turn_id": "child-turn-1",
+      "turn": {
+        "privacy_level": "minimal",
+        "response_tokens": 180
+      }
+    }
+  ]
+}
+```
+
+If the orchestrator later cites and presents this source to the user, those `content_cited` and `content_presented` events appear in the parent session, and a consumer holding both sessions joins them through `parent_session_id`. Emitters MAY omit the link when the relationship is unavailable or its disclosure is not appropriate; consumers MUST NOT infer that an unlinked session had no parent.
 
 ## Annex C (informative): Vendor bot-classification mappings
 
