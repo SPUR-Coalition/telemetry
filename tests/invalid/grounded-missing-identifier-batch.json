@@ -1,0 +1,20 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: batch member content_grounded with neither content_url nor content_id (section 5.7.5), in the event batch shape.",
+  "_expected_error": "'content_grounded' carries neither content_url nor content_id",
+  "document_type": "event_batch",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440646",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T10:00:02Z",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "chars_ingested": 4200
+      }
+    }
+  ]
+}

@@ -1,6 +1,9 @@
 {
   "_test_description": "Manifest missing the required 'operator' field. Fails JSON Schema validation.",
-  "schema_version": "0.1",
+  "_expected_error": "/ 'operator' is a required property",
+  "schema_version": "1.0",
   "id": "https://example.com/.well-known/content-telemetry.json",
-  "roles": ["content_owner"]
+  "roles": [
+    "content_owner"
+  ]
 }

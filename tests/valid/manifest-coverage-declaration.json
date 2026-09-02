@@ -1,0 +1,18 @@
+{
+  "_test_description": "Agent manifest declaring per-event-type coverage in telemetry.coverage (8.5, 5.7.6): content_grounded reported complete, content_retrieved sampled under a rule stated in the referenced terms.",
+  "schema_version": "1.0",
+  "id": "https://assistant.example.com/.well-known/content-telemetry.json",
+  "roles": ["agent"],
+  "operator": { "name": "Assistant Example" },
+  "telemetry": {
+    "endpoint": "https://telemetry.assistant.example.com/v1/events",
+    "conformance_level": "grounding",
+    "coverage": {
+      "content_grounded": { "mode": "complete" },
+      "content_retrieved": {
+        "mode": "sampled",
+        "terms_ref": "https://terms.example.com/reporting/v1"
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "_test_description": "Grounding conformance level: agent emitting content_retrieved, content_grounded, and turn events with privacy_level. Includes agent_id and data.scope as required by the Grounding tier.",
-  "schema_version": "0.1",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440002",
   "agent_id": "research-assistant-v1",
   "started_at": "2026-03-28T12:00:00Z",
@@ -30,6 +30,7 @@
       "data": {
         "scope": "session",
         "cached": false,
+        "chars_ingested": 20400,
         "tokens_ingested": 5100,
         "content_last_modified": "2026-03-15T08:00:00Z",
         "media_type": "text"

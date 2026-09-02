@@ -1,0 +1,15 @@
+{
+  "_test_description": "Manifest whose telemetry endpoint is an http URL; section 8.5 requires an HTTPS URL.",
+  "_expected_error": "/telemetry/endpoint 'http://t.example.com/v1/events' does not match '^https://'",
+  "schema_version": "1.0",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": [
+    "content_owner"
+  ],
+  "operator": {
+    "name": "Example Media"
+  },
+  "telemetry": {
+    "endpoint": "http://t.example.com/v1/events"
+  }
+}

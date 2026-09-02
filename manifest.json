@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://contenttelemetry.org/schema/v0.1/manifest.json",
+  "$id": "https://contenttelemetry.org/schema/v1/manifest.json",
   "title": "Content Telemetry Manifest",
   "description": "Schema for the .well-known/content-telemetry.json manifest defined in section 8 of the Content Telemetry specification. A manifest declares a participant's identity, roles, telemetry endpoint, signing keys, and claimed domains.",
   "type": "object",
@@ -8,13 +8,14 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "0.1",
-      "description": "Manifest schema version. v0.1 emitters MUST use '0.1'. (Section 8.2)"
+      "const": "1.0",
+      "description": "Manifest schema version. v1 emitters MUST use '1.0'. (Section 8.2)"
     },
     "id": {
       "type": "string",
       "format": "uri",
-      "description": "The manifest's canonical URL, e.g. https://example.com/.well-known/content-telemetry.json. (Section 8.2)"
+      "pattern": "^https://[^?#]+/\\.well-known/content-telemetry\\.json$",
+      "description": "The manifest's canonical https URL, ending in /.well-known/content-telemetry.json, e.g. https://example.com/.well-known/content-telemetry.json. (Section 8.2)"
     },
     "roles": {
       "type": "array",
@@ -76,12 +77,38 @@
         "endpoint": {
           "type": "string",
           "format": "uri",
-          "description": "HTTPS URL. For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the owner's content. (Section 8.5)"
+          "pattern": "^https://",
+          "description": "HTTPS URL (schema-enforced). For agents and platforms, the outbound submission endpoint. For content owners, the inbound destination for events about the owner's content. (Section 8.5)"
         },
         "conformance_level": {
           "type": "string",
           "enum": ["retrieval", "grounding", "citation"],
           "description": "Conformance level advertised by this participant's own emitter(s). Informational. (Sections 8.5, 5.7)"
+        },
+        "ctx_resolution": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "description": "HTTPS URL of the click-token resolution endpoint operated by or for this participant. Valid on agent and platform manifests (enforced at the application layer). Destinations resolve ctx_iss to this manifest and present the token here. (Section 7.4)"
+        },
+        "coverage": {
+          "type": "object",
+          "description": "Per-event-type coverage declaration, a map from event type to a mode object. A claim subject to the rules of section 5.7.6: complete asserts every qualifying occurrence within the declared relationship scope is emitted. (Sections 8.5, 5.7.6)",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": ["complete", "sampled", "aggregated", "selected"],
+                "description": "Coverage mode (section 5.7.6)"
+              },
+              "terms_ref": {
+                "type": ["string", "null"],
+                "description": "Reference to the terms stating the sampling, aggregation or selection rule and the relationship scope (section 5.2.4)"
+              }
+            }
+          }
         }
       },
       "description": "Telemetry endpoint declaration. (Section 8.5)"
@@ -91,7 +118,28 @@
       "items": {
         "type": "string"
       },
-      "description": "Domains the participant claims authority over. MAY appear only on root manifests; each entry MUST be the manifest's own host or a subdomain of it (literal or wildcard). (Section 8.6)"
+      "description": "Domains the participant claims authority over. MAY appear only on root manifests (enforced at the application layer); each entry MUST be the manifest's own host or a subdomain of it (literal or wildcard). (Section 8.6)"
+    },
+    "identifier_schemes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["prefix"],
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The content_id prefix claimed, matched against content_id values up to and including the prefix, e.g. ft: or mkt:gridnews:. (Section 8.6)"
+          },
+          "resolution": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://",
+            "description": "HTTPS URL of an endpoint mapping a content_id under this prefix to the owning content record or organisation. (Section 8.6)"
+          }
+        }
+      },
+      "description": "Identifier prefixes the participant claims for content_id routing. MAY appear only on content_owner manifests (enforced at the application layer); prefix ownership is verified by the consumer at registration. (Sections 7.3, 8.6)"
     }
   }
 }

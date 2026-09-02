@@ -1,9 +1,14 @@
 {
   "_test_description": "Manifest with telemetry.conformance_level 'attribution' which is not one of retrieval, grounding, citation. Fails JSON Schema validation.",
-  "schema_version": "0.1",
+  "_expected_error": "/telemetry/conformance_level 'attribution' is not one of ['retrieval', 'grounding', 'citation']",
+  "schema_version": "1.0",
   "id": "https://searchco.com/agents/web-search/.well-known/content-telemetry.json",
-  "roles": ["agent"],
-  "operator": { "name": "SearchCo" },
+  "roles": [
+    "agent"
+  ],
+  "operator": {
+    "name": "SearchCo"
+  },
   "telemetry": {
     "endpoint": "https://telemetry.example.com/v1/events",
     "conformance_level": "attribution"

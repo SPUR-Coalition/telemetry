@@ -1,0 +1,25 @@
+{
+  "_test_description": "Standalone grounding of a third-party-sourced representation that the agent had cached (cached true is unconstrained for third_party_sourced, section 6.4), identified by an ISCC content_id alongside the URL, with an iscc fingerprint detection.",
+  "document_type": "event",
+  "schema_version": "1.0",
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "agent_id": "agent-example",
+  "started_at": "2026-06-20T10:00:00Z",
+  "event": {
+    "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+    "type": "content_grounded",
+    "timestamp": "2026-06-20T10:00:01Z",
+    "content_url": "https://example.com/article",
+    "content_id": "ISCC:KACYPXW445FTYNJ3",
+    "data": {
+      "scope": "turn",
+      "cached": true,
+      "provenance": "third_party_sourced",
+      "tokens_ingested": 512,
+      "content_fingerprint": {
+        "scheme": "iscc",
+        "detected": true
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: standalone envelope whose only session reference is a ctx_token but whose event is a content_grounded. An envelope ctx_token accompanies content_engaged events only (section 7.1).",
+  "_expected_error": "Envelope ctx_token accompanies a 'content_grounded' event",
+  "document_type": "event",
+  "schema_version": "1.0",
+  "ctx_token": "ct_9f3a1c7e2b8d4a06",
+  "event": {
+    "type": "content_grounded",
+    "timestamp": "2026-08-20T10:00:02Z",
+    "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+    "data": {
+      "scope": "turn",
+      "cached": false,
+      "chars_ingested": 4200
+    }
+  }
+}

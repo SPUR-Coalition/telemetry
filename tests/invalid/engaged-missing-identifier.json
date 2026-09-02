@@ -1,0 +1,30 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: content_engaged event carrying neither content_url nor content_id. The engagement references its presentation via presentation_id but still MUST identify the content acted on (section 5.7.5).",
+  "_expected_error": "'content_engaged' carries neither content_url nor content_id",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440234",
+  "started_at": "2026-08-05T12:20:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440235",
+      "type": "content_presented",
+      "timestamp": "2026-08-05T12:20:01Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-05T12:20:04Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440235",
+      "data": {
+        "engagement_type": "link_click"
+      }
+    }
+  ]
+}

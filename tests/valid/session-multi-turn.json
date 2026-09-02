@@ -1,11 +1,21 @@
 {
-  "_test_description": "Session-scoped grounding, 3 turns, citations in turns 1 and 3, zero-click outcome (browse with new_query exit). Turn 2 has no citation - the grounded content was in context but not explicitly referenced.",
-  "schema_version": "0.1",
+  "_test_description": "Session-scoped grounding, 3 turns, citations in turns 1 and 3, zero-click outcome. Turn 2 has no citation - the grounded content was in context but not explicitly referenced.",
+  "schema_version": "1.0",
   "session_id": "660e8400-e29b-41d4-a716-446655440006",
   "agent_id": "copilot-v3",
   "started_at": "2026-03-28T16:00:00Z",
   "ended_at": "2026-03-28T16:10:00Z",
   "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-03-28T16:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "question",
+        "topics": ["fusion energy", "ITER"]
+      }
+    },
     {
       "type": "content_retrieved",
       "timestamp": "2026-03-28T16:00:01Z",
@@ -20,24 +30,17 @@
       "data": {
         "scope": "session",
         "cached": false,
+        "chars_ingested": 9600,
         "tokens_ingested": 2400,
         "media_type": "text"
       }
     },
     {
-      "type": "turn_started",
-      "timestamp": "2026-03-28T16:00:00Z",
-      "turn_id": "1",
-      "turn": {
-        "privacy_level": "intent",
-        "query_intent": "question",
-        "topics": ["fusion energy", "ITER"]
-      }
-    },
-    {
+      "id": "880e8400-e29b-41d4-a716-446655440051",
       "type": "content_cited",
       "timestamp": "2026-03-28T16:00:08Z",
       "turn_id": "1",
+      "output_id": "response:1",
       "content_url": "https://www.bbc.co.uk/news/science-environment-68234567",
       "content_id": "bbc:68234567",
       "data": {
@@ -47,12 +50,16 @@
       }
     },
     {
-      "type": "content_displayed",
+      "id": "880e8400-e29b-41d4-a716-446655440052",
+      "type": "content_presented",
       "timestamp": "2026-03-28T16:00:08Z",
       "turn_id": "1",
+      "output_id": "response:1",
+      "citation_id": "880e8400-e29b-41d4-a716-446655440051",
       "content_url": "https://www.bbc.co.uk/news/science-environment-68234567",
       "data": {
-        "display_type": "link"
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
       }
     },
     {
@@ -100,9 +107,11 @@
       }
     },
     {
+      "id": "880e8400-e29b-41d4-a716-446655440053",
       "type": "content_cited",
       "timestamp": "2026-03-28T16:05:12Z",
       "turn_id": "3",
+      "output_id": "response:3",
       "content_url": "https://www.bbc.co.uk/news/science-environment-68234567",
       "content_id": "bbc:68234567",
       "data": {

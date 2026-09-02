@@ -1,0 +1,23 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: a turn object on a content_grounded event. Turn data is carried on turn_started and turn_completed only (sections 5.2, 5.4).",
+  "_expected_error": "Field 'turn' present on 'content_grounded' event",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440634",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T10:00:02Z",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "chars_ingested": 4200
+      },
+      "turn": {
+        "privacy_level": "minimal"
+      }
+    }
+  ]
+}

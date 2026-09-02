@@ -1,0 +1,113 @@
+{
+  "_test_description": "The non-click engagement types: a snippet presentation is expanded, and the detail view it opens is copied from and shared. Each action is one engagement occurrence on one presentation (sections 4.3, 6.7); three actions on two presentations, all in-product and agent-reported.",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440650",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-08-20T10:00:05Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "how_to",
+        "topics": [
+          "sourdough"
+        ]
+      }
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T10:00:02Z",
+      "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "chars_ingested": 7200
+      }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440601",
+      "type": "content_cited",
+      "timestamp": "2026-08-20T10:00:03Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance",
+      "data": {
+        "citation_type": "paraphrase",
+        "position": "primary"
+      },
+      "output_element_id": "answer:steps:1"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440602",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T10:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "citation_id": "770e8400-e29b-41d4-a716-446655440601",
+      "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "snippet"
+      },
+      "output_element_id": "answer:steps:1"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440603",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T10:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance",
+      "data": {
+        "presentation_kind": "content",
+        "presentation_type": "detail_view",
+        "media_type": "text"
+      },
+      "output_element_id": "panel:source:1"
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-08-20T10:00:05Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "response_type": "how_to",
+        "response_mode": "standard",
+        "response_tokens": 260
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T10:00:06Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440602",
+      "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance",
+      "data": {
+        "engagement_type": "expand"
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T10:00:07Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440603",
+      "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance",
+      "data": {
+        "engagement_type": "copy"
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T10:00:08Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440603",
+      "content_url": "https://www.kingarthurbaking.com/recipes/sourdough-starter-maintenance",
+      "data": {
+        "engagement_type": "share"
+      }
+    }
+  ]
+}

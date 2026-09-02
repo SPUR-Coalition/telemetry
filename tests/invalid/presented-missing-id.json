@@ -1,0 +1,20 @@
+{
+  "_test_description": "content_presented event with output_id and presentation data but no event id. id is required on presentation events so a later content_engaged.presentation_id can reference the exact surface occurrence (section 6.7).",
+  "_expected_error": "/events/0 'id' is a required property",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440200",
+  "started_at": "2026-08-05T09:00:00Z",
+  "events": [
+    {
+      "type": "content_presented",
+      "timestamp": "2026-08-05T09:00:01Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    }
+  ]
+}

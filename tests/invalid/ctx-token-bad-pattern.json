@@ -1,0 +1,15 @@
+{
+  "_test_description": "ctx_token failing the value pattern: tokens are opaque but MUST match ^ct_[A-Za-z0-9_-]{16,240}$ so they survive URL carriage and are recognisable in logs (section 7.4). This value has no ct_ prefix and contains reserved characters.",
+  "_expected_error": "/ctx_token 'session=660e8400!' does not match '^ct_[A-Za-z0-9_-]{16,240}$'",
+  "document_type": "event",
+  "schema_version": "1.0",
+  "ctx_token": "session=660e8400!",
+  "event": {
+    "type": "content_engaged",
+    "timestamp": "2026-08-10T11:20:00Z",
+    "content_url": "https://news.example.com/markets/rate-decision",
+    "data": {
+      "engagement_type": "link_click"
+    }
+  }
+}

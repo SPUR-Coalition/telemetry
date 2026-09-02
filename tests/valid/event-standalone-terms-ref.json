@@ -1,0 +1,15 @@
+{
+  "_test_description": "Standalone retrieval event reported under governing terms with no grant: terms_ref names the terms (5.2.4), license_ref is absent, and the envelope carries manifest_ref (7.1) to tie the emitter to a domain without a session document.",
+  "document_type": "event",
+  "schema_version": "1.0",
+  "agent_id": "assistant.example.com",
+  "manifest_ref": "https://assistant.example.com/.well-known/content-telemetry.json",
+  "event": {
+    "type": "content_retrieved",
+    "timestamp": "2026-08-13T15:00:04Z",
+    "source_role": "agent",
+    "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440071",
+    "content_url": "https://example.com/2026/08/13/markets-live",
+    "terms_ref": "https://terms.example.com/search-only/v2"
+  }
+}

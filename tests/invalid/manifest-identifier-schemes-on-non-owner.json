@@ -1,0 +1,20 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: agent manifest carrying identifier_schemes. The block MAY appear only on manifests declaring the content_owner role (section 8.6).",
+  "_expected_error": "identifier_schemes only on content_owner manifests",
+  "schema_version": "1.0",
+  "id": "https://searchco.com/agents/web-search/.well-known/content-telemetry.json",
+  "roles": [
+    "agent"
+  ],
+  "operator": {
+    "name": "SearchCo"
+  },
+  "telemetry": {
+    "endpoint": "https://telemetry.searchco.com/v1/events"
+  },
+  "identifier_schemes": [
+    {
+      "prefix": "sc:"
+    }
+  ]
+}

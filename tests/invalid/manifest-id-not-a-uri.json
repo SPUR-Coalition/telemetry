@@ -1,0 +1,12 @@
+{
+  "_test_description": "Manifest whose id is not a valid URI (a space in the host). format: uri rejects it (section 8.2).",
+  "_expected_error": "/id 'https://exa mple.com/.well-known/content-telemetry.json' is not a 'uri'",
+  "schema_version": "1.0",
+  "id": "https://exa mple.com/.well-known/content-telemetry.json",
+  "roles": [
+    "content_owner"
+  ],
+  "operator": {
+    "name": "Example Media"
+  }
+}

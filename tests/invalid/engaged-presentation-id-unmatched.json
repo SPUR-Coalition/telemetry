@@ -1,0 +1,31 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: content_engaged whose presentation_id matches no content_presented event id in the session. Section 6.7 requires presentation_id to reference the exact content_presented.id on which the action occurred; an all-zeros UUID satisfies the schema's format assertion but references nothing.",
+  "_expected_error": "presentation_id '00000000-0000-0000-0000-000000000000' does not match any content_presented event id",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440236",
+  "started_at": "2026-08-05T12:30:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440237",
+      "type": "content_presented",
+      "timestamp": "2026-08-05T12:30:01Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-05T12:30:04Z",
+      "turn_id": "1",
+      "presentation_id": "00000000-0000-0000-0000-000000000000",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "engagement_type": "link_click"
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "_test_description": "content_grounded with provenance 'scraped'. provenance is agent_fetched, agent_cached or third_party_sourced (section 6.4).",
+  "_expected_error": "/events/0/data/provenance 'scraped' is not one of ['agent_fetched', 'agent_cached', 'third_party_sourced']",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440607",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T10:00:02Z",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "provenance": "scraped"
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 ## Status
 
-Content Telemetry is an open specification stewarded by the SPUR Coalition. It is in preview (v0.x); see [SPECIFICATION.md](./SPECIFICATION.md) section 12 for the versioning policy.
+Content Telemetry is an open specification stewarded by the SPUR Coalition. Version 1.0 is the current specification; see [SPECIFICATION.md](./SPECIFICATION.md) section 12 for the versioning policy.
 
 ## Stewardship
 
@@ -18,20 +18,22 @@ The SPUR Coalition stewards the specification and holds this repository. The sta
 
 The SPUR Coalition is a group of publishers and content owners that maintains the Content Telemetry standard. It holds the intellectual property through the preview period and releases the standard under Apache 2.0 from 12 June 2026.
 
-Contributing to the standard does not require membership. The wire format is developed in the open, and anyone - content owner, agent operator, intermediary, or implementer - can take part through the issue tracker and the comment process described in the [README](./README.md#request-for-comment).
+Contributing to the standard does not require membership. The wire format is developed in the open, and anyone - content owner, agent operator, intermediary, or implementer - can take part through the issue tracker and the process described in the [README](./README.md#consultation-record).
 
-The standard is maintained by Alex Springer (alex@spurcoalition.org). The decision-making process will be set out before 1.0.
+The standard is maintained by Alex Springer (alex@spurcoalition.org).
 
-## Path to 1.0
+## Version 1.0 and decisions
 
-The specification is at v0.1 (preview). It moves to 1.0 once the open questions are resolved, the conformance suite is stable, and there are independent interoperable implementations from more than one party. There is no fixed date.
+The specification reached 1.0 on 2 September 2026, following the public consultation of 12 June to 24 July 2026 and the release-candidate work recorded on the issue tracker.
+
+Decisions follow the proposal and alignment process in [CONTRIBUTING.md](./CONTRIBUTING.md): anyone may propose a change, a maintainer records the disposition publicly on the issue tracker, and the SPUR Steering Board approves releases. The tracker and pull-request history are the public decision record. Minor versions add optional fields and event types; breaking changes require a major version (SPECIFICATION.md section 12).
 
 ## How to participate
 
 - File questions and bugs on the [issue tracker](https://github.com/SPUR-Coalition/telemetry/issues) (see the templates).
-- Follow the [post-consultation status](./README.md#consultation-status). The
-  formal v1 comment window is closed, but concrete bugs and implementation
-  evidence remain welcome on the issue tracker.
+- See the [consultation record](./README.md#consultation-record). The formal
+  v1 comment window is closed, but concrete bugs and implementation evidence
+  remain welcome on the issue tracker.
 - Propose new capabilities or changes in behaviour as a short human-written note
   in [`proposals/`](./proposals/), following
   [CONTRIBUTING.md](./CONTRIBUTING.md).

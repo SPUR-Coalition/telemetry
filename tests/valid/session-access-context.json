@@ -1,0 +1,64 @@
+{
+  "_test_description": "Session-level data container (5.1.3): access_context identifies the institution whose entitlement the agent used, required by the governing terms, with turn data at intent level per 5.5. The retrieval event carries content_depth: full (6.1).",
+  "document_type": "session",
+  "schema_version": "1.0",
+  "session_id": "880e8400-e29b-41d4-a716-446655440080",
+  "agent_id": "scholar-assistant.example.com",
+  "content_scope": "consortium-agreement-4471",
+  "started_at": "2026-08-13T14:02:10Z",
+  "ended_at": "2026-08-13T14:03:44Z",
+  "data": {
+    "access_context": {
+      "identifiers": [
+        { "scheme": "ror", "value": "https://ror.org/013meh722" },
+        { "scheme": "saml_entity_id", "value": "https://idp.example.ac.uk/shibboleth" }
+      ]
+    }
+  },
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-08-13T14:02:11Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "question",
+        "topics": ["materials science"]
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-13T14:02:14Z",
+      "source_role": "agent",
+      "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440081",
+      "content_url": "https://journals.example.com/article/10.1000/xyz123",
+      "content_id": "doi:10.1000/xyz123",
+      "license_ref": "grant-4471-2026",
+      "data": {
+        "media_type": "text",
+        "content_depth": "full"
+      }
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-13T14:02:16Z",
+      "source_role": "agent",
+      "turn_id": "1",
+      "content_id": "doi:10.1000/xyz123",
+      "data": {
+        "scope": "turn",
+        "chars_ingested": 18400
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-08-13T14:03:40Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "question",
+        "topics": ["materials science"]
+      }
+    }
+  ]
+}

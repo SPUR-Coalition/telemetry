@@ -1,0 +1,142 @@
+{
+  "_test_description": "Multi-owner catalogue under one agreement (Annex B.5): content_scope identifies the marketplace agreement, owner resolution is per event - one owner by content_url domain, the other by a registered content_id prefix with no canonical URL at all. Two owners, each event resolving to its own.",
+  "schema_version": "1.0",
+  "session_id": "990e8400-e29b-41d4-a716-446655440500",
+  "agent_id": "research-assistant-v5",
+  "content_scope": "marketplace-agreement-2026-017",
+  "manifest_ref": "https://assistant.example.com/.well-known/content-telemetry.json",
+  "started_at": "2026-08-20T09:00:00Z",
+  "ended_at": "2026-08-20T09:00:09Z",
+  "events": [
+    {
+      "type": "turn_started",
+      "timestamp": "2026-08-20T09:00:00Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "query_intent": "comparison",
+        "topics": [
+          "electric vehicles",
+          "charging"
+        ]
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-20T09:00:01Z",
+      "source_role": "index",
+      "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440501",
+      "content_url": "https://www.autoreview.example/ev/charging-networks-2026",
+      "content_id": "mkt:autoreview:88213",
+      "license_ref": "agreement-2026-017:autoreview",
+      "data": {
+        "media_type": "text",
+        "content_depth": "full"
+      }
+    },
+    {
+      "type": "content_retrieved",
+      "timestamp": "2026-08-20T09:00:01Z",
+      "source_role": "index",
+      "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440502",
+      "content_id": "mkt:gridnews:5520",
+      "license_ref": "agreement-2026-017:gridnews",
+      "data": {
+        "media_type": "text",
+        "content_depth": "full"
+      }
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T09:00:02Z",
+      "turn_id": "1",
+      "content_url": "https://www.autoreview.example/ev/charging-networks-2026",
+      "content_id": "mkt:autoreview:88213",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "provenance": "third_party_sourced",
+        "chars_ingested": 11200
+      }
+    },
+    {
+      "type": "content_grounded",
+      "timestamp": "2026-08-20T09:00:02Z",
+      "turn_id": "1",
+      "content_id": "mkt:gridnews:5520",
+      "data": {
+        "scope": "turn",
+        "cached": false,
+        "provenance": "third_party_sourced",
+        "chars_ingested": 6400
+      }
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440503",
+      "type": "content_cited",
+      "timestamp": "2026-08-20T09:00:06Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:networks:1",
+      "content_url": "https://www.autoreview.example/ev/charging-networks-2026",
+      "content_id": "mkt:autoreview:88213",
+      "data": {
+        "citation_type": "paraphrase",
+        "position": "primary"
+      }
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440504",
+      "type": "content_cited",
+      "timestamp": "2026-08-20T09:00:06Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:tariffs:1",
+      "content_id": "mkt:gridnews:5520",
+      "data": {
+        "citation_type": "reference",
+        "position": "supporting"
+      }
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440505",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T09:00:07Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:networks:1",
+      "citation_id": "990e8400-e29b-41d4-a716-446655440503",
+      "content_url": "https://www.autoreview.example/ev/charging-networks-2026",
+      "content_id": "mkt:autoreview:88213",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440506",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T09:00:07Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "output_element_id": "answer:tariffs:1",
+      "citation_id": "990e8400-e29b-41d4-a716-446655440504",
+      "content_id": "mkt:gridnews:5520",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "card"
+      }
+    },
+    {
+      "type": "turn_completed",
+      "timestamp": "2026-08-20T09:00:09Z",
+      "turn_id": "1",
+      "turn": {
+        "privacy_level": "intent",
+        "response_type": "comparison",
+        "response_mode": "standard",
+        "response_tokens": 410
+      }
+    }
+  ]
+}

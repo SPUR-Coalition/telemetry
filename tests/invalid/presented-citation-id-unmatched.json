@@ -1,0 +1,34 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: content_presented whose citation_id matches no content_cited event id in the session. Section 6.7 requires citation_id to reference the presented content_cited event's id; here it points at an all-zeros UUID while the session's actual citation has a different id.",
+  "_expected_error": "citation_id '00000000-0000-0000-0000-000000000000' does not match any content_cited event id",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440238",
+  "started_at": "2026-08-05T12:40:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440239",
+      "type": "content_cited",
+      "timestamp": "2026-08-05T12:40:01Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "citation_type": "reference",
+        "position": "primary"
+      }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440240",
+      "type": "content_presented",
+      "timestamp": "2026-08-05T12:40:02Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "citation_id": "00000000-0000-0000-0000-000000000000",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    }
+  ]
+}

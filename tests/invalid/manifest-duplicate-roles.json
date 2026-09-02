@@ -1,0 +1,13 @@
+{
+  "_test_description": "Manifest repeating a role; roles are a set (section 8.2).",
+  "_expected_error": "/roles ['agent', 'agent'] has non-unique elements",
+  "schema_version": "1.0",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": [
+    "agent",
+    "agent"
+  ],
+  "operator": {
+    "name": "Example Media"
+  }
+}

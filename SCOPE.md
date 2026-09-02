@@ -18,7 +18,7 @@ Conformance and verification answer five separate questions:
 4. **Factual truth and completeness:** did the event happen as claimed, and were all qualifying events reported?
 5. **Entitlement:** was the reported use permitted under an applicable grant or agreement?
 
-Events are claims by identified emitters. Evidence applies to a particular assertion. Origin or access evidence can corroborate only what that observer could see; it cannot prove grounding, reproduction, citation, presentation, engagement, truth, completeness or entitlement.
+Events are claims by identified emitters. Evidence applies to a particular assertion. Origin or access evidence can corroborate only what that observer could see; it cannot prove grounding, citation, presentation, engagement, truth, completeness or entitlement.
 
 Relationship configuration should avoid profile proliferation. A publisher may require `content_grounded` and `content_cited` events, intent-level topics, event delivery to a named endpoint and a set of aggregate reports. Another may require `content_cited`, `content_presented` and `content_engaged` events with a different privacy level. These are deployment choices backed by governing terms, not publisher-specific protocol profiles. A new profile is justified only when a class of relationships introduces semantics or processing rules that multiple implementations must interpret in the same way.
 

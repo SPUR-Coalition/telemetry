@@ -1,0 +1,19 @@
+{
+  "_test_description": "Manifest key of type 'RSA'; v1 defines Ed25519 only (section 8.4).",
+  "_expected_error": "/keys/0/type 'Ed25519' was expected",
+  "schema_version": "1.0",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": [
+    "agent"
+  ],
+  "operator": {
+    "name": "Example Media"
+  },
+  "keys": [
+    {
+      "id": "key-1",
+      "type": "RSA",
+      "publicKey": "z6Mk"
+    }
+  ]
+}

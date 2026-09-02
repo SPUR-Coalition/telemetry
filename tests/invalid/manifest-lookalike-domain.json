@@ -1,0 +1,16 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: manifest at example.com claiming evilexample.com, a lookalike that ends in the host string but is not a subdomain of it (section 8.6).",
+  "_expected_error": "'evilexample.com' is not the manifest host",
+  "schema_version": "1.0",
+  "id": "https://example.com/.well-known/content-telemetry.json",
+  "roles": [
+    "content_owner"
+  ],
+  "operator": {
+    "name": "Example Media"
+  },
+  "domains": [
+    "example.com",
+    "evilexample.com"
+  ]
+}

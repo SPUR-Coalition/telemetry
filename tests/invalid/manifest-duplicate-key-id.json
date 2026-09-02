@@ -1,6 +1,7 @@
 {
   "_test_description": "Agent manifest with two keys sharing the id 'key-1'. Passes JSON Schema (the entries differ in publicKey) but violates section 8.7: consumers reject a manifest with duplicate keys[].id.",
-  "schema_version": "0.1",
+  "_expected_error": "Duplicate keys[].id",
+  "schema_version": "1.0",
   "id": "https://searchco.com/agents/web-search/.well-known/content-telemetry.json",
   "roles": ["agent"],
   "operator": { "name": "SearchCo" },

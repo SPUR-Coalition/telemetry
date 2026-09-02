@@ -1,0 +1,18 @@
+{
+  "_test_description": "Standalone retrieval reported by a marketplace index (source_role index) that served the content to the agent: identified by the marketplace catalogue id with no canonical URL, resolved by content_id prefix registration (sections 4.4, 7.3).",
+  "document_type": "event",
+  "schema_version": "1.0",
+  "manifest_ref": "https://marketplace.example.com/.well-known/content-telemetry.json",
+  "event": {
+    "type": "content_retrieved",
+    "timestamp": "2026-08-20T10:00:01Z",
+    "source_role": "index",
+    "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440602",
+    "content_id": "mkt:gridnews:5520",
+    "license_ref": "agreement-2026-017:gridnews",
+    "data": {
+      "media_type": "text",
+      "content_depth": "full"
+    }
+  }
+}

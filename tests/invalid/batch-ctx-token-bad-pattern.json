@@ -1,0 +1,18 @@
+{
+  "_test_description": "Event batch envelope whose ctx_token fails the value pattern (section 7.4.1).",
+  "_expected_error": "/ctx_token 'token123' does not match '^ct_[A-Za-z0-9_-]{16,240}$'",
+  "document_type": "event_batch",
+  "schema_version": "1.0",
+  "ctx_token": "token123",
+  "events": [
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T10:00:06Z",
+      "turn_id": "1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "engagement_type": "link_click"
+      }
+    }
+  ]
+}

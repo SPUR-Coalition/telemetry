@@ -1,0 +1,44 @@
+{
+  "_test_description": "APPLICATION-LAYER VIOLATION: two content_presented events share one id, so the engagement cannot name the exact occurrence. Repeated presentations receive distinct ids (section 6.7).",
+  "_expected_error": "Duplicate event id",
+  "schema_version": "1.0",
+  "session_id": "660e8400-e29b-41d4-a716-446655440635",
+  "agent_id": "assistant-v4",
+  "started_at": "2026-08-20T10:00:00Z",
+  "events": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440602",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T10:00:04Z",
+      "turn_id": "1",
+      "output_id": "response:1",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440602",
+      "type": "content_presented",
+      "timestamp": "2026-08-20T10:00:05Z",
+      "turn_id": "1",
+      "output_id": "response:2",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "presentation_kind": "source_reference",
+        "presentation_type": "link"
+      }
+    },
+    {
+      "type": "content_engaged",
+      "timestamp": "2026-08-20T10:00:06Z",
+      "turn_id": "1",
+      "presentation_id": "770e8400-e29b-41d4-a716-446655440602",
+      "content_url": "https://www.example-news.com/economy/rate-decision-analysis",
+      "data": {
+        "engagement_type": "link_click"
+      }
+    }
+  ]
+}

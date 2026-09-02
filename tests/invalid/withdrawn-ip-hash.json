@@ -1,0 +1,22 @@
+{
+  "_test_description": "Standalone event envelope from a CDN carrying ip_hash in data. The field was withdrawn in v1 (section 9.1): hashing does not anonymise a value drawn from a space small enough to enumerate. Passes JSON Schema because event data accepts additional properties, so the rule is enforced at the application layer.",
+  "_expected_error": "'ip_hash' in data",
+  "document_type": "event",
+  "schema_version": "1.0",
+  "event": {
+    "type": "content_retrieved",
+    "timestamp": "2026-03-28T08:15:00Z",
+    "source_role": "edge",
+    "content_telemetry_id": "990e8400-e29b-41d4-a716-446655440051",
+    "content_url": "https://www.telegraph.co.uk/business/2026/03/28/ftse-100-markets-live",
+    "data": {
+      "user_agent": "PerplexityBot/1.0",
+      "purpose": "inference",
+      "response_status": 200,
+      "asn": 396982,
+      "asn_org": "Perplexity AI",
+      "country": "US",
+      "ip_hash": "sha256:e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6"
+    }
+  }
+}
