@@ -1,0 +1,69 @@
+{
+  "description": "license_ref -> credential resolution map for offline verification. Historical-status reasoning (profile section 5.4(c)) trusts only the signed validFrom inside a status-list credential \u2014 issuer-attested time \u2014 never a locally recorded retrieval time, which proves nothing about what the issuer had published. expect states the reference outcome, reported as 'grant evidence verified' at the stated class \u2014 never as an adjudication of entitlement.",
+  "credentials": [
+    {
+      "license_ref": "grant-valid-001",
+      "credential": "credential-valid.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "grant evidence verified (independently_verifiable)"
+    },
+    {
+      "license_ref": "grant-revoked-002",
+      "credential": "credential-revoked.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "fails 5.4(b): status bit set"
+    },
+    {
+      "license_ref": "grant-expired-003",
+      "credential": "credential-expired.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "fails 5.4(a): outside validity window"
+    },
+    {
+      "license_ref": "pub-grant-001",
+      "credential": "credential-other-issuer.jwt",
+      "did_document": "did-publisher.example.json",
+      "status_list": "statuslist-publisher.jwt",
+      "expect": "grant evidence verified (independently_verifiable), second issuer"
+    },
+    {
+      "license_ref": "grant-unknownkid-004",
+      "credential": "credential-unknown-kid.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "fails 5.3/4.1: kid absent from DID document, no fallback"
+    },
+    {
+      "license_ref": "grant-granteemismatch-005",
+      "credential": "credential-grantee-mismatch.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "fails 5.5: credential grantee agent.other.example does not match reporting agent_id"
+    },
+    {
+      "license_ref": "grant-unauthsl-007",
+      "credential": "credential-unauthenticated-statuslist.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-unauthenticated.jwt",
+      "expect": "fails 8.2/5.4(b): status list is signed by did:web:publisher.example but declares did:web:licensor.example as issuer \u2014 the list MUST be authenticated before its bitstring is consulted, and an unauthenticated list is unresolvable status, never 'not revoked'"
+    },
+    {
+      "license_ref": "grant-outofrange-008",
+      "credential": "credential-index-out-of-range.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "expect": "fails 8.3/5.4(d): statusListIndex 999999 is outside the decoded bitstring (131072 bits) \u2014 credential and list disagree, which is an error and MUST NOT be read as 'not revoked'"
+    },
+    {
+      "license_ref": "grant-revokedlate-006",
+      "credential": "credential-revoked-late.jwt",
+      "did_document": "did-licensor.example.json",
+      "status_list": "statuslist-licensor.jwt",
+      "snapshot_status_list": "statuslist-licensor-snapshot.jwt",
+      "expect": "current list: bit set -> fails 5.4(c) by default (retroactive). With the issuer-signed snapshot (signed validFrom 2026-07-05 >= event time, bit clear): grant evidence verified (independently_verifiable) via the 5.4(c) signed-snapshot path"
+    }
+  ]
+}
