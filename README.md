@@ -65,6 +65,7 @@ Grounding and presentation record different boundary crossings: grounding means 
 - [manifest.json](./manifest.json) - JSON Schema for the `.well-known/content-telemetry.json` manifest ([section 8](./SPECIFICATION.md#8-manifest))
 - [tests/](./tests/) - conformance test suite
 - [GOVERNANCE.md](./GOVERNANCE.md) - stewardship, versioning status, relationship to profiles
+- [ACKNOWLEDGEMENTS.md](./ACKNOWLEDGEMENTS.md) - contributors credited per release
 - [LICENSE](./LICENSE) - Apache License 2.0
 
 This repository is the **standard** - the wire format. Publisher-facing accreditation and the SPUR conformance mark are defined separately in the [SPUR Content Telemetry Profile](https://github.com/SPUR-Coalition/telemetry-profile), which references this specification by version. The standard defines the privacy mechanism (section 5.5); whether a profile makes any privacy level binding is the profile's choice. See [GOVERNANCE.md](./GOVERNANCE.md).
