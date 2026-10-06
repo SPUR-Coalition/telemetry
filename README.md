@@ -39,7 +39,7 @@ The **session** ties these events together - one bounded interaction from query 
 The gaps between stages show how content was used:
 
 - **Retrieval without grounding** - your content was fetched but not used
-- **Grounding without citation** - your content influenced the answer but you got no credit
+- **Grounding without citation** - your content was in the context that produced the answer but you got no credit
 - **Citation without presentation** - your content was credited in the output but the credit never reached the user
 - **Presentation without engagement** - your link was shown but the user didn't click through
 
